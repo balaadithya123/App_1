@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Brush,
   ChevronRight,
@@ -22,12 +23,13 @@ const services = [
 ];
 
 export default function Index() {
-  const [selectedService, setSelectedService] = useState("");
+  const navigate = useNavigate();
   const [work, setWork] = useState("");
   const [location, setLocation] = useState("");
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    navigate("/search");
   };
 
   return (
@@ -43,12 +45,12 @@ export default function Index() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Link
+              to="/register"
               className="hidden rounded-[9px] px-2 py-2 text-[12px] font-bold text-teal transition-colors hover:bg-mint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 min-[360px]:block"
             >
               Register as a Worker
-            </button>
+            </Link>
             <button
               type="button"
               aria-label="Open menu"
@@ -119,30 +121,21 @@ export default function Index() {
             </h2>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {services.map(({ name, icon: Icon, tone }, index) => {
-              const isSelected = selectedService === name;
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => setSelectedService(isSelected ? "" : name)}
-                  aria-pressed={isSelected}
-                  className={`flex min-h-[74px] items-center justify-between rounded-[12px] border px-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 ${
-                    isSelected
-                      ? "border-teal bg-mint text-navy shadow-sm"
-                      : `${index % 2 === 0 ? "border-[#dcece7]" : "border-line"} bg-white text-navy hover:border-teal/50 hover:bg-mint/50`
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className={`flex h-9 w-9 items-center justify-center rounded-[9px] ${isSelected ? "bg-white text-teal" : `${tone} text-teal`}`}>
-                      <Icon size={18} strokeWidth={1.8} />
-                    </span>
-                    <span className="text-[13px] font-bold">{name}</span>
+            {services.map(({ name, icon: Icon, tone }, index) => (
+              <Link
+                key={name}
+                to="/search"
+                className={`flex min-h-[74px] items-center justify-between rounded-[12px] border px-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 ${index % 2 === 0 ? "border-[#dcece7]" : "border-line"} bg-white text-navy hover:border-teal/50 hover:bg-mint/50`}
+              >
+                <span className="flex items-center gap-3">
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-[9px] ${tone} text-teal`}>
+                    <Icon size={18} strokeWidth={1.8} />
                   </span>
-                  <ChevronRight size={16} className="text-slate/60" />
-                </button>
-              );
-            })}
+                  <span className="text-[13px] font-bold">{name}</span>
+                </span>
+                <ChevronRight size={16} className="text-slate/60" />
+              </Link>
+            ))}
           </div>
         </section>
 
