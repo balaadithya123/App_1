@@ -1,11 +1,41 @@
+import { useEffect, useState } from "react";
 import { ArrowRight, Check, MapPin, ShieldCheck } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
-import { workers } from "@/data/workers";
+import { workers as staticWorkers, type Worker } from "@/data/workers";
+import type { WorkersResponse } from "@shared/api";
 
 export default function WorkerProfile() {
   const [searchParams] = useSearchParams();
-  const worker = workers.find((item) => item.id === searchParams.get("worker")) ?? workers[0];
+  const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
+  const worker = availableWorkers.find((item) => item.id === searchParams.get("worker")) ?? availableWorkers[0];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetch("/api/workers")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load workers");
+        }
+
+        return response.json() as Promise<WorkersResponse>;
+      })
+      .then((data) => {
+        if (isMounted) {
+          setAvailableWorkers(data.workers);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setAvailableWorkers(staticWorkers);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <PageShell backTo="/search" backLabel="Search results">
