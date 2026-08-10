@@ -1,16 +1,56 @@
+import { useEffect, useState } from "react";
 import { MapPin, Search as SearchIcon } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
-import { workers } from "@/data/workers";
+import { workers as staticWorkers, type Worker } from "@/data/workers";
+import type { WorkersResponse } from "@shared/api";
+import { filterWorkers } from "@/lib/search";
 
 const categories = ["Electrician", "Painter", "Plumber", "Carpenter", "Cleaner", "Other"];
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
-  const requestedService = searchParams.get("service")?.trim() || "Other";
+  const requestedService = searchParams.get("service")?.trim() || "";
+  const requestedLocation = searchParams.get("location")?.trim() || "";
+  const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
   const category = categories.find((item) => item.toLowerCase() === requestedService.toLowerCase()) || requestedService;
-  const matchingWorkers = workers.filter((worker) => worker.category.toLowerCase() === category.toLowerCase());
-  const heading = category === "Other" ? "Other workers near you" : `${category}s near you`;
+  const matchingWorkers = filterWorkers(availableWorkers, category, requestedLocation);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetch("/api/workers")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load workers");
+        }
+
+        return response.json() as Promise<WorkersResponse>;
+      })
+      .then((data) => {
+        if (isMounted) {
+          setAvailableWorkers(data.workers);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setAvailableWorkers(staticWorkers);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  const heading = category
+    ? category === "Other"
+      ? "Other workers near you"
+      : `${category}s near you`
+    : requestedLocation
+      ? `Workers near ${requestedLocation}`
+      : "Workers near you";
+  const serviceLabel = requestedService || "Any service";
+  const locationLabel = requestedLocation || "Near you";
 
   return (
     <PageShell>
@@ -22,11 +62,11 @@ export default function SearchResults() {
         <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
           <div className="flex h-11 items-center gap-3 rounded-[10px] border border-line bg-white px-3.5 text-sm text-navy">
             <SearchIcon size={17} className="text-teal" />
-            {requestedService || category}
+            {serviceLabel}
           </div>
           <div className="flex h-11 items-center gap-2 rounded-[10px] border border-line bg-white px-3.5 text-sm text-slate">
             <MapPin size={17} className="text-teal" />
-            Near you
+            {locationLabel}
           </div>
         </div>
       </section>
@@ -60,7 +100,7 @@ export default function SearchResults() {
           </div>
         ) : (
           <p className="rounded-[13px] border border-line bg-white px-4 py-6 text-center text-sm text-slate">
-            No workers found for this service.
+            No workers found for this search.
           </p>
         )}
       </section>

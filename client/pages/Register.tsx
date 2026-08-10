@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import PageShell from "@/components/PageShell";
+import type { ApiErrorResponse, WorkerRegistrationRequest } from "@shared/api";
 
 const fields = [
   ["fullName", "Full Name", "e.g. Ravi Kumar"],
@@ -12,10 +13,43 @@ const fields = [
 
 export default function Register() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
+    setError("");
+    setIsSubmitting(true);
+
+    const formData = new FormData(event.currentTarget);
+    const payload: WorkerRegistrationRequest = {
+      fullName: String(formData.get("fullName") || ""),
+      phone: String(formData.get("phone") || ""),
+      category: String(formData.get("category") || ""),
+      location: String(formData.get("location") || ""),
+      experience: String(formData.get("experience") || ""),
+      services: String(formData.get("services") || ""),
+      about: String(formData.get("about") || ""),
+    };
+
+    try {
+      const response = await fetch("/api/workers/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as ApiErrorResponse | null;
+        throw new Error(data?.message || "Registration failed. Please try again.");
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -42,7 +76,8 @@ export default function Register() {
             <label htmlFor="about" className="mb-2 block text-[13px] font-bold text-navy">About You</label>
             <textarea id="about" name="about" required placeholder="A short introduction" rows={4} className="w-full resize-none rounded-[9px] border border-line bg-[#fbfcfc] px-3 py-3 text-sm text-navy outline-none placeholder:text-slate/80 focus:border-teal focus:ring-2 focus:ring-teal/15" />
           </div>
-          <button type="submit" className="flex h-12 w-full items-center justify-center rounded-[10px] bg-navy text-sm font-bold text-white shadow-[0_5px_12px_rgba(18,63,75,0.18)] transition-colors hover:bg-[#234b59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2">Register as a Worker</button>
+          {error ? <p className="text-center text-[13px] font-semibold text-red-600">{error}</p> : null}
+          <button type="submit" disabled={isSubmitting} className="flex h-12 w-full items-center justify-center rounded-[10px] bg-navy text-sm font-bold text-white shadow-[0_5px_12px_rgba(18,63,75,0.18)] transition-colors hover:bg-[#234b59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-80">{isSubmitting ? "Submitting..." : "Register as a Worker"}</button>
         </form>
       )}
     </PageShell>

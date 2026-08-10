@@ -29,7 +29,12 @@ export default function Index() {
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate(`/search?service=${encodeURIComponent(work.trim())}`);
+    const params = new URLSearchParams({
+      service: work.trim(),
+      location: location.trim(),
+    });
+
+    navigate(`/search?${params.toString()}`);
   };
 
   return (
