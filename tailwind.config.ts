@@ -14,6 +14,12 @@ export default {
     },
     extend: {
       colors: {
+        ink: "#18373e",
+        navy: "#123f4b",
+        teal: "#168b83",
+        mint: "#e8f5f1",
+        slate: "#667b80",
+        line: "#dce7e4",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
