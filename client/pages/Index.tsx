@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import MobileMenu from "@/components/MobileMenu";
 import {
   Brush,
   ChevronRight,
   Hammer,
   MapPin,
-  Menu,
   Paintbrush,
   Search,
   ShieldCheck,
@@ -29,7 +29,7 @@ export default function Index() {
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate("/search");
+    navigate(`/search?service=${encodeURIComponent(work.trim())}`);
   };
 
   return (
@@ -51,13 +51,7 @@ export default function Index() {
             >
               Register as a Worker
             </Link>
-            <button
-              type="button"
-              aria-label="Open menu"
-              className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-line bg-white text-navy shadow-[0_2px_8px_rgba(24,55,62,0.04)] transition-colors hover:bg-mint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2"
-            >
-              <Menu size={21} strokeWidth={2.2} />
-            </button>
+            <MobileMenu />
           </div>
         </header>
 
@@ -124,7 +118,7 @@ export default function Index() {
             {services.map(({ name, icon: Icon, tone }, index) => (
               <Link
                 key={name}
-                to="/search"
+                to={`/search?service=${encodeURIComponent(name)}`}
                 className={`flex min-h-[74px] items-center justify-between rounded-[12px] border px-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 ${index % 2 === 0 ? "border-[#dcece7]" : "border-line"} bg-white text-navy hover:border-teal/50 hover:bg-mint/50`}
               >
                 <span className="flex items-center gap-3">

@@ -1,4 +1,5 @@
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import MobileMenu from "@/components/MobileMenu";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
@@ -23,13 +24,7 @@ export default function PageShell({
               LocalWorker
             </span>
           </Link>
-          <button
-            type="button"
-            aria-label="Open menu"
-            className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-line bg-white text-navy shadow-[0_2px_8px_rgba(24,55,62,0.04)]"
-          >
-            <Menu size={21} strokeWidth={2.2} />
-          </button>
+          <MobileMenu />
         </header>
         <Link
           to={backTo}
