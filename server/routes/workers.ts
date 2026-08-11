@@ -15,7 +15,14 @@ export const workerRegistrationSchema = z.object({
   category: z.string().trim().min(1, "Work category is required"),
   location: z.string().trim().min(1, "Location is required"),
   experience: z.string().trim().min(1, "Years of experience is required"),
-  services: z.string().trim().min(1, "Services offered is required"),
+  services: z
+    .string()
+    .trim()
+    .min(1, "Services offered is required")
+    .refine(
+      (value) => value.split(",").some((service) => service.trim().length > 0),
+      "At least one service is required",
+    ),
   about: z.string().trim().min(1, "About you is required"),
 });
 
