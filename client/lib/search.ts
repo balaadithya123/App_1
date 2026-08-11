@@ -12,14 +12,15 @@ export const filterWorkers = (
 
   return workers.filter((worker) => {
     const searchableServices = [worker.category, ...worker.services].map((service) =>
-      service.toLowerCase(),
+      normalizeSearchValue(service),
     );
-    const matchesService = normalizedService
-      ? searchableServices.some((service) => service.includes(normalizedService))
-      : true;
-    const matchesLocation = normalizedLocation
-      ? worker.locality.toLowerCase().includes(normalizedLocation)
-      : true;
+    const searchableLocation = normalizeSearchValue(worker.locality);
+
+    const matchesService =
+      !normalizedService ||
+      searchableServices.some((service) => service.includes(normalizedService));
+    const matchesLocation =
+      !normalizedLocation || searchableLocation.includes(normalizedLocation);
 
     return matchesService && matchesLocation;
   });
