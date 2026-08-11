@@ -22,16 +22,19 @@ const selectFields = "id,name,phone,category,locality,experience,initials,tone,a
 
 export const saveRegisteredWorker = async (worker: Worker) => {
   const row = workerRow(worker);
-  const first = await supabase.from("workers").insert(row).select(selectFields).single();
-  if (!first.error) return toWorker(first.data);
 
-  // If Vercel has an incorrect/expired service key, use the public client.
-  // The database already has a narrowly validated public INSERT policy for registration.
-  if (publicSupabase && /row-level security policy/i.test(first.error.message)) {
-    const fallback = await publicSupabase.from("workers").insert(row).select(selectFields).single();
-    if (!fallback.error) return toWorker(fallback.data);
-    throw new Error(`Unable to save worker to Supabase: ${fallback.error.message}`);
-  }
+  // Registration is deliberately performed through the public client. The database
+  // has a dedicated INSERT policy that validates every registration field, including
+  // an exactly 10-digit phone number. This avoids depending on a Vercel secret being
+  // interpreted as the service_role JWT and accidentally being subject to RLS.
+  if (!publicSupabase) throw new Error("Supabase public registration client is not configured.");
+  const result = await publicSupabase.from("workers").insert(row).select(selectFields).single();
+  if (!result.error) return toWorker(result.data);
 
-  throw new Error(`Unable to save worker to Supabase: ${first.error.message}`);
+  // Keep the server client as a secondary path for environments where the public
+  // registration variables are unavailable, while never masking the real error.
+  const serverResult = await supabase.from("workers").insert(row).select(selectFields).single();
+  if (!serverResult.error) return toWorker(serverResult.data);
+
+  throw new Error(`Unable to save worker to Supabase: ${result.error.message}`);
 };
