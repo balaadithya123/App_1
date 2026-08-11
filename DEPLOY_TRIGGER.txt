@@ -1,0 +1,1 @@
+Latest deployment trigger for App_1. Supabase worker INSERT RLS policy has been applied separately.
