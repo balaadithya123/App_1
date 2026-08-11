@@ -4,7 +4,7 @@ import type { ApiErrorResponse, WorkerRegistrationRequest } from "@shared/api";
 
 const fields = [
   ["fullName", "Full Name", "e.g. Ravi Kumar"],
-  ["phone", "Phone Number", "Your phone number"],
+  ["phone", "Phone Number", "10-digit mobile number"],
   ["category", "Work Category", "e.g. Electrician"],
   ["location", "Location", "Your town or locality"],
   ["experience", "Years of Experience", "e.g. 5 years"],
@@ -22,61 +22,55 @@ export default function Register() {
     setIsSubmitting(true);
 
     const formData = new FormData(event.currentTarget);
+    const phone = String(formData.get("phone") || "").replace(/\D/g, "");
+    if (!/^\d{10}$/.test(phone)) {
+      setError("Phone number must be exactly 10 digits.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const payload: WorkerRegistrationRequest = {
-      fullName: String(formData.get("fullName") || ""),
-      phone: String(formData.get("phone") || ""),
-      category: String(formData.get("category") || ""),
-      location: String(formData.get("location") || ""),
-      experience: String(formData.get("experience") || ""),
-      services: String(formData.get("services") || ""),
-      about: String(formData.get("about") || ""),
+      fullName: String(formData.get("fullName") || ""), phone,
+      category: String(formData.get("category") || ""), location: String(formData.get("location") || ""),
+      experience: String(formData.get("experience") || ""), services: String(formData.get("services") || ""), about: String(formData.get("about") || ""),
     };
 
     try {
       const response = await fetch("/api/workers/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as ApiErrorResponse | null;
-        throw new Error(data?.message || "Registration failed. Please try again.");
-      }
-
+      const data = (await response.json().catch(() => null)) as ApiErrorResponse | null;
+      if (!response.ok) throw new Error(data?.message || `Registration failed (HTTP ${response.status}). Please try again.`);
       setSubmitted(true);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Registration failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } finally { setIsSubmitting(false); }
   };
 
   return (
     <PageShell>
-      <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 sm:px-8 sm:py-9">
-        <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.045em] text-navy sm:text-4xl">Register as a Worker</h1>
-        <p className="mt-3 text-[14px] leading-6 text-slate">Tell people nearby what kind of work you can help with.</p>
+      <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 dark:border-slate-700 dark:bg-slate-900 sm:px-8 sm:py-9">
+        <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.045em] text-navy dark:text-white sm:text-4xl">Register as a Worker</h1>
+        <p className="mt-3 text-[14px] leading-6 text-slate dark:text-slate-300">Tell people nearby what kind of work you can help with.</p>
       </section>
-
       {submitted ? (
-        <section className="mt-6 rounded-[13px] border border-[#b9ddd4] bg-mint p-5 text-center">
-          <h2 className="font-extrabold text-navy">Your registration has been submitted.</h2>
-          <p className="mt-2 text-[14px] text-slate">Thank you for sharing your details.</p>
+        <section className="mt-6 rounded-[13px] border border-[#b9ddd4] bg-mint p-5 text-center dark:border-emerald-800 dark:bg-emerald-950">
+          <h2 className="font-extrabold text-navy dark:text-white">Your registration has been submitted.</h2>
+          <p className="mt-2 text-[14px] text-slate dark:text-slate-300">Thank you for sharing your details.</p>
         </section>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-7 space-y-4 rounded-[13px] border border-line bg-white p-5 shadow-[0_5px_18px_rgba(24,55,62,0.04)] sm:p-7">
+        <form onSubmit={handleSubmit} className="mt-7 space-y-4 rounded-[13px] border border-line bg-white p-5 shadow-[0_5px_18px_rgba(24,55,62,0.04)] dark:border-slate-700 dark:bg-slate-900 sm:p-7">
           {fields.map(([id, label, placeholder]) => (
             <div key={id}>
-              <label htmlFor={id} className="mb-2 block text-[13px] font-bold text-navy">{label}</label>
-              <input id={id} name={id} required placeholder={placeholder} className="h-11 w-full rounded-[9px] border border-line bg-[#fbfcfc] px-3 text-sm text-navy outline-none placeholder:text-slate/80 focus:border-teal focus:ring-2 focus:ring-teal/15" />
+              <label htmlFor={id} className="mb-2 block text-[13px] font-bold text-navy dark:text-slate-100">{label}</label>
+              <input id={id} name={id} required inputMode={id === "phone" ? "numeric" : undefined} maxLength={id === "phone" ? 10 : undefined} pattern={id === "phone" ? "[0-9]{10}" : undefined} onInput={id === "phone" ? (event) => { event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, 10); } : undefined} placeholder={placeholder} className="h-11 w-full rounded-[9px] border border-line bg-[#fbfcfc] px-3 text-sm text-navy outline-none placeholder:text-slate/80 focus:border-teal focus:ring-2 focus:ring-teal/15 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-400" />
             </div>
           ))}
           <div>
-            <label htmlFor="about" className="mb-2 block text-[13px] font-bold text-navy">About You</label>
-            <textarea id="about" name="about" required placeholder="A short introduction" rows={4} className="w-full resize-none rounded-[9px] border border-line bg-[#fbfcfc] px-3 py-3 text-sm text-navy outline-none placeholder:text-slate/80 focus:border-teal focus:ring-2 focus:ring-teal/15" />
+            <label htmlFor="about" className="mb-2 block text-[13px] font-bold text-navy dark:text-slate-100">About You</label>
+            <textarea id="about" name="about" required placeholder="A short introduction" rows={4} className="w-full resize-none rounded-[9px] border border-line bg-[#fbfcfc] px-3 py-3 text-sm text-navy outline-none placeholder:text-slate/80 focus:border-teal focus:ring-2 focus:ring-teal/15 dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-400" />
           </div>
-          {error ? <p className="text-center text-[13px] font-semibold text-red-600">{error}</p> : null}
+          {error ? <p className="text-center text-[13px] font-semibold text-red-600 dark:text-red-400">{error}</p> : null}
           <button type="submit" disabled={isSubmitting} className="flex h-12 w-full items-center justify-center rounded-[10px] bg-navy text-sm font-bold text-white shadow-[0_5px_12px_rgba(18,63,75,0.18)] transition-colors hover:bg-[#234b59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-80">{isSubmitting ? "Submitting..." : "Register as a Worker"}</button>
         </form>
       )}
