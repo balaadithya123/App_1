@@ -3,10 +3,16 @@ import { workers } from "@/data/workers";
 import { filterWorkers } from "./search";
 
 describe("filterWorkers", () => {
-  it("filters by service case-insensitively", () => {
+  it("filters by service category case-insensitively", () => {
     const results = filterWorkers(workers, "painter", "");
 
     expect(results.map((worker) => worker.id)).toEqual(["arun", "mani"]);
+  });
+
+  it("filters by partial offered service case-insensitively", () => {
+    const results = filterWorkers(workers, "wiring", "");
+
+    expect(results.map((worker) => worker.id)).toEqual(["ravi-kumar", "suresh"]);
   });
 
   it("filters by partial location case-insensitively", () => {
