@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 export default function PageShell({ children, backTo = "/", backLabel = "Home" }: { children: ReactNode; backTo?: string; backLabel?: string }) {
   return (
-    <main className="min-h-screen bg-[#f8faf9] px-5 pb-10 text-ink dark:bg-black dark:text-slate-100 dark:bg-[radial-gradient(circle_at_18%_8%,rgba(37,99,235,0.10),transparent_26%),radial-gradient(circle_at_82%_32%,rgba(30,64,175,0.07),transparent_30%),#000] sm:px-8">
+    <main className="min-h-screen bg-[#f8faf9] px-5 pb-10 text-ink dark:bg-black dark:text-slate-100 sm:px-8">
       <div className="mx-auto max-w-[720px]">
         <header className="flex items-center justify-between py-5 sm:py-7">
           <Link to="/" className="flex items-center gap-2.5">
