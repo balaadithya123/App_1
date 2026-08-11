@@ -11,14 +11,14 @@ export const filterWorkers = (
   const normalizedLocation = normalizeSearchValue(location);
 
   return workers.filter((worker) => {
-    const searchableServices = [worker.category, ...worker.services].map((service) =>
-      normalizeSearchValue(service),
+    const searchableServices = [worker.name, worker.category, ...worker.services].map(
+      (value) => normalizeSearchValue(value),
     );
     const searchableLocation = normalizeSearchValue(worker.locality);
 
     const matchesService =
       !normalizedService ||
-      searchableServices.some((service) => service.includes(normalizedService));
+      searchableServices.some((value) => value.includes(normalizedService));
     const matchesLocation =
       !normalizedLocation || searchableLocation.includes(normalizedLocation);
 
