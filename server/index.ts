@@ -1,28 +1,15 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
-import { handleCreateReport } from "./routes/reports";
-import { handleGetWorkers, handleRegisterWorker } from "./routes/workers";
+import { handleGetWorkers, handleRegisterWorker } from "./routes/workers.js";
 
 export function createServer() {
   const app = express();
-
-  // Middleware
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-
-  // Example API routes
-  app.get("/api/ping", (_req, res) => {
-    const ping = process.env.PING_MESSAGE ?? "ping";
-    res.json({ message: ping });
-  });
-
-  app.get("/api/demo", handleDemo);
+  app.get("/api/ping", (_req, res) => res.json({ message: process.env.PING_MESSAGE ?? "ping" }));
   app.get("/api/workers", handleGetWorkers);
   app.post("/api/workers/register", handleRegisterWorker);
-  app.post("/api/reports", handleCreateReport);
-
   return app;
 }
