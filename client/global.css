@@ -78,8 +78,7 @@
   }
   .dark body {
     background-color: #000;
-    background-image: radial-gradient(circle at 18% 8%, rgba(37, 99, 235, 0.10), transparent 26%), radial-gradient(circle at 82% 32%, rgba(30, 64, 175, 0.07), transparent 30%);
-    background-attachment: fixed;
+    background-image: none;
   }
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) { overflow-wrap: anywhere; word-break: break-word; }
   pre, code { overflow-x: auto; white-space: pre; }
