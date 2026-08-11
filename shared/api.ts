@@ -30,3 +30,18 @@ export type ApiErrorResponse = {
   message: string;
   errors?: Record<string, string[]>;
 };
+
+export type ReportRequest = {
+  reason: string;
+  feedback: string;
+};
+
+export type Report = ReportRequest & {
+  id: string;
+  createdAt: string;
+};
+
+export type ReportSuccessResponse = {
+  message: string;
+  report: Report;
+};
