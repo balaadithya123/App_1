@@ -10,7 +10,8 @@ import { findWorkerById } from "@/lib/workers";
 export default function WorkerProfile() {
   const [searchParams] = useSearchParams();
   const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
-  const worker = findWorkerById(availableWorkers, searchParams.get("worker")) ?? availableWorkers[0];
+  const requestedWorkerId = searchParams.get("worker");
+  const worker = findWorkerById(availableWorkers, requestedWorkerId);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,6 +39,17 @@ export default function WorkerProfile() {
       isMounted = false;
     };
   }, []);
+
+  if (!worker) {
+    return (
+      <PageShell backTo="/search" backLabel="Search results">
+        <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 sm:px-8 sm:py-9">
+          <h1 className="text-[27px] font-extrabold tracking-[-0.04em] text-navy">Worker profile unavailable</h1>
+          <p className="mt-2 text-[14px] leading-6 text-slate">We could not find that worker profile. Please return to search results and try again.</p>
+        </section>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell backTo="/search" backLabel="Search results">
