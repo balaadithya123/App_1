@@ -42,6 +42,7 @@ const createInitials = (fullName: string) => {
 const createWorker = (registration: z.infer<typeof workerRegistrationSchema>): Worker => ({
   id: createWorkerId(registration.fullName),
   name: registration.fullName,
+  phone: registration.phone,
   category: registration.category,
   locality: registration.location,
   experience: registration.experience,
