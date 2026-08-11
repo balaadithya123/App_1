@@ -1,10 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { z } from "zod";
 import type { Worker } from "../../shared/workers";
-
-const dataDirectory = path.join(process.cwd(), "data");
-const registeredWorkersFile = path.join(dataDirectory, "registered-workers.json");
+import { supabase } from "./supabase";
 
 const persistedWorkerSchema = z.object({
   id: z.string().trim().min(1),
@@ -17,29 +13,49 @@ const persistedWorkerSchema = z.object({
   about: z.string().trim().min(1),
   services: z.array(z.string().trim().min(1)).min(1),
   phone: z.string().trim().min(1),
+  created_at: z.string().optional(),
 });
 
 const persistedWorkersSchema = z.array(persistedWorkerSchema);
 
-export const readRegisteredWorkers = async (): Promise<Worker[]> => {
-  try {
-    const contents = await readFile(registeredWorkersFile, "utf8");
-    return persistedWorkersSchema.parse(JSON.parse(contents)) as Worker[];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return [];
-    }
+const toWorker = (row: unknown): Worker => {
+  return persistedWorkerSchema.parse(row) as Worker;
+};
 
-    throw error;
+export const readRegisteredWorkers = async (): Promise<Worker[]> => {
+  const { data, error } = await supabase
+    .from("workers")
+    .select("id,name,phone,category,locality,experience,initials,tone,about,services,created_at")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Unable to load workers from Supabase: ${error.message}`);
   }
+
+  return persistedWorkersSchema.parse(data ?? []).map(toWorker);
 };
 
 export const saveRegisteredWorker = async (worker: Worker) => {
-  const workers = await readRegisteredWorkers();
-  const nextWorkers = [...workers, worker];
+  const { data, error } = await supabase
+    .from("workers")
+    .insert({
+      id: worker.id,
+      name: worker.name,
+      phone: worker.phone,
+      category: worker.category,
+      locality: worker.locality,
+      experience: worker.experience,
+      initials: worker.initials,
+      tone: worker.tone,
+      about: worker.about,
+      services: worker.services,
+    })
+    .select("id,name,phone,category,locality,experience,initials,tone,about,services,created_at")
+    .single();
 
-  await mkdir(dataDirectory, { recursive: true });
-  await writeFile(registeredWorkersFile, JSON.stringify(nextWorkers, null, 2));
+  if (error) {
+    throw new Error(`Unable to save worker to Supabase: ${error.message}`);
+  }
 
-  return worker;
+  return toWorker(data);
 };
