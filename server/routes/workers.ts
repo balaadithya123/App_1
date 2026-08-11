@@ -8,7 +8,8 @@ import type {
 import { staticWorkers, type Worker } from "../../shared/workers";
 import { readRegisteredWorkers, saveRegisteredWorker } from "../lib/registered-workers";
 
-const workerRegistrationSchema = z.object({
+export const workerRegistrationSchema = z.object({
+  id: z.string().trim().optional(),
   fullName: z.string().trim().min(1, "Full name is required"),
   phone: z.string().trim().min(1, "Phone number is required"),
   category: z.string().trim().min(1, "Work category is required"),
@@ -18,14 +19,32 @@ const workerRegistrationSchema = z.object({
   about: z.string().trim().min(1, "About you is required"),
 });
 
-const createWorkerId = (fullName: string) => {
-  const slug = fullName
+type WorkerRegistration = z.infer<typeof workerRegistrationSchema>;
+
+const createUrlSafeSlug = (value: string) =>
+  value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 
-  return `${slug || "worker"}-${Date.now().toString(36)}`;
+export const createWorkerId = (fullName: string, existingWorkers: Worker[], requestedId?: string) => {
+  const baseId = createUrlSafeSlug(requestedId || fullName) || "worker";
+  const existingIds = new Set(existingWorkers.map((worker) => worker.id));
+
+  if (!existingIds.has(baseId)) {
+    return baseId;
+  }
+
+  let suffix = 2;
+  let candidate = `${baseId}-${suffix}`;
+
+  while (existingIds.has(candidate)) {
+    suffix += 1;
+    candidate = `${baseId}-${suffix}`;
+  }
+
+  return candidate;
 };
 
 const createInitials = (fullName: string) => {
@@ -39,8 +58,8 @@ const createInitials = (fullName: string) => {
   return initials || "W";
 };
 
-const createWorker = (registration: z.infer<typeof workerRegistrationSchema>): Worker => ({
-  id: createWorkerId(registration.fullName),
+export const createWorker = (registration: WorkerRegistration, existingWorkers: Worker[]): Worker => ({
+  id: createWorkerId(registration.fullName, existingWorkers, registration.id),
   name: registration.fullName,
   phone: registration.phone,
   category: registration.category,
@@ -55,11 +74,16 @@ const createWorker = (registration: z.infer<typeof workerRegistrationSchema>): W
     .filter(Boolean),
 });
 
+export const getAllWorkers = async () => {
+  const registeredWorkers = await readRegisteredWorkers();
+
+  return [...staticWorkers, ...registeredWorkers];
+};
+
 export const handleGetWorkers: RequestHandler = async (_req, res) => {
   try {
-    const registeredWorkers = await readRegisteredWorkers();
     const response: WorkersResponse = {
-      workers: [...staticWorkers, ...registeredWorkers],
+      workers: await getAllWorkers(),
     };
 
     res.json(response);
@@ -85,7 +109,8 @@ export const handleRegisterWorker: RequestHandler = async (req, res) => {
   }
 
   try {
-    const worker = createWorker(result.data);
+    const existingWorkers = await getAllWorkers();
+    const worker = createWorker(result.data, existingWorkers);
     await saveRegisteredWorker(worker);
 
     const response: WorkerRegistrationSuccessResponse = {
