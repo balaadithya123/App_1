@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse } from "@shared/api";
+import { getWorkerContactHref } from "@/lib/contact";
 
 export default function WorkerProfile() {
   const [searchParams] = useSearchParams();
@@ -48,9 +49,9 @@ export default function WorkerProfile() {
             <p className="mt-1 flex items-center gap-1.5 text-[13px] text-slate"><MapPin size={14} /> {worker.locality}</p>
           </div>
         </div>
-        <button type="button" className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-navy text-sm font-bold text-white shadow-[0_5px_12px_rgba(18,63,75,0.18)] transition-colors hover:bg-[#234b59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2">
+        <a href={getWorkerContactHref(worker)} aria-label={`Contact ${worker.name} by phone`} className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-navy text-sm font-bold text-white shadow-[0_5px_12px_rgba(18,63,75,0.18)] transition-colors hover:bg-[#234b59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2">
           Contact <ArrowRight size={16} />
-        </button>
+        </a>
       </section>
 
       <div className="space-y-3 pt-7">
