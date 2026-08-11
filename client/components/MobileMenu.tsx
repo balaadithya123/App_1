@@ -12,7 +12,7 @@ export default function MobileMenu() {
       {open && <nav className="absolute right-0 top-12 z-30 w-52 rounded-[12px] border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-[#080808]">
         <Link to="/" onClick={() => setOpen(false)} className="block rounded-[9px] px-3 py-3 text-sm font-bold text-navy hover:bg-slate-100 dark:text-white dark:hover:bg-slate-900">Home</Link>
         <Link to="/login" onClick={() => setOpen(false)} className="block rounded-[9px] px-3 py-3 text-sm font-bold text-navy hover:bg-slate-100 dark:text-white dark:hover:bg-slate-900">Login</Link>
-        <Link to="/register" onClick={() => setOpen(false)} className="block rounded-[9px] px-3 py-3 text-sm font-bold text-navy hover:bg-slate-100 dark:text-white dark:hover:bg-slate-900">Register as a Worker</Link>
+        <Link to="/register" onClick={() => setOpen(false)} className="block rounded-[9px] px-3 py-3 text-sm font-bold text-navy hover:bg-slate-100 dark:text-white dark:hover:bg-slate-900">Register</Link>
       </nav>}
     </div>
   );
