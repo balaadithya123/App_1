@@ -18,23 +18,21 @@ export const readRegisteredWorkers = async (): Promise<Worker[]> => {
 };
 
 const workerRow = (worker: Worker) => ({ id: worker.id, name: worker.name, phone: worker.phone, category: worker.category, locality: worker.locality, experience: worker.experience, initials: worker.initials, tone: worker.tone, about: worker.about, services: worker.services });
-const selectFields = "id,name,phone,category,locality,experience,initials,tone,about,services,created_at";
 
 export const saveRegisteredWorker = async (worker: Worker) => {
   const row = workerRow(worker);
 
-  // Registration is deliberately performed through the public client. The database
-  // has a dedicated INSERT policy that validates every registration field, including
-  // an exactly 10-digit phone number. This avoids depending on a Vercel secret being
-  // interpreted as the service_role JWT and accidentally being subject to RLS.
-  if (!publicSupabase) throw new Error("Supabase public registration client is not configured.");
-  const result = await publicSupabase.from("workers").insert(row).select(selectFields).single();
-  if (!result.error) return toWorker(result.data);
+  // The public registration policy is intentionally INSERT-only. Do not chain
+  // .select() here because that would require a SELECT policy as well.
+  if (publicSupabase) {
+    const result = await publicSupabase.from("workers").insert(row);
+    if (!result.error) return toWorker({ ...row, created_at: new Date().toISOString() });
+  }
 
-  // Keep the server client as a secondary path for environments where the public
-  // registration variables are unavailable, while never masking the real error.
-  const serverResult = await supabase.from("workers").insert(row).select(selectFields).single();
-  if (!serverResult.error) return toWorker(serverResult.data);
+  // Secondary path for a correctly configured service-role key.
+  const serverResult = await supabase.from("workers").insert(row);
+  if (!serverResult.error) return toWorker({ ...row, created_at: new Date().toISOString() });
 
-  throw new Error(`Unable to save worker to Supabase: ${result.error.message}`);
+  const message = publicSupabase ? "Worker registration was rejected by the database policy." : serverResult.error.message;
+  throw new Error(`Unable to save worker to Supabase: ${message}`);
 };
