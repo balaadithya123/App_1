@@ -5,11 +5,12 @@ import PageShell from "@/components/PageShell";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse } from "@shared/api";
 import { getWorkerContactHref } from "@/lib/contact";
+import { findWorkerById } from "@/lib/workers";
 
 export default function WorkerProfile() {
   const [searchParams] = useSearchParams();
   const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
-  const worker = availableWorkers.find((item) => item.id === searchParams.get("worker")) ?? availableWorkers[0];
+  const worker = findWorkerById(availableWorkers, searchParams.get("worker")) ?? availableWorkers[0];
 
   useEffect(() => {
     let isMounted = true;

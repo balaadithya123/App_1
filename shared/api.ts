@@ -8,6 +8,7 @@ export interface DemoResponse {
 }
 
 export type WorkerRegistrationRequest = {
+  id?: string;
   fullName: string;
   phone: string;
   category: string;
