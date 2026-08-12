@@ -15,18 +15,28 @@ export const handleWatchWorker: RequestHandler = async (req, res) => {
   try {
     const user = await tokenUser(req);
     const { workerId } = z.object({ workerId: z.string().trim().min(1) }).parse(req.body);
-    const { data: worker, error: workerError } = await supabase.from("workers").select("id,name,available_today,away_until").eq("id", workerId).maybeSingle();
+
+    // Worker cards may identify a worker by phone number. Resolve that public
+    // identifier to the database UUID before calling the UUID-based RPC.
+    const looksLikeUuid = z.string().uuid().safeParse(workerId).success;
+    const workerQuery = supabase
+      .from("workers")
+      .select("id,name,available_today,away_until")
+      .limit(1);
+    const { data: workers, error: workerError } = looksLikeUuid
+      ? await workerQuery.eq("id", workerId)
+      : await workerQuery.eq("phone", workerId);
+    const worker = workers?.[0];
     if (workerError || !worker) return res.status(404).json({ message: "Worker profile was not found." } satisfies ApiErrorResponse);
+
     const today = new Date().toISOString().slice(0, 10);
     const alreadyAvailable = Boolean(worker.available_today) && !(worker.away_until && worker.away_until >= today);
     if (alreadyAvailable) return res.json({ watching: false, alreadyAvailable: true });
     const email = user.email || String(user.user_metadata?.email || "");
     if (!email) return res.status(400).json({ message: "Your account does not have an email address for notifications." } satisfies ApiErrorResponse);
 
-    // Use the protected service-role RPC for this write. The browser never writes
-    // availability_watchers directly, so its RLS policies remain enabled.
     const { error } = await supabase.rpc("create_availability_watcher", {
-      p_worker_id: workerId,
+      p_worker_id: worker.id,
       p_requester_id: user.id,
       p_requester_email: email,
     });
@@ -59,6 +69,6 @@ export const handleMarkNotificationRead: RequestHandler = async (req, res) => {
     return res.json({ ok: true });
   } catch (error) {
     const code = error instanceof Error ? error.message : "Unable to update notification.";
-    return res.status(code === "UNAUTHORIZED" ? 401 : 500).json({ message: code } satisfies ApiErrorResponse);
+    return res.status(code === "UNAUTHORIZED" ? 401 : 500).json({ message: code });
   }
 };
