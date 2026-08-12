@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { handleGetWorkers, handleRegisterWorker, handleUpdateWorkerPhoto } from "./routes/workers.js";
+import { handleGetWorkers, handleRegisterWorker, handleUpdateWorkerPhoto, handleUpdateWorkerProfile } from "./routes/workers.js";
 
 export function createServer() {
   const app = express();
@@ -11,6 +11,7 @@ export function createServer() {
   app.get("/api/ping", (_req, res) => res.json({ message: process.env.PING_MESSAGE ?? "ping" }));
   app.get("/api/workers", handleGetWorkers);
   app.post("/api/workers/register", handleRegisterWorker);
+  app.post("/api/workers/profile", handleUpdateWorkerProfile);
   app.post("/api/workers/photo", handleUpdateWorkerPhoto);
   return app;
 }
