@@ -10,6 +10,11 @@ export type Worker = {
   services: string[];
   phone: string;
   photo_url?: string;
+  available_today?: boolean;
+  away_from?: string | null;
+  away_until?: string | null;
+  urgent_today?: boolean;
+  next_available_date?: string;
 };
 
 export const staticWorkers: Worker[] = [
