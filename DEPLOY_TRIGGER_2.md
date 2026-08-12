@@ -1,0 +1,1 @@
+Trigger a fresh production build after Supabase environment variables were added in Vercel.
