@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleGetWorkers, handleRegisterWorker, handleUpdateWorkerAvailability, handleUpdateWorkerPhoto, handleUpdateWorkerProfile } from "./routes/workers.js";
+import { handleGetNotifications, handleMarkNotificationRead, handleWatchWorker } from "./routes/notifications.js";
 
 export function createServer() {
   const app = express();
@@ -14,5 +15,8 @@ export function createServer() {
   app.post("/api/workers/profile", handleUpdateWorkerProfile);
   app.post("/api/workers/photo", handleUpdateWorkerPhoto);
   app.post("/api/workers/availability", handleUpdateWorkerAvailability);
+  app.post("/api/notifications/watch", handleWatchWorker);
+  app.get("/api/notifications", handleGetNotifications);
+  app.post("/api/notifications/read", handleMarkNotificationRead);
   return app;
 }
