@@ -1,62 +1,28 @@
 /** @import must precede all other statements */
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
-
 @import "tailwindcss";
 @config "../tailwind.config.ts";
-
 @layer base {
-  :root {
-    --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%; --primary-foreground: 210 40 98%;
-    --secondary: 210 40% 96.1%; --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%; --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%; --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%; --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 0 0% 0%; --foreground: 0 0% 92%;
-    --card: 0 0% 0%; --card-foreground: 0 0% 92%;
-    --popover: 0 0% 0%; --popover-foreground: 0 0% 92%;
-    --primary: 0 0% 92%; --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 4%; --secondary-foreground: 0 0% 92%;
-    --muted: 0 0% 5%; --muted-foreground: 0 0% 70%;
-    --accent: 0 0% 7%; --accent-foreground: 0 0% 92%;
-    --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 96%;
-    --border: 0 0% 12%; --input: 0 0% 12%; --ring: 0 0% 80%;
-  }
+  :root { --background: 0 0% 100%; --foreground: 222.2 84% 4.9%; --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%; --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%; --primary: 222.2 47.4% 11.2%; --primary-foreground: 210 40 98%; --secondary: 210 40% 96.1%; --secondary-foreground: 222.2 47.4% 11.2%; --muted: 210 40% 96.1%; --muted-foreground: 215.4 16.3% 46.9%; --accent: 210 40% 96.1%; --accent-foreground: 222.2 47.4% 11.2%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%; --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%; --ring: 222.2 84% 4.9%; --radius: 0.5rem; }
+  .dark { --background: 0 0% 0%; --foreground: 0 0% 92%; --card: 0 0% 0%; --card-foreground: 0 0% 92%; --popover: 0 0% 0%; --popover-foreground: 0 0% 92%; --primary: 0 0% 92%; --primary-foreground: 0 0% 0%; --secondary: 0 0% 4%; --secondary-foreground: 0 0% 92%; --muted: 0 0% 5%; --muted-foreground: 0 0% 70%; --accent: 0 0% 7%; --accent-foreground: 0 0% 92%; --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 96%; --border: 0 0% 12%; --input: 0 0% 12%; --ring: 0 0% 80%; }
   * { @apply border-border; }
   html, body, #root { min-height: 100%; }
-  body {
-    @apply bg-background text-foreground;
-    font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
+  body { @apply bg-background text-foreground; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
   :where(input, textarea, select) { color-scheme: light; }
   .dark :where(input, textarea, select) { color-scheme: dark; }
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) { overflow-wrap: anywhere; word-break: break-word; }
   pre, code { overflow-x: auto; white-space: pre; }
-
-  /* Flat 2D system: remove elevation, glass, gradients and 3D motion site-wide. */
-  *, *::before, *::after {
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-  body, #root {
-    background-image: none !important;
-  }
-  button, a, input, textarea, select {
-    transform: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  button:hover, a:hover {
-    transform: none !important;
-  }
+  .dark .bg-white { background-color: #151515 !important; }
+  .dark [class*="bg-[#fbfcfc]"] { background-color: #151515 !important; }
+  .dark [class*="bg-[#f4f4f4]"] { background-color: #202020 !important; }
+  .dark [class*="bg-[#f0f2f2]"] { background-color: #202020 !important; }
+  .dark [class*="bg-[#111]"] { background-color: #111 !important; }
+  .dark [class*="bg-emerald-50"] { background-color: rgba(6,78,59,.32) !important; }
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
+  body, #root { background-image: none !important; }
+  button, a, input, textarea, select { transform: none !important; filter: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  button:hover, a:hover { transform: none !important; }
+  .contact-glass { background: rgba(255,255,255,.10) !important; border: 1px solid rgba(255,255,255,.24) !important; color: #f1f3f2 !important; backdrop-filter: blur(18px) saturate(125%) !important; -webkit-backdrop-filter: blur(18px) saturate(125%) !important; }
+  .contact-glass:hover { background: rgba(255,255,255,.15) !important; }
+  :not(.dark) .contact-glass { background: rgba(255,255,255,.48) !important; border-color: rgba(255,255,255,.78) !important; color: #123f4b !important; }
 }
