@@ -17,12 +17,19 @@ export const handleWatchWorker: RequestHandler = async (req, res) => {
     const { workerId } = z.object({ workerId: z.string().trim().min(1) }).parse(req.body);
     const { data: worker, error: workerError } = await supabase.from("workers").select("id,name,available_today,away_until").eq("id", workerId).maybeSingle();
     if (workerError || !worker) return res.status(404).json({ message: "Worker profile was not found." } satisfies ApiErrorResponse);
-    const today = new Date().toISOString().slice(0,10);
+    const today = new Date().toISOString().slice(0, 10);
     const alreadyAvailable = Boolean(worker.available_today) && !(worker.away_until && worker.away_until >= today);
     if (alreadyAvailable) return res.json({ watching: false, alreadyAvailable: true });
     const email = user.email || String(user.user_metadata?.email || "");
     if (!email) return res.status(400).json({ message: "Your account does not have an email address for notifications." } satisfies ApiErrorResponse);
-    const { error } = await supabase.from("availability_watchers").upsert({ worker_id: workerId, requester_id: user.id, requester_email: email, notified_at: null }, { onConflict: "worker_id,requester_id" });
+
+    // Use the protected service-role RPC for this write. The browser never writes
+    // availability_watchers directly, so its RLS policies remain enabled.
+    const { error } = await supabase.rpc("create_availability_watcher", {
+      p_worker_id: workerId,
+      p_requester_id: user.id,
+      p_requester_email: email,
+    });
     if (error) throw new Error(error.message);
     return res.json({ watching: true, alreadyAvailable: false });
   } catch (error) {
