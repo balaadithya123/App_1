@@ -9,6 +9,7 @@ export type Worker = {
   about: string;
   services: string[];
   phone: string;
+  photo_url?: string;
 };
 
 export const staticWorkers: Worker[] = [
