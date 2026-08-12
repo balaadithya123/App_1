@@ -41,4 +41,22 @@
   .dark :where(input, textarea, select) { color-scheme: dark; }
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) { overflow-wrap: anywhere; word-break: break-word; }
   pre, code { overflow-x: auto; white-space: pre; }
+
+  /* Flat 2D system: remove elevation, glass, gradients and 3D motion site-wide. */
+  *, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  body, #root {
+    background-image: none !important;
+  }
+  button, a, input, textarea, select {
+    transform: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  button:hover, a:hover {
+    transform: none !important;
+  }
 }
