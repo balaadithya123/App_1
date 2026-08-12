@@ -37,3 +37,11 @@ export const updateWorkerPhotoByPhone = async (phone: string, photoUrl: string) 
   if (!data) throw new Error("Worker profile was not found for this account.");
   return toWorker(data);
 };
+
+export const updateWorkerProfileByPhone = async (phone: string, profile: { name: string; category: string; locality: string; experience: string; services: string[]; about: string; photo_url?: string | null }) => {
+  const initials = profile.name.trim().split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase()).join("") || "W";
+  const { data, error } = await supabase.from("workers").update({ name: profile.name.trim(), category: profile.category.trim(), locality: profile.locality.trim(), experience: profile.experience.trim(), services: profile.services.map(s => s.trim()).filter(Boolean), about: profile.about.trim(), initials, ...(profile.photo_url !== undefined ? { photo_url: profile.photo_url } : {}) }).eq("phone", phone).select("id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at").maybeSingle();
+  if (error) throw new Error(`Unable to save worker profile: ${error.message}`);
+  if (!data) throw new Error("Worker profile was not found for this account.");
+  return toWorker(data);
+};
