@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import Report from "./pages/Report";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import WorkerDashboard from "./pages/WorkerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/worker-dashboard" element={<WorkerDashboard />} />
           <Route path="/report" element={<Report />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
