@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BriefcaseBusiness, CalendarDays, Check, Edit3, LogOut, UserRound, X } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Check, Edit3, LogOut, UserRound, X, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
@@ -10,100 +10,25 @@ const formatDate = (value: string) => new Date(`${value}T00:00:00`).toLocaleDate
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [availableToday, setAvailableToday] = useState(false);
-  const [awayFrom, setAwayFrom] = useState("");
-  const [awayUntil, setAwayUntil] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [urgent, setUrgent] = useState(false);
-
-  useEffect(() => {
-    if (!supabase) { setLoading(false); return; }
-    supabase.auth.getUser().then(({ data }) => {
-      const current = data.user;
-      if (!current) { navigate("/login", { replace: true }); return; }
-      if (current.user_metadata?.role !== "worker") { navigate("/", { replace: true }); return; }
-      const meta = current.user_metadata ?? {};
-      const today = isoToday();
-      const storedFrom = meta.away_from || "";
-      const storedUntil = meta.away_until || "";
-      const activeAway = storedFrom && storedUntil && storedFrom <= today && storedUntil >= today;
-      setUser(current);
-      setAwayFrom(activeAway ? storedFrom : "");
-      setAwayUntil(activeAway ? storedUntil : "");
-      setAvailableToday(Boolean(meta.available_today ?? meta.available));
-      setUrgent(Boolean(meta.urgent_today) && !activeAway);
-      setLoading(false);
-    });
-  }, [navigate]);
-
-  const updateMeta = async (changes: Record<string, unknown>) => {
-    if (!supabase || !user || saving) return false;
-    setSaving(true);
-    const { data, error } = await supabase.auth.updateUser({ data: { ...user.user_metadata, ...changes } });
-    if (!error && data.user) setUser(data.user);
-    setSaving(false);
-    return !error;
-  };
-
-  const isAway = Boolean(awayFrom && awayUntil && awayFrom <= isoToday() && awayUntil >= isoToday());
-  const todayIsUnavailable = isAway || !availableToday;
-
-  const toggleToday = async () => {
-    if (isAway) return;
-    const next = !availableToday;
-    const ok = await updateMeta({ available_today: next, available: next, availability_updated_at: new Date().toISOString(), ...(next ? {} : { urgent_today: false }) });
-    if (ok) { setAvailableToday(next); if (!next) setUrgent(false); }
-  };
-  const toggleUrgent = async () => {
-    if (todayIsUnavailable) return;
-    const next = !urgent;
-    if (await updateMeta({ urgent_today: next })) setUrgent(next);
-  };
-  const saveAway = async () => {
-    if (!awayFrom || !awayUntil || awayUntil < awayFrom) return;
-    if (await updateMeta({ away_from: awayFrom, away_until: awayUntil, available_today: false, available: false, urgent_today: false })) {
-      setAvailableToday(false); setUrgent(false);
-    }
-  };
-  const clearAway = async () => {
-    if (await updateMeta({ away_from: "", away_until: "" })) { setAwayFrom(""); setAwayUntil(""); }
-  };
-  const logout = async () => { await supabase?.auth.signOut(); navigate("/", { replace: true }); };
-
-  const nextAvailable = useMemo(() => {
-    if (isAway) return addDays(new Date(`${awayUntil}T00:00:00`), 1).toISOString().slice(0, 10);
-    return availableToday ? isoToday() : addDays(new Date(), 1).toISOString().slice(0, 10);
-  }, [availableToday, awayUntil, isAway]);
-
-  if (loading) return <PageShell hideBack hideHome><section className="rounded-[18px] border border-line bg-white p-8 text-center dark:border-white/10 dark:bg-black"><p className="text-sm text-slate dark:text-slate-300">Loading your portal...</p></section></PageShell>;
-  if (!user) return null;
-
-  const meta = user.user_metadata ?? {};
-  const name = meta.name || "Worker";
-  const category = meta.category || "Your work category";
-  const location = meta.location || "Location not set";
-  const avatar = meta.avatar_url || "";
-
-  const tomorrow = addDays(new Date(), 1).toISOString().slice(0, 10);
-
-  return <PageShell hideBack hideHome>
-    <div className="mx-auto max-w-[760px] space-y-5">
-      <section className="overflow-hidden rounded-[20px] border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] sm:p-7">
-        <div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-[#f2f4f3] dark:border-white/15 dark:bg-white/10">{avatar ? <img src={avatar} alt="Profile" className="h-full w-full object-cover" /> : <UserRound size={29} className="text-navy dark:text-white" />}</div><div className="min-w-0 flex-1"><p className="text-xs font-bold uppercase tracking-[0.12em] text-slate dark:text-slate-400">Worker Portal</p><h1 className="mt-1 truncate text-[27px] font-extrabold tracking-tight text-navy dark:text-white">Hi, {name}</h1><p className="mt-1 flex items-center gap-1.5 text-sm text-slate dark:text-slate-300"><BriefcaseBusiness size={15} />{category} · {location}</p></div></div>
-      </section>
-
-      <section className="rounded-[20px] border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] sm:p-7">
-        <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white"><CalendarDays size={20} /></div><div><h2 className="font-extrabold text-navy dark:text-white">Today's availability</h2><p className="text-xs text-slate dark:text-slate-400">Your profile stays visible even when you're busy.</p></div></div>
-        <button type="button" onClick={toggleToday} disabled={saving || isAway} className="mt-5 flex w-full items-center justify-between rounded-[14px] border border-black/10 bg-white/65 px-4 py-4 text-left dark:border-white/10 dark:bg-black/30 disabled:cursor-not-allowed disabled:opacity-70"><div className="flex items-center gap-3"><span className={`flex h-9 w-9 items-center justify-center rounded-full ${availableToday && !isAway ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300" : "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300"}`}>{availableToday && !isAway ? <Check size={18}/> : <X size={18}/>}</span><div><p className="text-sm font-extrabold text-navy dark:text-white">{isAway ? `Away ${formatDate(awayFrom)} – ${formatDate(awayUntil)}` : availableToday ? "Available today" : "Busy today"}</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{isAway ? "Your availability will resume after your away period." : availableToday ? "Employers can see you're available today." : `Next available: ${formatDate(nextAvailable)}`}</p></div></div>{!isAway && <span className={`relative h-7 w-12 shrink-0 rounded-full transition ${availableToday ? "bg-teal" : "bg-slate-300 dark:bg-white/20"}`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${availableToday ? "left-6" : "left-1"}`} /></span>}</button>
-
-        <div className="mt-4 rounded-[14px] border border-black/10 bg-white/50 p-4 dark:border-white/10 dark:bg-black/20"><p className="text-sm font-extrabold text-navy dark:text-white">Away mode</p><p className="mt-1 text-xs text-slate dark:text-slate-400">Choose the first and last day you're unavailable.</p><div className="mt-3 grid gap-2 sm:grid-cols-2"><label className="text-xs font-bold text-slate dark:text-slate-300">From<input type="date" min={tomorrow} value={awayFrom} onChange={e=>setAwayFrom(e.target.value)} className="mt-1 h-10 w-full rounded-[10px] border border-black/10 bg-white px-3 text-sm font-normal text-navy outline-none dark:border-white/10 dark:bg-[#151515] dark:text-white"/></label><label className="text-xs font-bold text-slate dark:text-slate-300">Until<input type="date" min={awayFrom || tomorrow} value={awayUntil} onChange={e=>setAwayUntil(e.target.value)} className="mt-1 h-10 w-full rounded-[10px] border border-black/10 bg-white px-3 text-sm font-normal text-navy outline-none dark:border-white/10 dark:bg-[#151515] dark:text-white"/></label></div><div className="mt-2 flex gap-2"><button type="button" onClick={saveAway} disabled={!awayFrom || !awayUntil || awayUntil < awayFrom || saving} className="rounded-[10px] bg-navy px-4 py-2 text-sm font-bold text-white disabled:opacity-50 dark:bg-white dark:text-black">Set away period</button>{isAway&&<button type="button" onClick={clearAway} disabled={saving} className="rounded-[10px] border border-black/10 px-4 py-2 text-sm font-bold text-navy dark:border-white/10 dark:text-white">Clear</button>}</div></div>
-
-        <button type="button" onClick={toggleUrgent} disabled={saving || todayIsUnavailable} aria-disabled={todayIsUnavailable} className="mt-4 flex w-full items-center justify-between rounded-[14px] border border-black/10 bg-white/50 px-4 py-3 text-left dark:border-white/10 dark:bg-black/20 disabled:cursor-not-allowed disabled:opacity-60"><div><p className="text-sm font-extrabold text-navy dark:text-white">Urgent / same-day work</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{todayIsUnavailable ? "Turn on Available today before enabling urgent work." : "Let employers know you're open to last-minute work."}</p></div><span className={`relative h-7 w-12 shrink-0 rounded-full transition ${urgent && !todayIsUnavailable ? "bg-teal" : "bg-slate-300 dark:bg-white/20"}`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${urgent && !todayIsUnavailable ? "left-6" : "left-1"}`} /></span></button>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2"><button type="button" onClick={() => navigate("/profile")} className="flex items-center gap-3 rounded-[16px] border border-black/10 bg-white/70 p-4 text-left backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055]"><Edit3 size={19} className="text-navy dark:text-white" /><span><strong className="block text-sm text-navy dark:text-white">Edit my profile</strong><span className="text-xs text-slate dark:text-slate-400">Update your details and photo</span></span></button><button type="button" onClick={logout} className="flex items-center gap-3 rounded-[16px] border border-red-200 bg-red-50/70 p-4 text-left dark:border-red-900/50 dark:bg-red-950/20"><LogOut size={19} className="text-red-600 dark:text-red-300" /><span><strong className="block text-sm text-red-700 dark:text-red-300">Log out</strong><span className="text-xs text-red-600/80 dark:text-red-300/70">Leave your worker account</span></span></button></section>
-    </div>
-  </PageShell>;
+  const [user, setUser] = useState<any>(null); const [loading, setLoading] = useState(true); const [availableToday, setAvailableToday] = useState(false); const [awayFrom, setAwayFrom] = useState(""); const [awayUntil, setAwayUntil] = useState(""); const [saving, setSaving] = useState(false); const [urgent, setUrgent] = useState(false);
+  useEffect(() => { if (!supabase) { setLoading(false); return; } supabase.auth.getUser().then(({ data }) => { const current=data.user; if(!current){navigate("/login",{replace:true});return;} if(current.user_metadata?.role!=="worker"){navigate("/",{replace:true});return;} const meta=current.user_metadata??{}; const today=isoToday(); const storedFrom=meta.away_from||""; const storedUntil=meta.away_until||""; const activeAway=storedFrom&&storedUntil&&storedFrom<=today&&storedUntil>=today; setUser(current); setAwayFrom(activeAway?storedFrom:""); setAwayUntil(activeAway?storedUntil:""); setAvailableToday(Boolean(meta.available_today??meta.available)); setUrgent(Boolean(meta.urgent_today)&&!activeAway); setLoading(false); }); },[navigate]);
+  const updateMeta = async (changes: Record<string, unknown>) => { if(!supabase||!user||saving)return false; setSaving(true); const merged={...user.user_metadata,...changes}; const {data,error}=await supabase.auth.updateUser({data:merged}); if(!error&&data.user){setUser(data.user); const session=await supabase.auth.getSession(); await fetch("/api/workers/availability",{method:"POST",headers:{"Content-Type":"application/json",...(session.data.session?.access_token?{Authorization:`Bearer ${session.data.session.access_token}`}:{})},body:JSON.stringify({available_today:Boolean(merged.available_today??false),away_from:merged.away_from||null,away_until:merged.away_until||null,urgent_today:Boolean(merged.urgent_today??false)})});} setSaving(false); return !error; };
+  const isAway=Boolean(awayFrom&&awayUntil&&awayFrom<=isoToday()&&awayUntil>=isoToday()); const todayIsUnavailable=isAway||!availableToday;
+  const toggleToday=async()=>{if(isAway)return;const next=!availableToday;const ok=await updateMeta({available_today:next,available:next,availability_updated_at:new Date().toISOString(),...(next?{}:{urgent_today:false})});if(ok){setAvailableToday(next);if(!next)setUrgent(false);}};
+  const toggleUrgent=async()=>{if(todayIsUnavailable)return;const next=!urgent;if(await updateMeta({urgent_today:next}))setUrgent(next);};
+  const saveAway=async()=>{if(!awayFrom||!awayUntil||awayUntil<awayFrom)return;if(await updateMeta({away_from:awayFrom,away_until:awayUntil,available_today:false,available:false,urgent_today:false})){setAvailableToday(false);setUrgent(false);}};
+  const clearAway=async()=>{if(await updateMeta({away_from:"",away_until:""})){setAwayFrom("");setAwayUntil("");}};
+  const logout=async()=>{await supabase?.auth.signOut();navigate("/",{replace:true});};
+  const nextAvailable=useMemo(()=>{if(isAway)return addDays(new Date(`${awayUntil}T00:00:00`),1).toISOString().slice(0,10);return availableToday?isoToday():addDays(new Date(),1).toISOString().slice(0,10);},[availableToday,awayUntil,isAway]);
+  if(loading)return <PageShell hideBack hideHome><section className="rounded-[18px] border border-line bg-white p-8 text-center dark:border-white/10 dark:bg-black"><p className="text-sm text-slate dark:text-slate-300">Loading your portal...</p></section></PageShell>; if(!user)return null;
+  const meta=user.user_metadata??{}; const name=meta.name||"Worker"; const category=meta.category||"Your work category"; const location=meta.location||"Location not set"; const avatar=meta.avatar_url||""; const tomorrow=addDays(new Date(),1).toISOString().slice(0,10);
+  return <PageShell hideBack hideHome><div className="mx-auto max-w-[760px] space-y-5">
+    <section className="overflow-hidden rounded-[20px] border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] sm:p-7"><div className="flex items-center gap-4"><div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-[#f2f4f3] dark:border-white/15 dark:bg-white/10">{avatar?<img src={avatar} alt="Profile" className="h-full w-full object-cover"/>:<UserRound size={29} className="text-navy dark:text-white"/>}</div><div className="min-w-0 flex-1"><p className="text-xs font-bold uppercase tracking-[0.12em] text-slate dark:text-slate-400">Worker Portal</p><h1 className="mt-1 truncate text-[27px] font-extrabold tracking-tight text-navy dark:text-white">Hi, {name}</h1><p className="mt-1 flex items-center gap-1.5 text-sm text-slate dark:text-slate-300"><BriefcaseBusiness size={15}/>{category} · {location}</p></div></div></section>
+    <section className="rounded-[20px] border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] sm:p-7"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white"><CalendarDays size={20}/></div><div><h2 className="font-extrabold text-navy dark:text-white">Today's availability</h2><p className="text-xs text-slate dark:text-slate-400">Your profile stays visible even when you're busy.</p></div></div>
+      <button type="button" onClick={toggleToday} disabled={saving||isAway} className="mt-5 flex w-full items-center justify-between rounded-[14px] border border-black/10 bg-white/65 px-4 py-4 text-left dark:border-white/10 dark:bg-black/30 disabled:cursor-not-allowed disabled:opacity-70"><div className="flex items-center gap-3"><span className={`flex h-9 w-9 items-center justify-center rounded-full ${availableToday&&!isAway?"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300":"bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300"}`}>{availableToday&&!isAway?<Check size={18}/>:<X size={18}/>}</span><div><p className="text-sm font-extrabold text-navy dark:text-white">{isAway?`Away ${formatDate(awayFrom)} – ${formatDate(awayUntil)}`:availableToday?"Available today":"Busy today"}</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{isAway?"Your availability will resume after your away period.":availableToday?"Employers can see you're available today.":`Next available: ${formatDate(nextAvailable)}`}</p></div></div>{!isAway&&<span className={`relative h-7 w-12 shrink-0 rounded-full transition ${availableToday?"bg-teal":"bg-slate-300 dark:bg-white/20"}`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${availableToday?"left-6":"left-1"}`}/></span>}</button>
+      <div className="mt-4 rounded-[14px] border border-black/10 bg-white/50 p-4 dark:border-white/10 dark:bg-black/20"><p className="text-sm font-extrabold text-navy dark:text-white">Away mode</p><p className="mt-1 text-xs text-slate dark:text-slate-400">Choose the first and last day you're unavailable.</p><div className="mt-3 grid gap-2 sm:grid-cols-2"><label className="text-xs font-bold text-slate dark:text-slate-300">From<input type="date" min={tomorrow} value={awayFrom} onChange={e=>setAwayFrom(e.target.value)} className="mt-1 h-10 w-full rounded-[10px] border border-black/10 bg-white px-3 text-sm font-normal text-navy outline-none dark:border-white/10 dark:bg-[#151515] dark:text-white"/></label><label className="text-xs font-bold text-slate dark:text-slate-300">Until<input type="date" min={awayFrom||tomorrow} value={awayUntil} onChange={e=>setAwayUntil(e.target.value)} className="mt-1 h-10 w-full rounded-[10px] border border-black/10 bg-white px-3 text-sm font-normal text-navy outline-none dark:border-white/10 dark:bg-[#151515] dark:text-white"/></label></div><div className="mt-2 flex gap-2"><button type="button" onClick={saveAway} disabled={!awayFrom||!awayUntil||awayUntil<awayFrom||saving} className="rounded-[10px] bg-navy px-4 py-2 text-sm font-bold text-white disabled:opacity-50 dark:bg-white dark:text-black">Set away period</button>{isAway&&<button type="button" onClick={clearAway} disabled={saving} className="rounded-[10px] border border-black/10 px-4 py-2 text-sm font-bold text-navy dark:border-white/10 dark:text-white">Clear</button>}</div></div>
+      <button type="button" onClick={toggleUrgent} disabled={saving||todayIsUnavailable} className="mt-4 flex w-full items-center justify-between rounded-[14px] border border-black/10 bg-white/50 px-4 py-3 text-left dark:border-white/10 dark:bg-black/20 disabled:cursor-not-allowed disabled:opacity-60"><div><p className="text-sm font-extrabold text-navy dark:text-white">Urgent / same-day work</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{todayIsUnavailable?"Turn on Available today before enabling urgent work.":"Let employers know you're open to last-minute work."}</p></div><span className={`relative h-7 w-12 shrink-0 rounded-full transition ${urgent&&!todayIsUnavailable?"bg-teal":"bg-slate-300 dark:bg-white/20"}`}><span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${urgent&&!todayIsUnavailable?"left-6":"left-1"}`}/></span></button>
+    </section>
+    <section className="grid gap-3 sm:grid-cols-3"><button type="button" onClick={()=>navigate("/worker-commitments")} className="flex items-center gap-3 rounded-[16px] border border-black/10 bg-white/70 p-4 text-left dark:border-white/10 dark:bg-white/[0.055]"><ClipboardList size={19} className="text-navy dark:text-white"/><span><strong className="block text-sm text-navy dark:text-white">My Commitments</strong><span className="text-xs text-slate dark:text-slate-400">Upcoming and past jobs</span></span></button><button type="button" onClick={()=>navigate("/profile")} className="flex items-center gap-3 rounded-[16px] border border-black/10 bg-white/70 p-4 text-left dark:border-white/10 dark:bg-white/[0.055]"><Edit3 size={19} className="text-navy dark:text-white"/><span><strong className="block text-sm text-navy dark:text-white">Edit my profile</strong><span className="text-xs text-slate dark:text-slate-400">Update your details and photo</span></span></button><button type="button" onClick={logout} className="flex items-center gap-3 rounded-[16px] border border-red-200 bg-red-50/70 p-4 text-left dark:border-red-900/50 dark:bg-red-950/20"><LogOut size={19} className="text-red-600 dark:text-red-300"/><span><strong className="block text-sm text-red-700 dark:text-red-300">Log out</strong><span className="text-xs text-red-600/80 dark:text-red-300/70">Leave your worker account</span></span></button></section>
+  </div></PageShell>;
 }
