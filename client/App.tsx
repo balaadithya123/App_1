@@ -13,6 +13,7 @@ import WorkerProfile from "./pages/WorkerProfile";
 import Register from "./pages/Register";
 import Report from "./pages/Report";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/worker" element={<WorkerProfile />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/report" element={<Report />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
