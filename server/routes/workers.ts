@@ -21,16 +21,52 @@ const sendAvailabilityNotifications = async (workerId:string, workerName:string)
   const { data: watchers, error } = await supabase.from("availability_watchers").select("id,requester_id,requester_email").eq("worker_id", workerId).is("notified_at", null);
   if (error) throw new Error(`Unable to load availability watchers: ${error.message}`);
   if (!watchers?.length) return 0;
+
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error("RESEND_API_KEY is missing in Vercel environment variables.");
   const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   let sent = 0;
+
   for (const watcher of watchers) {
+    const recipient = String(watcher.requester_email || "").trim();
+    if (!recipient) {
+      console.error(`[availability-email] watcher ${watcher.id} has no requester email`);
+      continue;
+    }
+
     const message = `${workerName} is available again. You can now contact the worker from App_1.`;
-    const { error: notificationError } = await supabase.from("notifications").insert({ recipient_id: watcher.requester_id, type: "worker_available", title: "Worker is available again", message, worker_id: workerId });
-    if (notificationError) throw new Error(`Unable to create inbox notification: ${notificationError.message}`);
-    const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [watcher.requester_email], subject: `${workerName} is available again`, text: message }) });
-    if (!response.ok) { const body = await response.text(); throw new Error(`Resend failed: ${body}`); }
+
+    // Email delivery is intentionally independent of the inbox insert. A Supabase
+    // RLS/schema problem must not prevent the actual email from being sent.
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [recipient],
+        subject: `${workerName} is available again`,
+        text: message,
+      }),
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Resend failed (${response.status}): ${body}`);
+    }
+
+    // Keep the existing inbox feature, but do not make it a prerequisite for mail.
+    const { error: notificationError } = await supabase.from("notifications").insert({
+      recipient_id: watcher.requester_id,
+      type: "worker_available",
+      title: "Worker is available again",
+      message,
+      worker_id: workerId,
+    });
+    if (notificationError) {
+      console.error(`[availability-email] inbox notification failed for watcher ${watcher.id}: ${notificationError.message}`);
+    }
+
+    // Only mark the watcher after Resend has accepted the email. This keeps failed
+    // deliveries retryable instead of silently consuming the watcher.
     const { error: markError } = await supabase.from("availability_watchers").update({ notified_at: new Date().toISOString() }).eq("id", watcher.id);
     if (markError) throw new Error(`Unable to mark watcher notified: ${markError.message}`);
     sent++;
@@ -39,7 +75,7 @@ const sendAvailabilityNotifications = async (workerId:string, workerName:string)
 };
 
 export const handleUpdateWorkerAvailability:RequestHandler=async(req,res)=>{try{const {token,user}=await getAuthenticatedWorker(req);const body=z.object({available_today:z.boolean(),away_from:z.string().date().nullable().optional(),away_until:z.string().date().nullable().optional(),urgent_today:z.boolean()}).parse(req.body);const functionUrl=`${process.env.SUPABASE_URL||process.env.VITE_SUPABASE_URL}/functions/v1/worker-availability-notify`;const response=await fetch(functionUrl,{method:"POST",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify(body)});const result=await response.json().catch(()=>({message:"Unable to update availability."}));if(!response.ok)return res.status(response.status).json(result);
-    if (body.available_today) {
+    if (result?.becameAvailable || (result?.becameAvailable === undefined && body.available_today)) {
       const phone=String(user.phone||user.user_metadata?.phone||"").replace(/^\+91/,"").replace(/\D/g,"").slice(-10);
       const { data: worker } = await supabase.from("workers").select("id,name").eq("phone", phone).maybeSingle();
       if (worker) await sendAvailabilityNotifications(worker.id, worker.name);
@@ -47,4 +83,4 @@ export const handleUpdateWorkerAvailability:RequestHandler=async(req,res)=>{try{
     return res.json(result);
   }catch(error){const code=error instanceof Error?error.message:"";const status=code==="UNAUTHORIZED"?401:code==="FORBIDDEN"?403:500;return res.status(status).json({message:status===500?(error instanceof Error?error.message:"Unable to update availability."):"Your login session is invalid or expired."} satisfies ApiErrorResponse);}};
 export const handleUpdateWorkerProfile:RequestHandler=async(req,res)=>{try{const {token}=await getAuthenticatedWorker(req);const {data:user,error}=await supabase.auth.getUser(token);if(error||!user.user)return res.status(401).json({message:"Your login session is invalid or expired."} satisfies ApiErrorResponse);const body=z.object({name:z.string().trim().min(1),category:z.string().trim().min(1),location:z.string().trim().min(1),experience:z.string().trim().min(1),services:z.array(z.string().trim()).default([]),about:z.string().trim().min(1),photo_url:z.string().url().nullable().optional()}).parse(req.body);const phone=String(user.user.phone||user.user.user_metadata?.phone||"").replace(/^\+91/,"").replace(/\D/g,"").slice(-10);const worker=await updateWorkerProfileByPhone(phone,body);return res.json({worker});}catch(error){return res.status(500).json({message:error instanceof Error?error.message:"Unable to update worker profile."} satisfies ApiErrorResponse);}};
-export const handleUpdateWorkerPhoto:RequestHandler=async(req,res)=>{try{const {token}=await getAuthenticatedWorker(req);const {data:user,error}=await supabase.auth.getUser(token);if(error||!user.user)return res.status(500).json({message:error instanceof Error?error.message:"Unable to update worker photo."} satisfies ApiErrorResponse);const phone=String(user.user.phone||user.user.user_metadata?.phone||"");const photoUrl=z.string().url().safeParse(req.body?.photoUrl);if(!photoUrl.success)return res.status(400).json({message:"A valid profile photo URL is required."} satisfies ApiErrorResponse);const worker=await updateWorkerPhotoByPhone(phone.replace(/^\+91/,"").replace(/\D/g,"").slice(-10),photoUrl.data);return res.json({worker});}catch(error){return res.status(500).json({message:error instanceof Error?error.message:"Unable to update worker photo."} satisfies ApiErrorResponse);}};
+export const handleUpdateWorkerPhoto:RequestHandler=async(req,res)=>{try{const {token}=await getAuthenticatedWorker(req);const {data:user,error}=await supabase.auth.getUser(token);if(error||!user.user)return res.status(500).json({message:error instanceof Error?error.message:"Unable to update worker photo."} satisfies ApiErrorResponse);const phone=String(user.user.phone||user.user.user_metadata?.phone||"");const photoUrl=z.string().url().safeParse(req.body?.photoUrl);if(!photoUrl.success)return res.status(400).json({message:"A valid profile photo URL is required."} satisfies ApiErrorResponse);const worker=await updateWorkerPhotoByPhone(phone.replace(/^\+91/,"").replace(/\D/g,"").slice(-10),photoUrl.data);return res.json({worker});}}catch(error){return res.status(500).json({message:error instanceof Error?error.message:"Unable to update worker photo."} satisfies ApiErrorResponse);}};
