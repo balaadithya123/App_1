@@ -39,7 +39,7 @@ export default function WorkerDashboard() {
 
   const logout = async () => { await supabase?.auth.signOut(); navigate("/", { replace: true }); };
 
-  if (loading) return <PageShell hideBack><section className="rounded-[18px] border border-line bg-white p-8 text-center dark:border-white/10 dark:bg-black"><p className="text-sm text-slate dark:text-slate-300">Loading your dashboard...</p></section></PageShell>;
+  if (loading) return <PageShell hideBack hideHome><section className="rounded-[18px] border border-line bg-white p-8 text-center dark:border-white/10 dark:bg-black"><p className="text-sm text-slate dark:text-slate-300">Loading your dashboard...</p></section></PageShell>;
   if (!user) return null;
 
   const meta = user.user_metadata ?? {};
@@ -48,7 +48,7 @@ export default function WorkerDashboard() {
   const location = meta.location || "Location not set";
   const avatar = meta.avatar_url || "";
 
-  return <PageShell hideBack>
+  return <PageShell hideBack hideHome>
     <div className="mx-auto max-w-[760px] space-y-5">
       <section className="overflow-hidden rounded-[20px] border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)] sm:p-7">
         <div className="flex items-center gap-4">
