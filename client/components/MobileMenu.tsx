@@ -10,7 +10,7 @@ export default function MobileMenu() {
   const [role, setRole] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
 
-  const load = async (session: Awaited<ReturnType<NonNullable<typeof supabase>["auth"]["getSession"]>>["data"]["session"] | null) => {
+  const load = async (session: any) => {
     setLoggedIn(!!session);
     setRole(session?.user?.user_metadata?.role ?? null);
 
@@ -39,8 +39,8 @@ export default function MobileMenu() {
     let active = true;
 
     // Read the session once. Do not call getSession again from inside
-    // onAuthStateChange; doing Supabase auth work recursively from the auth
-    // callback can stall the browser's auth lock and make the whole UI appear frozen.
+    // onAuthStateChange; recursively entering Supabase auth from its callback
+    // can stall the browser auth lock and make the whole UI appear frozen.
     void supabase.auth.getSession().then(({ data }) => {
       if (active) void load(data.session);
     });
