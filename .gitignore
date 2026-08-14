@@ -28,3 +28,5 @@ dist-ssr
 
 # Local MVP data store
 /data/
+
+# Baseline Vercel deployment marker
