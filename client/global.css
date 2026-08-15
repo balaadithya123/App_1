@@ -50,4 +50,17 @@
   .contact-glass { background: rgba(255,255,255,.045) !important; border: 1px solid rgba(255,255,255,.28) !important; color: #f1f3f2 !important; backdrop-filter: blur(20px) saturate(135%) !important; -webkit-backdrop-filter: blur(20px) saturate(135%) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 6px 24px rgba(0,0,0,.10) !important; }
   .contact-glass:hover { background: rgba(255,255,255,.075) !important; border-color: rgba(255,255,255,.36) !important; }
   :not(.dark) .contact-glass { background: rgba(255,255,255,.28) !important; border-color: rgba(255,255,255,.72) !important; color: #1C1917 !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 6px 24px rgba(24,55,62,.08) !important; }
+
+  /* Legacy hard-coded palette used by login, home, worker portal, profile, inbox and other pages. */
+  :not(.dark) [class*="bg-[#edf7f3]"], :not(.dark) [class*="bg-[#eef8f5]"], :not(.dark) [class*="bg-[#eef6f7]"], :not(.dark) [class*="bg-[#f5f1f8]"], :not(.dark) [class*="bg-[#f5f6f4]"], :not(.dark) [class*="bg-[#f8f5ed]"], :not(.dark) [class*="bg-[#f0f6fa]"] { background-color: #FFFFFF !important; }
+  :not(.dark) [class*="bg-[#f8faf9]"] { background-color: #FAFAF9 !important; }
+  :not(.dark) [class*="border-[#dcece7]"], :not(.dark) [class*="border-[#cfe5df]"] { border-color: #E7E5E4 !important; }
+  :not(.dark) .text-teal, :not(.dark) [class*="text-teal"] { color: #C2410C !important; }
+  :not(.dark) .bg-teal, :not(.dark) [class*="bg-teal"] { background-color: #C2410C !important; }
+  :not(.dark) .border-teal, :not(.dark) [class*="border-teal"] { border-color: #C2410C !important; }
+  :not(.dark) .ring-teal, :not(.dark) [class*="ring-teal"] { --tw-ring-color: #C2410C !important; }
+  :not(.dark) .fill-teal, :not(.dark) [class*="fill-teal"] { fill: #C2410C !important; }
+  :not(.dark) .stroke-teal, :not(.dark) [class*="stroke-teal"] { stroke: #C2410C !important; }
+  .dark [class*="bg-[#edf7f3]"], .dark [class*="bg-[#eef8f5]"], .dark [class*="bg-[#eef6f7]"], .dark [class*="bg-[#f5f1f8]"], .dark [class*="bg-[#f5f6f4]"], .dark [class*="bg-[#f8f5ed]"], .dark [class*="bg-[#f0f6fa]"] { background-color: #1A1A1A !important; }
+  .dark [class*="border-[#dcece7]"], .dark [class*="border-[#cfe5df]"] { border-color: #2A2A2A !important; }
 }
