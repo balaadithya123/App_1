@@ -7,6 +7,7 @@ import type { WorkersResponse } from "@shared/api";
 import { getWorkerContactHref } from "@/lib/contact";
 import { findWorkerById } from "@/lib/workers";
 import { getSavedWorkerIds, toggleSavedWorker } from "@/lib/favorites";
+import { addRecentlyViewedWorker } from "@/lib/recently-viewed";
 
 const softWhiteButton = "border border-[#e3e5e4] bg-[#f4f5f4] text-[#111111] shadow-sm hover:bg-[#eef0ef] dark:border-[#d8dada] dark:bg-[#f0f1f0] dark:text-[#111111] dark:hover:bg-[#e7e9e8]";
 
@@ -20,6 +21,7 @@ export default function WorkerProfile() {
 
   useEffect(() => { setSaved(requestedWorkerId ? getSavedWorkerIds().includes(requestedWorkerId) : false); }, [requestedWorkerId]);
   useEffect(() => { let isMounted = true; fetch("/api/workers", { cache: "no-store" }).then(async (response) => { if (!response.ok) throw new Error("Unable to load workers"); return response.json() as Promise<WorkersResponse>; }).then((data) => { if (isMounted) setAvailableWorkers(data.workers); }).catch(() => { if (isMounted) setAvailableWorkers(staticWorkers); }); return () => { isMounted = false; }; }, []);
+  useEffect(() => { if (worker?.id) addRecentlyViewedWorker(worker.id); }, [worker?.id]);
 
   if (!worker) return <PageShell backTo="/search" backLabel="Search results"><section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 dark:border-white/10 dark:bg-[#151515] sm:px-8 sm:py-9"><h1 className="text-[27px] font-extrabold tracking-[-0.04em] text-navy dark:text-white">Worker profile unavailable</h1><p className="mt-2 text-[14px] leading-6 text-slate dark:text-slate-300">We could not find that worker profile. Please return to search results and try again.</p></section></PageShell>;
 
