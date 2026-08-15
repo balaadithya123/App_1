@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MobileMenu from "@/components/MobileMenu";
 import ThemeToggle from "@/components/ThemeToggle";
-import { Brush, ChevronRight, Hammer, MapPin, Paintbrush, Search, ShieldCheck, UserRound, Zap, Wrench } from "lucide-react";
+import { Brush, ChevronRight, Hammer, MapPin, Paintbrush, Search, UserRound, Zap, Wrench } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const services = [
@@ -82,11 +82,6 @@ export default function Index() {
               </Link>
             ))}
           </div>
-        </section>
-
-        <section className="mt-10 flex items-center gap-3 rounded-[13px] border border-border bg-card px-4 py-4">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><ShieldCheck size={19} /></span>
-          <p className="text-[13px] font-semibold leading-5 text-foreground">Find local workers in your area.</p>
         </section>
       </div>
     </main>
