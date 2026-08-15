@@ -6,59 +6,54 @@ import { supabase } from "@/lib/supabase";
 export default function MobileMenu() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
+  const [session, setSession] = useState<any>(null);
   const [unread, setUnread] = useState(0);
-
-  const load = async (session: any) => {
-    setLoggedIn(!!session);
-    setRole(session?.user?.user_metadata?.role ?? null);
-
-    if (!session || session.user.user_metadata?.role === "worker") {
-      setUnread(0);
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/notifications", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        cache: "no-store",
-      });
-      if (response.ok) {
-        const result = await response.json();
-        setUnread((result.notifications || []).filter((n: any) => !n.read_at).length);
-      }
-    } catch {
-      setUnread(0);
-    }
-  };
 
   useEffect(() => {
     if (!supabase) return;
-
     let active = true;
 
-    // Read the session once. Do not call getSession again from inside
-    // onAuthStateChange; recursively entering Supabase auth from its callback
-    // can stall the browser auth lock and make the whole UI appear frozen.
     void supabase.auth.getSession().then(({ data }) => {
-      if (active) void load(data.session);
+      if (active) setSession(data.session);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      void load(session);
-      if (!session) {
-        setOpen(false);
-        navigate("/", { replace: true });
-      }
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      // Keep this callback synchronous. Do not call getSession, fetch, or other
+      // async Supabase work from inside onAuthStateChange: Supabase's auth lock
+      // can otherwise stall and make every button on the page appear frozen.
+      if (active) setSession(nextSession);
     });
 
     return () => {
       active = false;
       listener.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    setUnread(0);
+
+    if (!session || session.user?.user_metadata?.role === "worker") return;
+
+    void fetch("/api/notifications", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: "no-store",
+    })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((result) => {
+        if (active && result) {
+          setUnread((result.notifications || []).filter((n: any) => !n.read_at).length);
+        }
+      })
+      .catch(() => {
+        if (active) setUnread(0);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [session]);
 
   const logout = async () => {
     await supabase?.auth.signOut();
@@ -66,7 +61,8 @@ export default function MobileMenu() {
     navigate("/", { replace: true });
   };
 
-  const isWorker = role === "worker";
+  const loggedIn = !!session;
+  const isWorker = session?.user?.user_metadata?.role === "worker";
   const showInbox = loggedIn && !isWorker;
 
   return (
