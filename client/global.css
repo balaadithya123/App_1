@@ -3,8 +3,20 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 @layer base {
-  :root { --background: 30 7% 98%; --foreground: 20 15% 10%; --card: 0 0% 100%; --card-foreground: 20 15% 10%; --popover: 0 0% 100%; --popover-foreground: 20 15% 10%; --primary: 18 89% 40%; --primary-foreground: 0 0% 100%; --secondary: 30 6% 94%; --secondary-foreground: 20 15% 10%; --muted: 30 6% 94%; --muted-foreground: 24 6% 35%; --accent: 18 89% 40%; --accent-foreground: 0 0% 100%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%; --border: 30 6% 88%; --input: 30 6% 88%; --ring: 18 89% 40%; --radius: 0.5rem; }
-  .dark { --background: 0 0% 7%; --foreground: 0 0% 90%; --card: 0 0% 10%; --card-foreground: 0 0% 90%; --popover: 0 0% 10%; --popover-foreground: 0 0% 90%; --primary: 15 58% 59%; --primary-foreground: 0 0% 100%; --secondary: 0 0% 11%; --secondary-foreground: 0 0% 90%; --muted: 0 0% 12%; --muted-foreground: 0 0% 68%; --accent: 16 90% 50%; --accent-foreground: 0 0% 100%; --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 96%; --border: 0 0% 16%; --input: 0 0% 16%; --ring: 15 58% 59%; }
+  :root {
+    --background: 30 7% 98%; --foreground: 20 15% 10%; --card: 0 0% 100%; --card-foreground: 20 15% 10%;
+    --popover: 0 0% 100%; --popover-foreground: 20 15% 10%; --primary: 18 89% 40%; --primary-foreground: 0 0% 100%;
+    --secondary: 30 6% 94%; --secondary-foreground: 20 15% 10%; --muted: 30 6% 94%; --muted-foreground: 24 6% 35%;
+    --accent: 18 89% 40%; --accent-foreground: 0 0% 100%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%;
+    --border: 30 6% 88%; --input: 30 6% 88%; --ring: 18 89% 40%; --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 7%; --foreground: 0 0% 90%; --card: 0 0% 10%; --card-foreground: 0 0% 90%;
+    --popover: 0 0% 10%; --popover-foreground: 0 0% 90%; --primary: 15 58% 59%; --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 11%; --secondary-foreground: 0 0% 90%; --muted: 0 0% 12%; --muted-foreground: 0 0% 68%;
+    --accent: 16 90% 50%; --accent-foreground: 0 0% 100%; --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 96%;
+    --border: 0 0% 16%; --input: 0 0% 16%; --ring: 15 58% 59%;
+  }
   * { @apply border-border; }
   html, body, #root { min-height: 100%; }
   body { @apply bg-background text-foreground; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
@@ -12,24 +24,30 @@
   .dark :where(input, textarea, select) { color-scheme: dark; }
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) { overflow-wrap: anywhere; word-break: break-word; }
   pre, code { overflow-x: auto; white-space: pre; }
+
+  /* Global theme compatibility: older utility classes across every page inherit the new palette. */
+  .text-green-500, .text-green-600, .text-green-700, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-teal { color: hsl(var(--primary)) !important; }
+  .bg-green-50, .bg-green-100, .bg-emerald-50, .bg-emerald-100, .bg-teal, .bg-mint { background-color: hsl(var(--accent) / 0.12) !important; }
+  .border-green-200, .border-green-300, .border-emerald-200, .border-emerald-300, .border-teal { border-color: hsl(var(--primary) / 0.35) !important; }
+  .hover\:text-green-600:hover, .hover\:text-green-700:hover, .hover\:text-emerald-600:hover, .hover\:text-emerald-700:hover, .hover\:text-teal:hover { color: hsl(var(--accent)) !important; }
+  .hover\:bg-green-50:hover, .hover\:bg-emerald-50:hover { background-color: hsl(var(--accent) / 0.12) !important; }
   .dark .bg-white { background-color: #1A1A1A !important; }
-  .dark [class*="bg-[#fbfcfc]"] { background-color: #1A1A1A !important; }
-  .dark [class*="bg-[#f4f4f4]"], .dark [class*="bg-[#f0f2f2]"] { background-color: #1A1A1A !important; }
+  .dark [class*="bg-[#fbfcfc]"], .dark [class*="bg-[#f4f4f4]"], .dark [class*="bg-[#f0f2f2]"] { background-color: #1A1A1A !important; }
   .dark [class*="bg-[#111]"] { background-color: #121212 !important; }
-  .dark [class*="bg-emerald-50"] { background-color: rgba(217,119,87,.14) !important; }
-  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
-  body, #root { background-image: none !important; }
-  button, a, input, textarea, select { transform: none !important; filter: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-  button:hover, a:hover { transform: none !important; }
-  .dark .text-teal { color: #D97757 !important; }
-  .dark .hover\:text-teal:hover { color: #EA580C !important; }
+  .dark .text-green-500, .dark .text-green-600, .dark .text-green-700, .dark .text-emerald-500, .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-teal { color: #D97757 !important; }
+  .dark .bg-green-50, .dark .bg-green-100, .dark .bg-emerald-50, .dark .bg-emerald-100, .dark .bg-teal { background-color: rgba(217,119,87,.14) !important; }
+  .dark .border-green-200, .dark .border-green-300, .dark .border-emerald-200, .dark .border-emerald-300, .dark .border-teal { border-color: #C15F3C !important; }
+  .dark .hover\:text-green-600:hover, .dark .hover\:text-green-700:hover, .dark .hover\:text-emerald-600:hover, .dark .hover\:text-emerald-700:hover, .dark .hover\:text-teal:hover { color: #EA580C !important; }
   .dark .bg-teal { background-color: #D97757 !important; }
-  .dark .border-teal { border-color: #D97757 !important; }
   .dark .ring-teal { --tw-ring-color: #D97757 !important; }
   .dark .decoration-teal { text-decoration-color: #D97757 !important; }
   .dark .fill-teal { fill: #D97757 !important; }
   .dark .stroke-teal { stroke: #D97757 !important; }
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
+  body, #root { background-image: none !important; }
+  button, a, input, textarea, select { transform: none !important; filter: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  button:hover, a:hover { transform: none !important; }
   .contact-glass { background: rgba(255,255,255,.045) !important; border: 1px solid rgba(255,255,255,.28) !important; color: #f1f3f2 !important; backdrop-filter: blur(20px) saturate(135%) !important; -webkit-backdrop-filter: blur(20px) saturate(135%) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 6px 24px rgba(0,0,0,.10) !important; }
   .contact-glass:hover { background: rgba(255,255,255,.075) !important; border-color: rgba(255,255,255,.36) !important; }
-  :not(.dark) .contact-glass { background: rgba(255,255,255,.28) !important; border-color: rgba(255,255,255,.72) !important; color: #123f4b !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 6px 24px rgba(24,55,62,.08) !important; }
+  :not(.dark) .contact-glass { background: rgba(255,255,255,.28) !important; border-color: rgba(255,255,255,.72) !important; color: #1C1917 !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 6px 24px rgba(24,55,62,.08) !important; }
 }
