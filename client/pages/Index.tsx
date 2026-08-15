@@ -6,12 +6,12 @@ import { Brush, ChevronRight, Hammer, MapPin, Paintbrush, Search, ShieldCheck, U
 import { supabase } from "@/lib/supabase";
 
 const services = [
-  { name: "Electrician", icon: Zap, tone: "bg-[#eef8f5]" },
-  { name: "Plumber", icon: Wrench, tone: "bg-[#f0f6fa]" },
-  { name: "Carpenter", icon: Hammer, tone: "bg-[#f8f5ed]" },
-  { name: "Painter", icon: Paintbrush, tone: "bg-[#f5f1f8]" },
-  { name: "Cleaner", icon: Brush, tone: "bg-[#eef6f7]" },
-  { name: "Other", icon: ChevronRight, tone: "bg-[#f5f6f4]" },
+  { name: "Electrician", icon: Zap, tone: "bg-primary/10" },
+  { name: "Plumber", icon: Wrench, tone: "bg-primary/10" },
+  { name: "Carpenter", icon: Hammer, tone: "bg-primary/10" },
+  { name: "Painter", icon: Paintbrush, tone: "bg-primary/10" },
+  { name: "Cleaner", icon: Brush, tone: "bg-primary/10" },
+  { name: "Other", icon: ChevronRight, tone: "bg-primary/10" },
 ];
 
 export default function Index() {
@@ -22,14 +22,7 @@ export default function Index() {
 
   useEffect(() => {
     if (!supabase) return;
-
-    // Auth callbacks must stay synchronous. The previous implementation also
-    // called getSession here while MobileMenu was doing the same, which could
-    // contend for the Supabase auth lock during startup.
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setLoggedIn(!!session);
-    });
-
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => setLoggedIn(!!session));
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -39,61 +32,61 @@ export default function Index() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8faf9] px-5 pb-10 text-ink dark:bg-[#212121] dark:text-[#ececec] sm:px-8">
+    <main className="min-h-screen bg-background px-5 pb-10 text-foreground sm:px-8">
       <div className="mx-auto max-w-[1060px]">
         <header className="flex items-center justify-between py-5 sm:py-7">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-teal text-sm font-extrabold text-white">L</span>
-            <span className="text-[17px] font-extrabold tracking-[-0.03em] text-navy dark:text-[#ececec]">LocalWorker</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-primary text-sm font-extrabold text-primary-foreground">L</span>
+            <span className="text-[17px] font-extrabold tracking-[-0.03em] text-primary">LocalWorker</span>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {loggedIn && <Link to="/profile" aria-label="Profile" className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-900 shadow-sm transition-colors min-[360px]:flex dark:border-[#555] dark:bg-[#2f2f2f] dark:text-[#ececec]"><UserRound size={19} /></Link>}
-            {!loggedIn && <Link to="/register" className="hidden rounded-full border border-slate-300 bg-white px-5 py-2 text-[12px] font-bold text-slate-900 shadow-sm min-[360px]:block dark:border-[#555] dark:bg-[#2f2f2f] dark:text-[#ececec]">Register</Link>}
+            {loggedIn && <Link to="/profile" aria-label="Profile" className="hidden h-10 w-10 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-colors min-[360px]:flex"><UserRound size={19} /></Link>}
+            {!loggedIn && <Link to="/register" className="hidden rounded-full border border-border bg-card px-5 py-2 text-[12px] font-bold text-foreground shadow-sm min-[360px]:block">Register</Link>}
             <MobileMenu />
           </div>
         </header>
 
-        <div className="relative overflow-visible rounded-[24px] border-[2px] border-black dark:border-white pb-3">
-          <section className="relative overflow-hidden rounded-[21px] bg-[#edf7f3]/65 px-5 pb-20 pt-7 shadow-[0_18px_55px_rgba(24,55,62,0.10)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/30 dark:bg-white/[0.07] dark:shadow-[0_18px_60px_rgba(0,0,0,0.35)] dark:backdrop-blur-3xl sm:px-10 sm:pb-24 sm:pt-10">
-            <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full border-[16px] border-white/60 dark:border-black" />
-            <div className="pointer-events-none absolute right-10 top-7 h-2 w-2 rounded-full bg-teal/30 dark:bg-white/30" />
+        <div className="relative overflow-visible rounded-[24px] border-[2px] border-primary pb-3">
+          <section className="relative overflow-hidden rounded-[21px] bg-card px-5 pb-20 pt-7 shadow-[0_18px_55px_rgba(24,55,62,0.10)] sm:px-10 sm:pb-24 sm:pt-10">
+            <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full border-[16px] border-primary/20" />
+            <div className="pointer-events-none absolute right-10 top-7 h-2 w-2 rounded-full bg-primary/30" />
             <div className="relative max-w-[650px]">
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-teal dark:text-[#d5dedc]">Your neighborhood, connected</p>
-              <h1 className="max-w-[620px] text-[36px] font-extrabold leading-[1.04] tracking-[-0.055em] text-navy dark:text-[#f1f3f2] sm:text-5xl">Find local workers near you</h1>
-              <p className="mt-3 max-w-[390px] text-[15px] leading-6 text-slate dark:text-[#c5ccca]">Find the right person for the work you need.</p>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">Your neighborhood, connected</p>
+              <h1 className="max-w-[620px] text-[36px] font-extrabold leading-[1.04] tracking-[-0.055em] text-foreground sm:text-5xl">Find local workers near you</h1>
+              <p className="mt-3 max-w-[390px] text-[15px] leading-6 text-muted-foreground">Find the right person for the work you need.</p>
             </div>
           </section>
 
-          <form onSubmit={handleSearch} className="relative z-10 mt-3 rounded-[18px] bg-white/50 p-2 shadow-[0_14px_45px_rgba(24,55,62,0.16)] backdrop-blur-2xl supports-[backdrop-filter]:bg-white/38 dark:bg-white/[0.10] dark:shadow-[0_16px_50px_rgba(0,0,0,0.42)] dark:backdrop-blur-3xl sm:flex sm:items-center sm:gap-2 sm:p-2.5">
-            <div className="flex min-w-0 flex-1 items-center rounded-[12px] bg-white/60 px-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl dark:bg-white/[0.09] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-              <Search size={18} className="mr-3 shrink-0 text-teal dark:text-[#d5dedc]" />
-              <input id="work" value={work} onChange={e => setWork(e.target.value)} placeholder="What work do you need?" className="h-11 min-w-0 w-full bg-transparent text-sm text-navy outline-none placeholder:text-slate/75 dark:text-[#f0f2f1] dark:placeholder:text-[#9fa8a6]" />
+          <form onSubmit={handleSearch} className="relative z-10 mt-3 rounded-[18px] bg-card p-2 shadow-[0_14px_45px_rgba(24,55,62,0.16)] sm:flex sm:items-center sm:gap-2 sm:p-2.5">
+            <div className="flex min-w-0 flex-1 items-center rounded-[12px] border border-border bg-background px-3.5">
+              <Search size={18} className="mr-3 shrink-0 text-primary" />
+              <input id="work" value={work} onChange={e => setWork(e.target.value)} placeholder="What work do you need?" className="h-11 min-w-0 w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
             </div>
-            <div className="my-1 ml-12 h-px bg-line/70 dark:bg-black sm:my-0 sm:ml-0 sm:h-7 sm:w-px" />
-            <div className="flex min-w-0 flex-1 items-center rounded-[12px] bg-white/60 px-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] backdrop-blur-xl dark:bg-white/[0.09] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-              <MapPin size={18} className="mr-3 shrink-0 text-teal dark:text-[#d5dedc]" />
-              <input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="Your location" className="h-11 min-w-0 w-full bg-transparent text-sm text-navy outline-none placeholder:text-slate/75 dark:text-[#f0f2f1] dark:placeholder:text-[#9fa8a6]" />
+            <div className="my-1 ml-12 h-px bg-border sm:my-0 sm:ml-0 sm:h-7 sm:w-px" />
+            <div className="flex min-w-0 flex-1 items-center rounded-[12px] border border-border bg-background px-3.5">
+              <MapPin size={18} className="mr-3 shrink-0 text-primary" />
+              <input id="location" value={location} onChange={e => setLocation(e.target.value)} placeholder="Your location" className="h-11 min-w-0 w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground" />
             </div>
-            <button type="submit" className="mt-2 flex h-11 w-full items-center justify-center rounded-[12px] bg-navy px-7 text-sm font-bold text-white sm:mt-0 sm:w-auto dark:bg-white/90 dark:text-[#212121]">Search</button>
+            <button type="submit" className="mt-2 flex h-11 w-full items-center justify-center rounded-[12px] bg-primary px-7 text-sm font-bold text-primary-foreground sm:mt-0 sm:w-auto">Search</button>
           </form>
         </div>
 
         <section className="pt-10 sm:pt-14">
-          <h2 className="mb-4 text-[19px] font-extrabold text-navy dark:text-[#ececec]">Popular services</h2>
+          <h2 className="mb-4 text-[19px] font-extrabold text-foreground">Popular services</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {services.map(({ name, icon: Icon, tone }, i) => (
-              <Link key={name} to={`/search?service=${encodeURIComponent(name)}`} className={`flex min-h-[74px] items-center justify-between rounded-[12px] border px-4 bg-white text-navy dark:border-[#3a3a3a] dark:bg-[#2f2f2f] dark:text-[#ececec] ${i % 2 === 0 ? "border-[#dcece7]" : "border-line"}`}>
-                <span className="flex items-center gap-3"><span className={`flex h-9 w-9 items-center justify-center rounded-[9px] ${tone} text-teal dark:bg-[#3a3a3a] dark:text-[#d1d1d1]`}><Icon size={18} /></span><span className="text-[13px] font-bold">{name}</span></span>
+            {services.map(({ name, icon: Icon, tone }) => (
+              <Link key={name} to={`/search?service=${encodeURIComponent(name)}`} className="flex min-h-[74px] items-center justify-between rounded-[12px] border border-border bg-card px-4 text-foreground">
+                <span className="flex items-center gap-3"><span className={`flex h-9 w-9 items-center justify-center rounded-[9px] ${tone} text-primary`}><Icon size={18} /></span><span className="text-[13px] font-bold">{name}</span></span>
                 <ChevronRight size={16} />
               </Link>
             ))}
           </div>
         </section>
 
-        <section className="mt-10 flex items-center gap-3 rounded-[13px] border border-[#dcece7] bg-[#edf7f3]/70 px-4 py-4 dark:border-[#3a3a3a] dark:bg-[#2f2f2f]">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-teal dark:bg-[#3a3a3a]"><ShieldCheck size={19} /></span>
-          <p className="text-[13px] font-semibold leading-5 text-navy dark:text-[#ececec]">Find local workers in your area.</p>
+        <section className="mt-10 flex items-center gap-3 rounded-[13px] border border-border bg-card px-4 py-4">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><ShieldCheck size={19} /></span>
+          <p className="text-[13px] font-semibold leading-5 text-foreground">Find local workers in your area.</p>
         </section>
       </div>
     </main>
