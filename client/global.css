@@ -21,54 +21,42 @@
   html, body, #root { min-height: 100%; }
   body { @apply bg-background text-foreground; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; background-color: hsl(var(--background)); color: hsl(var(--foreground)); }
   :where(input, textarea, select) { color-scheme: light; }
-  .dark :where(input, textarea, select) { color-scheme: dark; }
+  html.dark :where(input, textarea, select) { color-scheme: dark; }
   :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) { overflow-wrap: anywhere; word-break: break-word; }
   pre, code { overflow-x: auto; white-space: pre; }
 
-  /* Global theme compatibility: legacy utility classes inherit the same palette everywhere. */
+  /* Theme is controlled by html.dark. Never use unscoped :not(.dark) selectors. */
   .text-green-500, .text-green-600, .text-green-700, .text-emerald-500, .text-emerald-600, .text-emerald-700, .text-teal { color: hsl(var(--primary)) !important; }
   .bg-green-50, .bg-green-100, .bg-emerald-50, .bg-emerald-100, .bg-teal, .bg-mint { background-color: hsl(var(--accent) / 0.12) !important; }
   .border-green-200, .border-green-300, .border-emerald-200, .border-emerald-300, .border-teal { border-color: hsl(var(--primary) / 0.35) !important; }
   .hover\:text-green-600:hover, .hover\:text-green-700:hover, .hover\:text-emerald-600:hover, .hover\:text-emerald-700:hover, .hover\:text-teal:hover { color: hsl(var(--accent)) !important; }
   .hover\:bg-green-50:hover, .hover\:bg-emerald-50:hover { background-color: hsl(var(--accent) / 0.12) !important; }
 
-  /* Dark mode overrides for hard-coded legacy page palettes. */
-  .dark .bg-white, .dark .bg-slate-50, .dark .bg-slate-100, .dark .bg-gray-50, .dark .bg-gray-100, .dark .bg-stone-50, .dark .bg-stone-100 { background-color: #121212 !important; }
-  .dark .bg-slate-200, .dark .bg-gray-200, .dark .bg-stone-200 { background-color: #1A1A1A !important; }
-  .dark .text-black, .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700, .dark .text-gray-900, .dark .text-gray-800, .dark .text-gray-700, .dark .text-stone-900, .dark .text-stone-800, .dark .text-stone-700 { color: #F1F1F1 !important; }
-  .dark .text-slate-600, .dark .text-slate-500, .dark .text-gray-600, .dark .text-gray-500, .dark .text-stone-600, .dark .text-stone-500 { color: #B8B8B8 !important; }
-  .dark .border-slate-200, .dark .border-slate-300, .dark .border-gray-200, .dark .border-gray-300, .dark .border-stone-200, .dark .border-stone-300 { border-color: #2A2A2A !important; }
-  .dark .bg-white\/50, .dark .bg-white\/60, .dark .bg-white\/70, .dark .bg-white\/80, .dark .bg-white\/90 { background-color: rgba(255,255,255,.06) !important; }
+  /* Dark mode: normalize hard-coded light surfaces, text and borders on every route. */
+  html.dark .bg-white, html.dark .bg-slate-50, html.dark .bg-slate-100, html.dark .bg-gray-50, html.dark .bg-gray-100, html.dark .bg-stone-50, html.dark .bg-stone-100 { background-color: #121212 !important; }
+  html.dark .bg-slate-200, html.dark .bg-gray-200, html.dark .bg-stone-200 { background-color: #1A1A1A !important; }
+  html.dark .text-black, html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-slate-700, html.dark .text-gray-900, html.dark .text-gray-800, html.dark .text-gray-700, html.dark .text-stone-900, html.dark .text-stone-800, html.dark .text-stone-700 { color: #F1F1F1 !important; }
+  html.dark .text-slate-600, html.dark .text-slate-500, html.dark .text-gray-600, html.dark .text-gray-500, html.dark .text-stone-600, html.dark .text-stone-500 { color: #B8B8B8 !important; }
+  html.dark .border-slate-200, html.dark .border-slate-300, html.dark .border-gray-200, html.dark .border-gray-300, html.dark .border-stone-200, html.dark .border-stone-300 { border-color: #2A2A2A !important; }
+  html.dark [class*="bg-[#fbfcfc]"], html.dark [class*="bg-[#f4f4f4]"], html.dark [class*="bg-[#f0f2f2]"], html.dark [class*="bg-[#edf7f3]"], html.dark [class*="bg-[#eef8f5]"], html.dark [class*="bg-[#eef6f7]"], html.dark [class*="bg-[#f5f1f8]"], html.dark [class*="bg-[#f5f6f4]"], html.dark [class*="bg-[#f8f5ed]"], html.dark [class*="bg-[#f0f6fa]"] { background-color: #1A1A1A !important; }
+  html.dark [class*="border-[#dcece7]"], html.dark [class*="border-[#cfe5df]"] { border-color: #2A2A2A !important; }
+  html.dark .bg-white\/50, html.dark .bg-white\/60, html.dark .bg-white\/70, html.dark .bg-white\/80, html.dark .bg-white\/90 { background-color: rgba(255,255,255,.06) !important; }
+  html.dark .text-green-500, html.dark .text-green-600, html.dark .text-green-700, html.dark .text-emerald-500, html.dark .text-emerald-600, html.dark .text-emerald-700, html.dark .text-teal { color: #D97757 !important; }
+  html.dark .bg-green-50, html.dark .bg-green-100, html.dark .bg-emerald-50, html.dark .bg-emerald-100, html.dark .bg-teal { background-color: rgba(217,119,87,.14) !important; }
+  html.dark .border-green-200, html.dark .border-green-300, html.dark .border-emerald-200, html.dark .border-emerald-300, html.dark .border-teal { border-color: #C15F3C !important; }
 
-  .dark .bg-white { background-color: #1A1A1A !important; }
-  .dark [class*="bg-[#fbfcfc]"], .dark [class*="bg-[#f4f4f4]"], .dark [class*="bg-[#f0f2f2]"] { background-color: #1A1A1A !important; }
-  .dark [class*="bg-[#111]"] { background-color: #121212 !important; }
-  .dark .text-green-500, .dark .text-green-600, .dark .text-green-700, .dark .text-emerald-500, .dark .text-emerald-600, .dark .text-emerald-700, .dark .text-teal { color: #D97757 !important; }
-  .dark .bg-green-50, .dark .bg-green-100, .dark .bg-emerald-50, .dark .bg-emerald-100, .dark .bg-teal { background-color: rgba(217,119,87,.14) !important; }
-  .dark .border-green-200, .dark .border-green-300, .dark .border-emerald-200, .dark .border-emerald-300, .dark .border-teal { border-color: #C15F3C !important; }
-  .dark .hover\:text-green-600:hover, .dark .hover\:text-green-700:hover, .dark .hover\:text-emerald-600:hover, .dark .hover\:text-emerald-700:hover, .dark .hover\:text-teal:hover { color: #EA580C !important; }
-  .dark .bg-teal { background-color: #D97757 !important; }
-  .dark .ring-teal { --tw-ring-color: #D97757 !important; }
-  .dark .decoration-teal { text-decoration-color: #D97757 !important; }
-  .dark .fill-teal { fill: #D97757 !important; }
-  .dark .stroke-teal { stroke: #D97757 !important; }
+  /* Light mode: explicitly scope legacy palette cleanup to html without .dark. */
+  html:not(.dark) [class*="bg-[#edf7f3]"], html:not(.dark) [class*="bg-[#eef8f5]"], html:not(.dark) [class*="bg-[#eef6f7]"], html:not(.dark) [class*="bg-[#f5f1f8]"], html:not(.dark) [class*="bg-[#f5f6f4]"], html:not(.dark) [class*="bg-[#f8f5ed]"], html:not(.dark) [class*="bg-[#f0f6fa]"] { background-color: #FFFFFF !important; }
+  html:not(.dark) [class*="bg-[#f8faf9]"] { background-color: #FAFAF9 !important; }
+  html:not(.dark) [class*="border-[#dcece7]"], html:not(.dark) [class*="border-[#cfe5df]"] { border-color: #E7E5E4 !important; }
+  html:not(.dark) .text-teal, html:not(.dark) [class*="text-teal"] { color: #C2410C !important; }
+  html:not(.dark) .bg-teal, html:not(.dark) [class*="bg-teal"] { background-color: #C2410C !important; }
+  html:not(.dark) .border-teal, html:not(.dark) [class*="border-teal"] { border-color: #C2410C !important; }
+  html:not(.dark) .ring-teal, html:not(.dark) [class*="ring-teal"] { --tw-ring-color: #C2410C !important; }
+  html:not(.dark) .fill-teal, html:not(.dark) [class*="fill-teal"] { fill: #C2410C !important; }
+  html:not(.dark) .stroke-teal, html:not(.dark) [class*="stroke-teal"] { stroke: #C2410C !important; }
 
-  /* Light mode: remove leftover green/teal identity from older pages. */
-  :not(.dark) [class*="bg-[#edf7f3]"], :not(.dark) [class*="bg-[#eef8f5]"], :not(.dark) [class*="bg-[#eef6f7]"], :not(.dark) [class*="bg-[#f5f1f8]"], :not(.dark) [class*="bg-[#f5f6f4]"], :not(.dark) [class*="bg-[#f8f5ed]"], :not(.dark) [class*="bg-[#f0f6fa]"] { background-color: #FFFFFF !important; }
-  :not(.dark) [class*="bg-[#f8faf9]"] { background-color: #FAFAF9 !important; }
-  :not(.dark) [class*="border-[#dcece7]"], :not(.dark) [class*="border-[#cfe5df]"] { border-color: #E7E5E4 !important; }
-  :not(.dark) .text-teal, :not(.dark) [class*="text-teal"] { color: #C2410C !important; }
-  :not(.dark) .bg-teal, :not(.dark) [class*="bg-teal"] { background-color: #C2410C !important; }
-  :not(.dark) .border-teal, :not(.dark) [class*="border-teal"] { border-color: #C2410C !important; }
-  :not(.dark) .ring-teal, :not(.dark) [class*="ring-teal"] { --tw-ring-color: #C2410C !important; }
-  :not(.dark) .fill-teal, :not(.dark) [class*="fill-teal"] { fill: #C2410C !important; }
-  :not(.dark) .stroke-teal, :not(.dark) [class*="stroke-teal"] { stroke: #C2410C !important; }
-
-  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
   body, #root { background-image: none !important; }
-  button, a, input, textarea, select { transform: none !important; filter: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-  button:hover, a:hover { transform: none !important; }
-  .contact-glass { background: rgba(255,255,255,.045) !important; border: 1px solid rgba(255,255,255,.28) !important; color: #f1f3f2 !important; backdrop-filter: blur(20px) saturate(135%) !important; -webkit-backdrop-filter: blur(20px) saturate(135%) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 6px 24px rgba(0,0,0,.10) !important; }
-  .contact-glass:hover { background: rgba(255,255,255,.075) !important; border-color: rgba(255,255,255,.36) !important; }
-  :not(.dark) .contact-glass { background: rgba(255,255,255,.28) !important; border-color: rgba(255,255,255,.72) !important; color: #1C1917 !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.65), 0 6px 24px rgba(24,55,62,.08) !important; }
+  .contact-glass { background: rgba(255,255,255,.045) !important; border: 1px solid rgba(255,255,255,.28) !important; color: #f1f3f2 !important; }
+  html:not(.dark) .contact-glass { background: rgba(255,255,255,.28) !important; border-color: rgba(255,255,255,.72) !important; color: #1C1917 !important; }
 }
