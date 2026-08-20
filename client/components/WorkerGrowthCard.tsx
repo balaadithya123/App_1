@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -6,23 +6,32 @@ export default function WorkerGrowthCard() {
   const [views, setViews] = useState(0);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
+  const [error, setError] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      if (!supabase) return;
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) return;
+      const response = await fetch("/api/worker-stats", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result?.message || "Unable to load reach");
+      setViews(Number(result.profileViewsThisWeek) || 0);
+      setReferralCode(result.referralCode || null);
+      setVerified(Boolean(result.phoneVerified));
+      setError(false);
+    } catch {
+      setError(true);
+    }
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    const load = async () => {
-      try {
-        if (!supabase) return;
-        const { data } = await supabase.auth.getSession();
-        const token = data.session?.access_token;
-        if (!token) return;
-        const response = await fetch("/api/worker-stats", { headers: { Authorization: `Bearer ${token}` } });
-        const result = await response.json();
-        if (active) { setViews(Number(result.profileViewsThisWeek) || 0); setReferralCode(result.referralCode || null); setVerified(Boolean(result.phoneVerified)); }
-      } catch { /* graceful fallback */ }
-    };
-    load();
-    return () => { active = false; };
-  }, []);
+    void load();
+    const onFocus = () => { void load(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [load]);
 
   const inviteLink = referralCode ? `${window.location.origin}/join?ref=${encodeURIComponent(referralCode)}` : "";
 
@@ -31,7 +40,8 @@ export default function WorkerGrowthCard() {
       <p className="text-xs font-bold uppercase tracking-wide text-slate dark:text-slate-400">Your profile reach</p>
       <p className="mt-1 text-2xl font-extrabold text-navy dark:text-white">{views}</p>
       <p className="text-sm text-slate dark:text-slate-300">people viewed your profile this week</p>
-      <Link to="/profile-completeness" className="mt-3 inline-block text-xs font-bold text-teal">Improve profile →</Link>
+      {error && <button type="button" onClick={() => void load()} className="mt-2 text-xs font-bold text-red-600 dark:text-red-300">Couldn’t load reach — retry</button>}
+      {!error && <Link to="/profile-completeness" className="mt-3 inline-block text-xs font-bold text-teal">Improve profile →</Link>}
     </section>
     {verified && referralCode && <section className="rounded-[16px] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/[0.055]">
       <p className="text-xs font-bold uppercase tracking-wide text-slate dark:text-slate-400">Invite a worker</p>
