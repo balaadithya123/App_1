@@ -16,15 +16,14 @@ const getAuthenticatedWorker = async (req: Parameters<RequestHandler>[0]) => {
 
 export const handleRecordWorkerReferral: RequestHandler = async (req, res) => {
   try {
-    await getAuthenticatedWorker(req);
     const body = referralSchema.parse(req.body);
-    const { error } = await supabase.from("workers").update({ referral_source: body.referralSource }).eq("id", body.workerId).is("referral_source", null);
+    const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { error } = await supabase.from("workers").update({ referral_source: body.referralSource }).eq("id", body.workerId).is("referral_source", null).gte("created_at", cutoff);
     if (error) throw error;
     return res.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to record referral.";
-    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 400;
-    return res.status(status).json({ message });
+    return res.status(400).json({ message });
   }
 };
 
