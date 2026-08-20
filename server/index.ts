@@ -5,6 +5,7 @@ import { handleGetWorkers, handleRegisterWorker, handleUpdateWorkerAvailability,
 import { handleGetNotifications, handleMarkNotificationRead, handleWatchWorker } from "./routes/notifications.js";
 import { handleGetWorkerCallbackRequests } from "./routes/callback-requests.js";
 import { handleGetWorkerStats, handleRecordWorkerReferral } from "./routes/growth.js";
+import { handleGetMyAgency, handleRegisterAgency } from "./routes/agencies.js";
 
 export function createServer() {
   const app = express();
@@ -23,5 +24,7 @@ export function createServer() {
   app.post("/api/notifications/watch", handleWatchWorker);
   app.get("/api/notifications", handleGetNotifications);
   app.post("/api/notifications/read", handleMarkNotificationRead);
+  app.post("/api/agencies/register", handleRegisterAgency);
+  app.get("/api/agencies/me", handleGetMyAgency);
   return app;
 }
