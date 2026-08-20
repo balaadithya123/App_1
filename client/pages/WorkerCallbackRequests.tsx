@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, CalendarClock, ClipboardList, Phone, UserRound } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowLeft, CalendarClock, ClipboardList, Phone, RefreshCw, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
@@ -19,63 +19,78 @@ export default function WorkerCallbackRequests() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState<CallbackRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadRequests = useCallback(async (showLoader = false) => {
+    if (!supabase) {
+      setError("Callback requests are temporarily unavailable.");
+      setLoading(false);
+      return;
+    }
 
-    const load = async () => {
-      if (!supabase) {
-        if (!cancelled) {
-          setError("Callback requests are temporarily unavailable.");
-          setLoading(false);
-        }
+    if (showLoader) setRefreshing(true);
+    setError("");
+
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        navigate("/login", { replace: true });
         return;
       }
 
-      try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData.session) {
-          navigate("/login", { replace: true });
-          return;
-        }
-
-        if (sessionData.session.user.user_metadata?.role !== "worker") {
-          navigate("/", { replace: true });
-          return;
-        }
-
-        const response = await fetch("/api/callback-requests", {
-          headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
-        });
-        const data = (await response.json().catch(() => null)) as { requests?: CallbackRequest[]; message?: string } | null;
-
-        if (!response.ok) throw new Error(data?.message || "Unable to load callback requests.");
-        if (!cancelled) setRequests(data?.requests ?? []);
-      } catch (loadError) {
-        if (!cancelled) setError(loadError instanceof Error ? loadError.message : "Unable to load callback requests.");
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (sessionData.session.user.user_metadata?.role !== "worker") {
+        navigate("/", { replace: true });
+        return;
       }
-    };
 
-    void load();
-    return () => { cancelled = true; };
+      const response = await fetch(`/api/callback-requests?_=${Date.now()}`, {
+        cache: "no-store",
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+      });
+      const data = (await response.json().catch(() => null)) as { requests?: CallbackRequest[]; message?: string } | null;
+
+      if (!response.ok) throw new Error(data?.message || "Unable to load callback requests.");
+      setRequests(data?.requests ?? []);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Unable to load callback requests.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [navigate]);
+
+  useEffect(() => {
+    void loadRequests();
+    const interval = window.setInterval(() => void loadRequests(), 10000);
+    const onFocus = () => void loadRequests();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [loadRequests]);
 
   return (
     <PageShell hideBack hideHome>
       <div className="mx-auto max-w-[760px] space-y-5">
         <section className="rounded-[20px] border border-black/10 bg-white/70 p-5 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.055] sm:p-7">
-          <button type="button" onClick={() => navigate("/worker-dashboard")} className="mb-5 inline-flex items-center gap-2 text-xs font-bold text-slate hover:text-navy dark:text-slate-300 dark:hover:text-white">
-            <ArrowLeft size={15} /> Back to Worker Portal
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white"><ClipboardList size={20} /></div>
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-[25px] font-extrabold tracking-tight text-navy dark:text-white">Callback Requests</h1>
-              <p className="mt-1 text-xs text-slate dark:text-slate-400">People who asked you to contact them about your services.</p>
+              <button type="button" onClick={() => navigate("/worker-dashboard")} className="mb-5 inline-flex items-center gap-2 text-xs font-bold text-slate hover:text-navy dark:text-slate-300 dark:hover:text-white">
+                <ArrowLeft size={15} /> Back to Worker Portal
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white"><ClipboardList size={20} /></div>
+                <div>
+                  <h1 className="text-[25px] font-extrabold tracking-tight text-navy dark:text-white">Callback Requests</h1>
+                  <p className="mt-1 text-xs text-slate dark:text-slate-400">People who asked you to contact them about your services.</p>
+                </div>
+              </div>
             </div>
+            <button type="button" onClick={() => void loadRequests(true)} disabled={refreshing} aria-label="Refresh callback requests" className="mt-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-navy hover:bg-black/5 disabled:opacity-50 dark:border-white/10 dark:text-white dark:hover:bg-white/10">
+              <RefreshCw size={15} className={refreshing ? "animate-spin" : ""} />
+            </button>
           </div>
         </section>
 
