@@ -14,7 +14,7 @@ export default function WorkerGrowthCard() {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
       if (!token) return;
-      const response = await fetch("/api/worker-stats", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+      const response = await fetch(`/api/worker-stats?t=${Date.now()}`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
       const result = await response.json();
       if (!response.ok) throw new Error(result?.message || "Unable to load reach");
       setViews(Number(result.profileViewsThisWeek) || 0);
