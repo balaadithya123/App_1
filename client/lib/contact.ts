@@ -6,8 +6,8 @@ export const getWorkerContactHref = (worker: Pick<Worker, "phone">) => {
   return `tel:${dialablePhone}`;
 };
 
-export const getWorkerWhatsAppHref = (worker: Pick<Worker, "phone" | "name">) => {
+export const getWorkerWhatsAppHref = (worker: Pick<Worker, "phone" | "name" | "category">) => {
   const digits = worker.phone.replace(/\D/g, "");
-  const message = encodeURIComponent(`Hi ${worker.name}, I found your profile on LocalWorker and would like to ask about your services.`);
+  const message = encodeURIComponent(`Hi ${worker.name}, I found you on App_1 and need help with ${worker.category}.`);
   return `https://wa.me/${digits}?text=${message}`;
 };

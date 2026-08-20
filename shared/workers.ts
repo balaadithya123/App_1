@@ -9,6 +9,7 @@ export type Worker = {
   about: string;
   services: string[];
   phone: string;
+  phone_verified?: boolean;
   photo_url?: string;
   available_today?: boolean;
   away_from?: string | null;
