@@ -30,13 +30,34 @@ export const handleRecordWorkerReferral: RequestHandler = async (req, res) => {
 export const handleGetWorkerStats: RequestHandler = async (req, res) => {
   try {
     const user = await getAuthenticatedWorker(req);
-    const phone = String(user.phone || user.user_metadata?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
-    const { data: worker } = await supabase.from("workers").select("id,referral_code,phone_verified").eq("phone", phone).maybeSingle();
+    const metadata = user.user_metadata ?? {};
+    const phone = String(user.phone || metadata.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const metadataWorkerId = String(metadata.worker_id || metadata.workerId || "").trim();
+
+    let worker: { id: string; referral_code: string | null; phone_verified: boolean } | null = null;
+    if (metadataWorkerId) {
+      const { data } = await supabase.from("workers").select("id,referral_code,phone_verified").eq("id", metadataWorkerId).maybeSingle();
+      worker = data;
+    }
+    if (!worker && phone) {
+      const { data, error } = await supabase.from("workers").select("id,referral_code,phone_verified").eq("phone", phone).maybeSingle();
+      if (error) throw error;
+      worker = data;
+    }
     if (!worker) return res.json({ profileViewsThisWeek: 0, referralCode: null, phoneVerified: false });
-    const since = new Date(); since.setDate(since.getDate() - 7);
-    const { count } = await supabase.from("analytics_events").select("id", { count: "exact", head: true }).eq("event_type", "profile_view").eq("worker_id", worker.id).gte("created_at", since.toISOString());
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { count, error: analyticsError } = await supabase
+      .from("analytics_events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_type", "profile_view")
+      .eq("worker_id", worker.id)
+      .gte("created_at", since);
+    if (analyticsError) throw analyticsError;
+
     return res.json({ profileViewsThisWeek: count ?? 0, referralCode: worker.referral_code ?? null, phoneVerified: Boolean(worker.phone_verified) });
-  } catch {
-    return res.json({ profileViewsThisWeek: 0, referralCode: null, phoneVerified: false });
+  } catch (error) {
+    console.error("[worker-stats] failed:", error);
+    return res.status(500).json({ message: "Unable to load your profile reach right now." });
   }
 };
