@@ -1,1 +1,0 @@
-Proof-of-demand implementation is ready for review.
