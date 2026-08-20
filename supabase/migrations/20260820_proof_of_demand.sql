@@ -40,6 +40,14 @@ grant select on public.contact_events to service_role;
 grant select, update on public.callback_requests to service_role;
 grant select on public.analytics_events to service_role;
 
-create policy if not exists "Anyone can log WhatsApp contact events" on public.contact_events for insert to anon, authenticated with check (source = 'whatsapp');
-create policy if not exists "Anyone can submit callback requests" on public.callback_requests for insert to anon, authenticated with check (length(trim(client_name)) between 1 and 120 and length(trim(client_phone)) = 10 and length(trim(service_needed)) between 1 and 200 and length(trim(preferred_time)) between 1 and 120 and (notes is null or length(notes) <= 2000));
-create policy if not exists "Anyone can log analytics events" on public.analytics_events for insert to anon, authenticated with check (length(trim(event_type)) between 1 and 80 and jsonb_typeof(metadata) = 'object');
+do $$ begin
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='contact_events' and policyname='Anyone can log WhatsApp contact events') then
+    create policy "Anyone can log WhatsApp contact events" on public.contact_events for insert to anon, authenticated with check (source = 'whatsapp');
+  end if;
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='callback_requests' and policyname='Anyone can submit callback requests') then
+    create policy "Anyone can submit callback requests" on public.callback_requests for insert to anon, authenticated with check (length(trim(client_name)) between 1 and 120 and length(trim(client_phone)) = 10 and length(trim(service_needed)) between 1 and 200 and length(trim(preferred_time)) between 1 and 120 and (notes is null or length(notes) <= 2000));
+  end if;
+  if not exists (select 1 from pg_policies where schemaname='public' and tablename='analytics_events' and policyname='Anyone can log analytics events') then
+    create policy "Anyone can log analytics events" on public.analytics_events for insert to anon, authenticated with check (length(trim(event_type)) between 1 and 80 and jsonb_typeof(metadata) = 'object');
+  end if;
+end $$;
