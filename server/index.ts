@@ -4,6 +4,7 @@ import cors from "cors";
 import { handleGetWorkers, handleRegisterWorker, handleUpdateWorkerAvailability, handleUpdateWorkerPhoto, handleUpdateWorkerProfile } from "./routes/workers.js";
 import { handleGetNotifications, handleMarkNotificationRead, handleWatchWorker } from "./routes/notifications.js";
 import { handleGetWorkerCallbackRequests } from "./routes/callback-requests.js";
+import { handleGetWorkerStats, handleRecordWorkerReferral } from "./routes/growth.js";
 
 export function createServer() {
   const app = express();
@@ -17,6 +18,8 @@ export function createServer() {
   app.post("/api/workers/photo", handleUpdateWorkerPhoto);
   app.post("/api/workers/availability", handleUpdateWorkerAvailability);
   app.get("/api/callback-requests", handleGetWorkerCallbackRequests);
+  app.get("/api/worker-stats", handleGetWorkerStats);
+  app.post("/api/worker-referral", handleRecordWorkerReferral);
   app.post("/api/notifications/watch", handleWatchWorker);
   app.get("/api/notifications", handleGetNotifications);
   app.post("/api/notifications/read", handleMarkNotificationRead);
