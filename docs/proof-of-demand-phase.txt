@@ -1,1 +1,0 @@
-Proof-of-demand phase implementation: WhatsApp contact tracking, callback requests, analytics events, category/location filtering, and phone verification badge.
