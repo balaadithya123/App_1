@@ -16,6 +16,7 @@ export type Worker = {
   away_until?: string | null;
   urgent_today?: boolean;
   next_available_date?: string;
+  agency_id?: string | null;
 };
 
 // There are no seeded or dummy worker profiles. Worker listings come only from Supabase.
