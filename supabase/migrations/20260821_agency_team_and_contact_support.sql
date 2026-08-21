@@ -1,0 +1,12 @@
+alter table public.agencies add column if not exists contact_person_name text not null default '';
+alter table public.agencies add column if not exists categories text[] not null default '{}';
+alter table public.agencies add column if not exists service_locations text[] not null default '{}';
+alter table public.agencies add column if not exists team_size_band text not null default '2-5' check (team_size_band in ('2-5','6-15','15+'));
+alter table public.agencies add column if not exists business_registration_number text;
+alter table public.agencies add column if not exists logo_url text;
+alter table public.workers add column if not exists agency_id uuid references public.agencies(id) on delete set null;
+alter table public.callback_requests add column if not exists agency_id uuid references public.agencies(id) on delete set null;
+alter table public.contact_events add column if not exists agency_id uuid references public.agencies(id) on delete set null;
+create index if not exists workers_agency_id_idx on public.workers(agency_id);
+create index if not exists callback_requests_agency_id_idx on public.callback_requests(agency_id);
+create index if not exists contact_events_agency_id_idx on public.contact_events(agency_id);
