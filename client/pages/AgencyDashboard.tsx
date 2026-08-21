@@ -1,3 +1,4 @@
+/* Agency dashboard: profile/code loading uses the authenticated agency row directly as a fallback. */
 import { useEffect, useMemo, useState } from "react";
 import { BadgeCheck, Building2, Check, Clipboard, Copy, LogOut, MapPin, Phone, Users, Wrench } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
