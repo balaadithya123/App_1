@@ -4,10 +4,14 @@ import { supabase } from "../lib/supabase.js";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
+  contactPersonName: z.string().trim().min(2).max(120),
   phone: z.string().trim().regex(/^\d{10}$/),
   email: z.string().trim().email().max(200),
-  location: z.string().trim().min(2).max(160),
-  services: z.string().trim().max(500).default(""),
+  categories: z.array(z.string().trim().min(1).max(80)).min(1).max(10),
+  serviceLocations: z.array(z.string().trim().min(1).max(120)).min(1).max(20),
+  teamSizeBand: z.enum(["2-5", "6-15", "15+"]),
+  businessRegistrationNumber: z.string().trim().max(100).optional().default(""),
+  logoUrl: z.string().url().max(1000).optional().or(z.literal("")).default(""),
   description: z.string().trim().max(2000).default(""),
 });
 
@@ -25,13 +29,11 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
   try {
     const user = await getAgencyUser(req);
     const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Please check the agency details and try again." });
-    const { data: existing } = await supabase.from("agencies").select("id,verified").eq("user_id", user.id).maybeSingle();
-    const payload = { ...parsed.data, user_id: user.id, updated_at: new Date().toISOString() };
-    const query = existing?.id
-      ? supabase.from("agencies").update(payload).eq("id", existing.id).select().single()
-      : supabase.from("agencies").insert(payload).select().single();
-    const { data, error } = await query;
+    if (!parsed.success) return res.status(400).json({ message: "Please check the agency details and try again.", errors: parsed.error.flatten().fieldErrors });
+    const { data: existing } = await supabase.from("agencies").select("id").eq("user_id", user.id).maybeSingle();
+    const { data, error } = existing?.id
+      ? await supabase.from("agencies").update({ user_id: user.id, name: parsed.data.name, contact_person_name: parsed.data.contactPersonName, phone: parsed.data.phone, email: parsed.data.email, categories: parsed.data.categories, service_locations: parsed.data.serviceLocations, location: parsed.data.serviceLocations.join(", "), team_size_band: parsed.data.teamSizeBand, business_registration_number: parsed.data.businessRegistrationNumber || null, logo_url: parsed.data.logoUrl || null, description: parsed.data.description, updated_at: new Date().toISOString() }).eq("id", existing.id).select().single()
+      : await supabase.from("agencies").insert({ user_id: user.id, name: parsed.data.name, contact_person_name: parsed.data.contactPersonName, phone: parsed.data.phone, email: parsed.data.email, categories: parsed.data.categories, service_locations: parsed.data.serviceLocations, location: parsed.data.serviceLocations.join(", "), team_size_band: parsed.data.teamSizeBand, business_registration_number: parsed.data.businessRegistrationNumber || null, logo_url: parsed.data.logoUrl || null, description: parsed.data.description }).select().single();
     if (error) throw error;
     return res.status(existing?.id ? 200 : 201).json({ agency: data });
   } catch (error) {
@@ -44,7 +46,7 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
 export const handleGetMyAgency: RequestHandler = async (req, res) => {
   try {
     const user = await getAgencyUser(req);
-    const { data, error } = await supabase.from("agencies").select("id,name,phone,email,location,services,description,verified,created_at,updated_at").eq("user_id", user.id).maybeSingle();
+    const { data, error } = await supabase.from("agencies").select("id,name,contact_person_name,phone,email,categories,service_locations,team_size_band,business_registration_number,logo_url,location,services,description,verified,created_at,updated_at").eq("user_id", user.id).maybeSingle();
     if (error) throw error;
     return res.json({ agency: data });
   } catch (error) {
