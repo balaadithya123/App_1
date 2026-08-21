@@ -10,9 +10,10 @@ BEGIN
 END;
 $$;
 
+-- Backfill every existing agency whose code is missing or invalid.
 UPDATE public.agencies
 SET agency_code = public.generate_agency_code(), regenerated_at = COALESCE(regenerated_at, now()), updated_at = now()
-WHERE agency_code IS NULL OR btrim(agency_code) = '' OR agency_code !~* '^AGN-[A-Z0-9]{4,6}$';
+WHERE agency_code IS NULL OR btrim(agency_code) = '' OR agency_code !~* '^AGN-[A-Z0-9]{4}$';
 
 ALTER TABLE public.agencies ALTER COLUMN agency_code SET DEFAULT public.generate_agency_code();
 CREATE UNIQUE INDEX IF NOT EXISTS agencies_agency_code_unique ON public.agencies (agency_code) WHERE agency_code IS NOT NULL;
