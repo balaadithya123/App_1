@@ -26,7 +26,7 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
     const user = await getAgencyUser(req);
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: "Please check the agency details and try again." });
-    const { data: existing } = await supabase.from("agencies").select("id").eq("user_id", user.id).maybeSingle();
+    const { data: existing } = await supabase.from("agencies").select("id,verified").eq("user_id", user.id).maybeSingle();
     const payload = { ...parsed.data, user_id: user.id, updated_at: new Date().toISOString() };
     const query = existing?.id
       ? supabase.from("agencies").update(payload).eq("id", existing.id).select().single()
@@ -44,7 +44,7 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
 export const handleGetMyAgency: RequestHandler = async (req, res) => {
   try {
     const user = await getAgencyUser(req);
-    const { data, error } = await supabase.from("agencies").select("id,name,phone,email,location,services,description,created_at,updated_at").eq("user_id", user.id).maybeSingle();
+    const { data, error } = await supabase.from("agencies").select("id,name,phone,email,location,services,description,verified,created_at,updated_at").eq("user_id", user.id).maybeSingle();
     if (error) throw error;
     return res.json({ agency: data });
   } catch (error) {
