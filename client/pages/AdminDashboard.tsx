@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, RefreshCw } from "lucide-react";
+import { BadgeCheck, CheckCircle2, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
 
 type EventRow = { event_type: string; created_at: string; metadata: Record<string, unknown> };
 type CallbackRow = { id: number; worker_id: string; client_name: string; client_phone: string; service_needed: string; preferred_time: string; notes: string | null; created_at: string; status: "new" | "contacted" | "closed" };
+type AgencyRow = { id: string; name: string; phone: string; email: string; location: string; services: string; verified: boolean; created_at: string };
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [workers, setWorkers] = useState(0);
   const [callbacks, setCallbacks] = useState<CallbackRow[]>([]);
+  const [agencies, setAgencies] = useState<AgencyRow[]>([]);
 
   const load = async () => {
     if (!supabase) { setLoading(false); return; }
@@ -24,15 +26,17 @@ export default function AdminDashboard() {
       if (!auth.user || auth.user.app_metadata?.is_admin !== true) { navigate("/", { replace: true }); return; }
       const since = new Date(); since.setDate(since.getDate() - 7);
       const iso = since.toISOString();
-      const [eventResult, workerResult, callbackResult] = await Promise.all([
+      const [eventResult, workerResult, callbackResult, agencyResult] = await Promise.all([
         supabase.from("analytics_events").select("event_type,created_at,metadata").gte("created_at", iso).order("created_at", { ascending: false }),
         supabase.from("workers").select("id", { count: "exact", head: true }).gte("created_at", iso),
         supabase.from("callback_requests").select("id,worker_id,client_name,client_phone,service_needed,preferred_time,notes,created_at,status").order("created_at", { ascending: false }).limit(100),
+        supabase.from("agencies").select("id,name,phone,email,location,services,verified,created_at").order("created_at", { ascending: false }).limit(100),
       ]);
-      if (eventResult.error || workerResult.error || callbackResult.error) setError("Some dashboard data could not be loaded.");
+      if (eventResult.error || workerResult.error || callbackResult.error || agencyResult.error) setError("Some dashboard data could not be loaded.");
       setEvents((eventResult.data ?? []) as EventRow[]);
       setWorkers(workerResult.count ?? 0);
       setCallbacks((callbackResult.data ?? []) as CallbackRow[]);
+      setAgencies((agencyResult.data ?? []) as AgencyRow[]);
     } catch { setError("Analytics are temporarily unavailable."); }
     finally { setLoading(false); setRefreshing(false); }
   };
@@ -62,6 +66,14 @@ export default function AdminDashboard() {
     else setCallbacks(rows => rows.map(row => row.id === id ? { ...row, status } : row));
   };
 
+  const toggleAgencyVerification = async (agency: AgencyRow) => {
+    if (!supabase) return;
+    const next = !agency.verified;
+    const { error: updateError } = await supabase.from("agencies").update({ verified: next, updated_at: new Date().toISOString() }).eq("id", agency.id);
+    if (updateError) setError("Could not update agency verification. Apply the agencies migration in Supabase first if needed.");
+    else setAgencies(rows => rows.map(row => row.id === agency.id ? { ...row, verified: next } : row));
+  };
+
   if (loading) return <PageShell hideBack hideHome><div className="rounded-[16px] border border-line bg-white p-8 text-center dark:border-white/10 dark:bg-[#151515]">Loading admin dashboard...</div></PageShell>;
 
   return <PageShell hideBack hideHome><div className="mx-auto max-w-[1000px] space-y-5">
@@ -75,6 +87,7 @@ export default function AdminDashboard() {
       <div className="rounded-[18px] border border-line bg-white p-5 dark:border-white/10 dark:bg-[#151515]"><h2 className="font-extrabold text-navy dark:text-white">Top searches</h2><div className="mt-3 space-y-2 text-sm">{stats.topSearches.length ? stats.topSearches.map(([term,total]) => <p key={term} className="flex justify-between"><span>{term}</span><strong>{total}</strong></p>) : <p className="text-slate">No search terms yet.</p>}</div></div>
     </section>
     <section className="rounded-[18px] border border-line bg-white p-5 dark:border-white/10 dark:bg-[#151515]"><h2 className="font-extrabold text-navy dark:text-white">Top categories</h2><div className="mt-3 grid gap-2 sm:grid-cols-2">{stats.topCategories.map(([category,total]) => <p key={category} className="flex justify-between rounded-lg border border-line px-3 py-2 text-sm dark:border-white/10"><span>{category}</span><strong>{total}</strong></p>)}</div></section>
+    <section className="rounded-[18px] border border-line bg-white p-5 dark:border-white/10 dark:bg-[#151515]"><h2 className="font-extrabold text-navy dark:text-white">Agency verification</h2><p className="mt-1 text-sm text-slate dark:text-slate-300">Review agencies and grant or remove the verified badge. Agencies cannot self-verify.</p><div className="mt-4 space-y-3">{agencies.map(agency => <div key={agency.id} className="rounded-[14px] border border-line p-4 dark:border-white/10"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-bold text-navy dark:text-white">{agency.name} {agency.verified&&<span className="ml-1 inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700 dark:bg-blue-950/30 dark:text-blue-300"><BadgeCheck size={13}/>Verified</span>}</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{agency.location} · {agency.phone} · {agency.email}</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{agency.services||"No services listed"}</p></div><button type="button" onClick={()=>toggleAgencyVerification(agency)} className={`rounded-lg px-3 py-2 text-xs font-bold ${agency.verified?"border border-line dark:border-white/10":"bg-navy text-white"}`}>{agency.verified?"Remove verification":"Verify agency"}</button></div></div>)}{!agencies.length&&<p className="text-sm text-slate">No agencies registered yet.</p>}</div></section>
     <section className="rounded-[18px] border border-line bg-white p-5 dark:border-white/10 dark:bg-[#151515]"><h2 className="font-extrabold text-navy dark:text-white">Callback requests</h2><div className="mt-4 space-y-3">{callbacks.map(callback => <div key={callback.id} className="rounded-[14px] border border-line p-4 dark:border-white/10"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-bold text-navy dark:text-white">{callback.client_name} · {callback.service_needed}</p><p className="mt-1 text-xs text-slate dark:text-slate-400">{callback.client_phone} · {callback.preferred_time}</p>{callback.notes && <p className="mt-2 text-sm text-slate dark:text-slate-300">{callback.notes}</p>}</div><div className="flex gap-2"><button type="button" onClick={() => updateCallbackStatus(callback.id,"contacted")} className="rounded-lg border border-line px-3 py-2 text-xs font-bold dark:border-white/10"><CheckCircle2 size={14} className="mr-1 inline"/>Contacted</button><button type="button" onClick={() => updateCallbackStatus(callback.id,"closed")} className="rounded-lg bg-navy px-3 py-2 text-xs font-bold text-white">Resolved</button></div></div><p className="mt-2 text-xs font-bold uppercase tracking-wide text-slate">Status: {callback.status}</p></div>)}{!callbacks.length && <p className="text-sm text-slate">No callback requests yet.</p>}</div></section>
   </div></PageShell>;
 }
