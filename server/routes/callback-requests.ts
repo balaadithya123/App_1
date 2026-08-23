@@ -1,7 +1,5 @@
 import type { RequestHandler } from "express";
 import { supabase } from "../lib/supabase.js";
-import { readRegisteredWorkers } from "../lib/registered-workers.js";
-import { staticWorkers } from "../../shared/workers.js";
 
 const normalizePhone = (value: unknown) => String(value || "")
   .replace(/^\+91/, "")
@@ -21,28 +19,32 @@ const getAuthenticatedWorker = async (req: Parameters<RequestHandler>[0]) => {
 export const handleGetWorkerCallbackRequests: RequestHandler = async (req, res) => {
   try {
     const user = await getAuthenticatedWorker(req);
-    const phone = normalizePhone(user.phone || user.user_metadata?.phone);
-    if (!/^\d{10}$/.test(phone)) {
-      return res.status(400).json({ message: "Your worker account does not have a valid phone number." });
+    const metadata = user.user_metadata ?? {};
+    const phone = normalizePhone(user.phone || metadata.phone);
+
+    // Email login and phone verification are intentionally decoupled. The auth
+    // user's phone can therefore be empty even though the worker profile has a
+    // verified/registered phone in metadata or in public.workers.
+    const workerIds = new Set<string>();
+    for (const candidate of [metadata.worker_id, metadata.workerId, metadata.profile_id, metadata.profileId]) {
+      if (candidate) workerIds.add(String(candidate));
+    }
+    if (phone) workerIds.add(phone);
+
+    if (phone) {
+      const { data: workers, error: workerError } = await supabase
+        .from("workers")
+        .select("id,phone")
+        .or(`phone.eq.${phone},id.eq.${phone}`);
+      if (workerError) throw workerError;
+      for (const worker of workers ?? []) {
+        workerIds.add(String(worker.id));
+        if (normalizePhone(worker.phone)) workerIds.add(normalizePhone(worker.phone));
+      }
     }
 
-    // Callback requests are keyed to the public worker profile id. Resolve the
-    // signed-in worker against both the Supabase workers table and the profile
-    // registry so older requests and newly registered workers are both included.
-    const [registeredWorkers, workerRowsResult] = await Promise.all([
-      readRegisteredWorkers(),
-      supabase.from("workers").select("id,phone").or(`phone.eq.${phone},id.eq.${phone}`),
-    ]);
-
-    const workerIds = new Set<string>([phone]);
-    for (const worker of staticWorkers) {
-      if (normalizePhone(worker.phone) === phone) workerIds.add(String(worker.id));
-    }
-    for (const worker of registeredWorkers) {
-      if (normalizePhone(worker.phone) === phone) workerIds.add(String(worker.id));
-    }
-    for (const worker of workerRowsResult.data ?? []) {
-      if (normalizePhone(worker.phone) === phone || String(worker.id) === phone) workerIds.add(String(worker.id));
+    if (workerIds.size === 0) {
+      return res.json({ requests: [] });
     }
 
     const { data, error } = await supabase
@@ -56,6 +58,7 @@ export const handleGetWorkerCallbackRequests: RequestHandler = async (req, res) 
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
     const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    console.error("[callback-requests] worker load failed:", error);
     return res.status(status).json({
       message: status === 500 ? (error instanceof Error ? error.message : "Unable to load callback requests.") : "Your login session is invalid or expired.",
     });
