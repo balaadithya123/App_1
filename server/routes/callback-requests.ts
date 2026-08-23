@@ -27,25 +27,23 @@ export const handleGetWorkerCallbackRequests: RequestHandler = async (req, res) 
     const name = normalizeName(metadata.name || metadata.full_name || metadata.fullName);
     const workerIds = new Set<string>();
 
-    // Email login and phone verification are intentionally decoupled. Resolve the
-    // actual worker record first, then use its real id when querying callback_requests.
     for (const candidate of [metadata.worker_id, metadata.workerId, metadata.profile_id, metadata.profileId]) {
       if (candidate) workerIds.add(String(candidate));
     }
 
+    // The callback_requests.worker_id column is text and existing worker records
+    // use the worker's phone as the canonical id. Keep that direct phone id even
+    // if the workers table lookup is blocked by RLS or returns no row.
+    if (phone) workerIds.add(phone);
+
     if (phone) {
-      const { data: workers, error: workerError } = await supabase
+      const { data: workers } = await supabase
         .from("workers")
         .select("id,phone")
         .eq("phone", phone);
-      if (workerError) throw workerError;
-      for (const worker of workers ?? []) {
-        workerIds.add(String(worker.id));
-      }
+      for (const worker of workers ?? []) workerIds.add(String(worker.id));
     }
 
-    // Some registered workers live in the app's registered-worker store rather
-    // than public.workers. Match those records by the verified phone or exact name.
     const allWorkers = await getAllWorkers();
     for (const worker of allWorkers) {
       if ((phone && normalizePhone(worker.phone) === phone) || (name && normalizeName(worker.name) === name)) {
