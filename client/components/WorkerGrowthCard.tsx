@@ -35,7 +35,7 @@ export default function WorkerGrowthCard() {
 
   const inviteLink = referralCode ? `${window.location.origin}/join?ref=${encodeURIComponent(referralCode)}` : "";
 
-  return <div className="grid gap-4 sm:grid-cols-2">
+  return <div className={`grid gap-4 ${verified && referralCode ? "sm:grid-cols-2" : "grid-cols-1"}`}>
     <section className="rounded-[16px] border border-black/10 bg-white/70 p-4 dark:border-white/10 dark:bg-white/[0.055]">
       <p className="text-xs font-bold uppercase tracking-wide text-slate dark:text-slate-400">Your profile reach</p>
       <p className="mt-1 text-2xl font-extrabold text-navy dark:text-white">{views}</p>
