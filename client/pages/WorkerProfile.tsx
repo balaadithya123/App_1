@@ -24,7 +24,7 @@ export default function WorkerProfile() {
 
   useEffect(()=>{setSaved(requestedWorkerId?getSavedWorkerIds().includes(requestedWorkerId):false)},[requestedWorkerId]);
   useEffect(()=>{let mounted=true;fetch("/api/workers",{cache:"no-store"}).then(async r=>{if(!r.ok)throw new Error();return r.json() as Promise<WorkersResponse>}).then(data=>{if(mounted)setAvailableWorkers(data.workers)}).catch(()=>{});return()=>{mounted=false}},[]);
-  useEffect(()=>{if(worker?.id){addRecentlyViewedWorker(worker.id);void logAnalyticsEvent("profile_view",worker.id)}},[worker?.id]);
+  useEffect(()=>{if(worker?.id){addRecentlyViewedWorker(worker.id);void logAnalyticsEvent("profile_view",worker.id);void fetch("/api/profile-view",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({workerId:worker.id})}).catch(()=>{})}},[worker?.id]);
 
   if(!worker)return <PageShell backTo="/search" backLabel="Search results"><section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 dark:border-white/10 dark:bg-[#151515] sm:px-8 sm:py-9"><h1 className="text-[27px] font-extrabold tracking-[-0.04em] text-navy dark:text-white">Worker profile unavailable</h1><p className="mt-2 text-[14px] leading-6 text-slate dark:text-slate-300">We could not find that worker profile.</p></section></PageShell>;
 
