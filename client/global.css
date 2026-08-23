@@ -5,17 +5,17 @@
 @layer base {
   :root {
     --background: 30 7% 98%; --foreground: 20 15% 10%; --card: 0 0% 100%; --card-foreground: 20 15% 10%;
-    --popover: 0 0% 100%; --popover-foreground: 20 15% 10%; --primary: 18 89% 40%; --primary-foreground: 0 0% 100%;
+    --popover: 0 0% 100%; --popover-foreground: 20 15% 10%; --primary: 18 82% 38%; --primary-foreground: 0 0% 100%;
     --secondary: 30 6% 94%; --secondary-foreground: 20 15% 10%; --muted: 30 6% 94%; --muted-foreground: 24 6% 35%;
-    --accent: 18 89% 40%; --accent-foreground: 0 0% 100%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%;
-    --border: 30 6% 88%; --input: 30 6% 88%; --ring: 18 89% 40%; --radius: 0.5rem;
+    --accent: 18 82% 38%; --accent-foreground: 0 0% 100%; --destructive: 0 84.2% 60.2%; --destructive-foreground: 0 0% 98%;
+    --border: 30 6% 88%; --input: 30 6% 88%; --ring: 18 82% 38%; --radius: 0.5rem;
   }
   .dark {
     --background: 0 0% 7%; --foreground: 0 0% 92%; --card: 0 0% 10%; --card-foreground: 0 0% 92%;
-    --popover: 0 0% 10%; --popover-foreground: 0 0% 92%; --primary: 15 58% 59%; --primary-foreground: 0 0% 100%;
+    --popover: 0 0% 10%; --popover-foreground: 0 0% 92%; --primary: 15 55% 55%; --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 11%; --secondary-foreground: 0 0% 92%; --muted: 0 0% 12%; --muted-foreground: 0 0% 68%;
-    --accent: 16 90% 50%; --accent-foreground: 0 0% 100%; --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 96%;
-    --border: 0 0% 18%; --input: 0 0% 18%; --ring: 15 58% 59%;
+    --accent: 16 86% 48%; --accent-foreground: 0 0% 100%; --destructive: 0 62.8% 30.6%; --destructive-foreground: 0 0% 96%;
+    --border: 0 0% 18%; --input: 0 0% 18%; --ring: 15 55% 55%;
   }
   * { @apply border-border; }
   html, body, #root { min-height: 100%; }
@@ -41,20 +41,20 @@
   html.dark [class*="bg-[#fbfcfc]"], html.dark [class*="bg-[#f4f4f4]"], html.dark [class*="bg-[#f0f2f2]"], html.dark [class*="bg-[#edf7f3]"], html.dark [class*="bg-[#eef8f5]"], html.dark [class*="bg-[#eef6f7]"], html.dark [class*="bg-[#f5f1f8]"], html.dark [class*="bg-[#f5f6f4]"], html.dark [class*="bg-[#f8f5ed]"], html.dark [class*="bg-[#f0f6fa]"] { background-color: #1A1A1A !important; }
   html.dark [class*="border-[#dcece7]"], html.dark [class*="border-[#cfe5df]"] { border-color: #2A2A2A !important; }
   html.dark .bg-white\/50, html.dark .bg-white\/60, html.dark .bg-white\/70, html.dark .bg-white\/80, html.dark .bg-white\/90 { background-color: rgba(255,255,255,.06) !important; }
-  html.dark .text-green-500, html.dark .text-green-600, html.dark .text-green-700, html.dark .text-emerald-500, html.dark .text-emerald-600, html.dark .text-emerald-700, html.dark .text-teal { color: #D97757 !important; }
-  html.dark .bg-green-50, html.dark .bg-green-100, html.dark .bg-emerald-50, html.dark .bg-emerald-100, html.dark .bg-teal { background-color: rgba(217,119,87,.14) !important; }
-  html.dark .border-green-200, html.dark .border-green-300, html.dark .border-emerald-200, html.dark .border-emerald-300, html.dark .border-teal { border-color: #C15F3C !important; }
+  html.dark .text-green-500, html.dark .text-green-600, html.dark .text-green-700, html.dark .text-emerald-500, html.dark .text-emerald-600, html.dark .text-emerald-700, html.dark .text-teal { color: #C96B4B !important; }
+  html.dark .bg-green-50, html.dark .bg-green-100, html.dark .bg-emerald-50, html.dark .bg-emerald-100, html.dark .bg-teal { background-color: rgba(201,107,75,.14) !important; }
+  html.dark .border-green-200, html.dark .border-green-300, html.dark .border-emerald-200, html.dark .border-emerald-300, html.dark .border-teal { border-color: #B85C3F !important; }
 
   /* Light mode: explicitly scope legacy palette cleanup to html without .dark. */
   html:not(.dark) [class*="bg-[#edf7f3]"], html:not(.dark) [class*="bg-[#eef8f5]"], html:not(.dark) [class*="bg-[#eef6f7]"], html:not(.dark) [class*="bg-[#f5f1f8]"], html:not(.dark) [class*="bg-[#f5f6f4]"], html:not(.dark) [class*="bg-[#f8f5ed]"], html:not(.dark) [class*="bg-[#f0f6fa]"] { background-color: #FFFFFF !important; }
   html:not(.dark) [class*="bg-[#f8faf9]"] { background-color: #FAFAF9 !important; }
   html:not(.dark) [class*="border-[#dcece7]"], html:not(.dark) [class*="border-[#cfe5df]"] { border-color: #E7E5E4 !important; }
-  html:not(.dark) .text-teal, html:not(.dark) [class*="text-teal"] { color: #C2410C !important; }
-  html:not(.dark) .bg-teal, html:not(.dark) [class*="bg-teal"] { background-color: #C2410C !important; }
-  html:not(.dark) .border-teal, html:not(.dark) [class*="border-teal"] { border-color: #C2410C !important; }
-  html:not(.dark) .ring-teal, html:not(.dark) [class*="ring-teal"] { --tw-ring-color: #C2410C !important; }
-  html:not(.dark) .fill-teal, html:not(.dark) [class*="fill-teal"] { fill: #C2410C !important; }
-  html:not(.dark) .stroke-teal, html:not(.dark) [class*="stroke-teal"] { stroke: #C2410C !important; }
+  html:not(.dark) .text-teal, html:not(.dark) [class*="text-teal"] { color: #B94E18 !important; }
+  html:not(.dark) .bg-teal, html:not(.dark) [class*="bg-teal"] { background-color: #B94E18 !important; }
+  html:not(.dark) .border-teal, html:not(.dark) [class*="border-teal"] { border-color: #B94E18 !important; }
+  html:not(.dark) .ring-teal, html:not(.dark) [class*="ring-teal"] { --tw-ring-color: #B94E18 !important; }
+  html:not(.dark) .fill-teal, html:not(.dark) [class*="fill-teal"] { fill: #B94E18 !important; }
+  html:not(.dark) .stroke-teal, html:not(.dark) [class*="stroke-teal"] { stroke: #B94E18 !important; }
 
   body, #root { background-image: none !important; }
   .contact-glass { background: rgba(255,255,255,.045) !important; border: 1px solid rgba(255,255,255,.28) !important; color: #f1f3f2 !important; }
