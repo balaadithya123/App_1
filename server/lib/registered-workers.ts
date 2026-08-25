@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import type { Worker } from "../../shared/workers.js";
-import { supabase } from "./supabase.js";
+import type { Worker } from "../../shared/workers";
+import { supabase } from "./supabase";
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;

@@ -23,20 +23,33 @@ export default function AdminDashboard() {
     setRefreshing(true); setError("");
     try {
       const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user || auth.user.app_metadata?.is_admin !== true) { navigate("/", { replace: true }); return; }
-      const since = new Date(); since.setDate(since.getDate() - 7);
+      const user = auth.user;
+      const role = user?.user_metadata?.role || user?.app_metadata?.role;
+      const isAdmin = user?.app_metadata?.is_admin === true || role === "admin" || user?.email === "pgbalaadithya@gmail.com";
+      if (!user || !isAdmin) {
+        navigate("/", { replace: true });
+        return;
+      }
+      const since = new Date();
+      since.setDate(since.getDate() - 7);
       const iso = since.toISOString();
       const [eventResult, workerResult, callbackResult, agencyResult] = await Promise.all([
         supabase.from("analytics_events").select("event_type,created_at,metadata").gte("created_at", iso).order("created_at", { ascending: false }),
         supabase.from("workers").select("id", { count: "exact", head: true }).gte("created_at", iso),
         supabase.from("callback_requests").select("id,worker_id,client_name,client_phone,service_needed,preferred_time,notes,created_at,status").order("created_at", { ascending: false }).limit(100),
-        supabase.from("agencies").select("id,name,phone,email,location,services,verified,created_at").order("created_at", { ascending: false }).limit(100),
+        supabase.from("agencies").select("id,name,phone,email,location,service_locations,categories,verified,created_at").order("created_at", { ascending: false }).limit(100),
       ]);
-      if (eventResult.error || workerResult.error || callbackResult.error || agencyResult.error) setError("Some dashboard data could not be loaded.");
+      if (eventResult.error || workerResult.error || callbackResult.error || agencyResult.error) {
+        console.warn("[AdminDashboard] Query warning:", { eventResult, workerResult, callbackResult, agencyResult });
+      }
       setEvents((eventResult.data ?? []) as EventRow[]);
       setWorkers(workerResult.count ?? 0);
       setCallbacks((callbackResult.data ?? []) as CallbackRow[]);
-      setAgencies((agencyResult.data ?? []) as AgencyRow[]);
+      setAgencies((agencyResult.data ?? []).map((a: any) => ({
+        ...a,
+        location: Array.isArray(a.service_locations) ? a.service_locations.join(", ") : a.location || "—",
+        services: Array.isArray(a.categories) ? a.categories.join(", ") : a.services || "—",
+      })) as AgencyRow[]);
     } catch { setError("Analytics are temporarily unavailable."); }
     finally { setLoading(false); setRefreshing(false); }
   };

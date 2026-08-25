@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { supabase } from "../lib/supabase.js";
+import { supabase } from "../lib/supabase";
 
 export const handleCompletePhoneVerification: RequestHandler = async (req, res) => {
   try {

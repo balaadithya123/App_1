@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import { supabase } from "../lib/supabase.js";
-import { getAllWorkers } from "./workers.js";
+import { supabase } from "../lib/supabase";
+import { getAllWorkers } from "./workers";
 
 const normalizePhone = (value: unknown) => String(value || "")
   .replace(/^\+91/, "")
@@ -31,9 +31,6 @@ export const handleGetWorkerCallbackRequests: RequestHandler = async (req, res) 
       if (candidate) workerIds.add(String(candidate));
     }
 
-    // The callback_requests.worker_id column is text and existing worker records
-    // use the worker's phone as the canonical id. Keep that direct phone id even
-    // if the workers table lookup is blocked by RLS or returns no row.
     if (phone) workerIds.add(phone);
 
     if (phone) {
@@ -70,3 +67,49 @@ export const handleGetWorkerCallbackRequests: RequestHandler = async (req, res) 
     });
   }
 };
+
+export const handleDeleteWorkerCallbackRequest: RequestHandler = async (req, res) => {
+  try {
+    await getAuthenticatedWorker(req);
+    const id = req.params.id;
+    if (!id) return res.status(400).json({ message: "Callback ID is required." });
+
+    const { error } = await supabase
+      .from("callback_requests")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+    return res.json({ success: true, message: "Callback request deleted." });
+  } catch (error) {
+    const code = error instanceof Error ? error.message : "";
+    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res.status(status).json({
+      message: error instanceof Error ? error.message : "Unable to delete callback request.",
+    });
+  }
+};
+
+export const handleUpdateWorkerCallbackStatus: RequestHandler = async (req, res) => {
+  try {
+    await getAuthenticatedWorker(req);
+    const id = req.params.id;
+    const { status } = req.body;
+    if (!id) return res.status(400).json({ message: "Callback ID is required." });
+
+    const { error } = await supabase
+      .from("callback_requests")
+      .update({ status })
+      .eq("id", id);
+
+    if (error) throw error;
+    return res.json({ success: true, message: "Callback status updated." });
+  } catch (error) {
+    const code = error instanceof Error ? error.message : "";
+    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res.status(status).json({
+      message: error instanceof Error ? error.message : "Unable to update callback request.",
+    });
+  }
+};
+

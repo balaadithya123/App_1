@@ -6,8 +6,9 @@ import { createServer } from "./server";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8080,
+    host: "0.0.0.0",
+    port: 3000,
+    allowedHosts: true,
     fs: {
       allow: ["./client", "./shared", "index.html"],
       deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
@@ -18,10 +19,21 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [react(), expressPlugin()],
   resolve: {
+    dedupe: ["react", "react-dom", "react-router-dom"],
     alias: {
       "@": path.resolve(__dirname, "./client"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
+  },
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react-router-dom",
+      "lucide-react",
+      "@tanstack/react-query",
+    ],
   },
 }));
 

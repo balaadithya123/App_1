@@ -1,0 +1,10 @@
+{
+  "name": "Local Worker Discovery",
+  "description": "Platform for discovering, contacting, and managing local workers and agencies with AI requirements assistant and Google Maps location registration.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

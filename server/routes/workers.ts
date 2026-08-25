@@ -1,9 +1,9 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
-import type { ApiErrorResponse, WorkerRegistrationSuccessResponse, WorkersResponse } from "../../shared/api.js";
-import { staticWorkers, type Worker } from "../../shared/workers.js";
-import { readRegisteredWorkers, saveRegisteredWorker, updateWorkerPhotoByPhone, updateWorkerProfileByPhone } from "../lib/registered-workers.js";
-import { supabase } from "../lib/supabase.js";
+import type { ApiErrorResponse, WorkerRegistrationSuccessResponse, WorkersResponse } from "../../shared/api";
+import { staticWorkers, type Worker } from "../../shared/workers";
+import { readRegisteredWorkers, saveRegisteredWorker, updateWorkerPhotoByPhone, updateWorkerProfileByPhone } from "../lib/registered-workers";
+import { supabase } from "../lib/supabase";
 
 export const workerRegistrationSchema = z.object({ id: z.string().trim().optional(), fullName: z.string().trim().min(1, "Full name is required"), phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"), category: z.string().trim().min(1, "Work category is required"), location: z.string().trim().min(1, "Location is required"), experience: z.string().trim().min(1, "Years of experience is required"), services: z.string().trim().min(1, "Services offered is required"), about: z.string().trim().min(1, "About you is required") });
 type WorkerRegistration = z.infer<typeof workerRegistrationSchema>;

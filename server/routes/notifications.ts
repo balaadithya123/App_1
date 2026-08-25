@@ -1,7 +1,7 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
-import { supabase } from "../lib/supabase.js";
-import type { ApiErrorResponse } from "../../shared/api.js";
+import { supabase } from "../lib/supabase";
+import type { ApiErrorResponse } from "../../shared/api";
 
 const tokenUser = async (req: Parameters<RequestHandler>[0]) => {
   const authorization = req.headers.authorization;

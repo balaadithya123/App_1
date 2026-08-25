@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
-import { supabase } from "../lib/supabase.js";
+import { supabase } from "../lib/supabase";
 
 const referralSchema = z.object({ workerId: z.string().trim().min(1), referralSource: z.string().trim().max(200).min(1) });
 

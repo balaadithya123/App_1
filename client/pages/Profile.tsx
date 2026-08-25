@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Check, Edit3, ImagePlus, LogOut, Trash2, UserRound, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
 
@@ -8,7 +8,31 @@ type ProfileData = { name: string; phone: string; category: string; location: st
 const emptyProfile: ProfileData = { name: "", phone: "", category: "", location: "", experience: "", services: "", about: "", avatar_url: "" };
 
 export default function Profile() {
-  const navigate = useNavigate(); const [loading,setLoading]=useState(true); const [user,setUser]=useState<any>(null); const [editing,setEditing]=useState(false); const [saving,setSaving]=useState(false); const [message,setMessage]=useState(""); const [error,setError]=useState(""); const [profile,setProfile]=useState<ProfileData>(emptyProfile); const [draft,setDraft]=useState<ProfileData>(emptyProfile); const [email,setEmail]=useState(""); const [draftEmail,setDraftEmail]=useState(""); const [otp,setOtp]=useState(""); const [pendingContact,setPendingContact]=useState<"email"|"phone"|null>(null); const [pendingValue,setPendingValue]=useState(""); const [deleteOpen,setDeleteOpen]=useState(false); const [deleting,setDeleting]=useState(false); const [uploading,setUploading]=useState(false);
+  const navigate = useNavigate();
+  const locationState = useLocation();
+  const [loading,setLoading]=useState(true);
+  const [user,setUser]=useState<any>(null);
+  const [editing,setEditing]=useState(false);
+  const [saving,setSaving]=useState(false);
+  const [message,setMessage]=useState("");
+  const [error,setError]=useState("");
+  const [profile,setProfile]=useState<ProfileData>(emptyProfile);
+  const [draft,setDraft]=useState<ProfileData>(emptyProfile);
+  const [email,setEmail]=useState("");
+  const [draftEmail,setDraftEmail]=useState("");
+  const [otp,setOtp]=useState("");
+  const [pendingContact,setPendingContact]=useState<"email"|"phone"|null>(null);
+  const [pendingValue,setPendingValue]=useState("");
+  const [deleteOpen,setDeleteOpen]=useState(false);
+  const [deleting,setDeleting]=useState(false);
+  const [uploading,setUploading]=useState(false);
+
+  useEffect(() => {
+    if (locationState.state && (locationState.state as any).edit) {
+      setEditing(true);
+    }
+  }, [locationState.state]);
+
   const role=useMemo(()=>user?.user_metadata?.role==="worker"?"Worker":user?.user_metadata?.role==="employer"?"Employer":"Member",[user]); const isWorker=role==="Worker";
   useEffect(()=>{if(!supabase){setLoading(false);return;} supabase.auth.getUser().then(({data})=>{setUser(data.user??null);if(data.user){const m=data.user.user_metadata??{};const rawPhone=m.phone||data.user.phone||"";const normalizedPhone=rawPhone.replace(/^\+91/,'').replace(/\D/g,"").slice(-10);const next={name:m.name||"",phone:normalizedPhone,category:m.category||"",location:m.location||"",experience:m.experience||"",services:m.services||"",about:m.about||"",avatar_url:m.avatar_url||""};setProfile(next);setDraft(next);setEmail(data.user.email||"");setDraftEmail(data.user.email||"");}setLoading(false);});const{data:listener}=supabase.auth.onAuthStateChange((_event,session)=>{setUser(session?.user??null);if(!session)navigate("/",{replace:true});});return()=>listener.subscription.unsubscribe();},[navigate]);
   const uploadPhoto=async(file:File)=>{if(!supabase||!user)return;setError("");setMessage("");if(!file.type.startsWith("image/")){setError("Please choose an image file.");return;}if(file.size>5*1024*1024){setError("Profile photo must be 5 MB or smaller.");return;}setUploading(true);try{const ext=file.name.split(".").pop()?.toLowerCase()||"jpg";const path=`${user.id}/profile.${ext}`;const{error:uploadError}=await supabase.storage.from("avatars").upload(path,file,{upsert:true,contentType:file.type,cacheControl:"3600"});if(uploadError)throw uploadError;const{data}=supabase.storage.from("avatars").getPublicUrl(path);const avatarUrl=`${data.publicUrl}?v=${Date.now()}`;const{error:updateError}=await supabase.auth.updateUser({data:{...user.user_metadata,avatar_url:avatarUrl}});if(updateError)throw updateError;const next={...profile,avatar_url:avatarUrl};setProfile(next);setDraft(next);setUser((u:any)=>u?{...u,user_metadata:{...u.user_metadata,avatar_url:avatarUrl}}:u);setMessage("Profile photo updated.");}catch(e){setError(e instanceof Error?e.message:"Unable to upload profile photo.");}finally{setUploading(false);}};
