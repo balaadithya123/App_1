@@ -1,6 +1,6 @@
 {
   "installCommand": "npm install",
-  "buildCommand": "npm run build:client",
+  "buildCommand": "npm run build:client && npm run build:vercel-server",
   "outputDirectory": "dist/spa",
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
