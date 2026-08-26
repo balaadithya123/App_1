@@ -1,16 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { createServer } from "../server/index";
 
-// Load the Express application lazily so Vercel can return the real module/runtime
-// error instead of failing the function during module initialization.
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  try {
-    const { createServer } = await import("../server");
-    const app = createServer();
-    return app(req, res);
-  } catch (error) {
-    console.error("[vercel-api] function initialization failed:", error);
-    return res.status(500).json({
-      message: error instanceof Error ? error.message : "Vercel API initialization failed.",
-    });
-  }
+// Keep the server import static so Vercel's ESM bundler resolves and includes
+// the TypeScript server module instead of trying to resolve /var/task/server
+// as a runtime directory import.
+const app = createServer();
+
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  return app(req, res);
 }
