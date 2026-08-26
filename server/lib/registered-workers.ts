@@ -13,19 +13,20 @@ const toWorker = (row: unknown): Worker => persistedWorkerSchema.parse(row) as W
 const workerSelect = "id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at,available_today,away_from,away_until,urgent_today,agency_id";
 
 export const readRegisteredWorkers = async (): Promise<Worker[]> => {
-  // Prefer the server client, but fall back to the public Supabase client. This is
-  // important on Vercel where server-only Supabase variables can be missing while
-  // the public VITE Supabase configuration is correctly present. Worker directory
-  // reads are intentionally public and protected by the database's SELECT policy.
   const primary = await supabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
-  if (!primary.error) return persistedWorkersSchema.parse(primary.data ?? []).map(toWorker);
+  const primaryWorkers = !primary.error ? persistedWorkersSchema.parse(primary.data ?? []).map(toWorker) : [];
 
+  // If Vercel's server-side variables point at an empty/old Supabase project,
+  // a successful zero-row response must still fall through to the public client.
   if (publicSupabase) {
     const fallback = await publicSupabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
-    if (!fallback.error) return persistedWorkersSchema.parse(fallback.data ?? []).map(toWorker);
-    throw new Error(`Unable to load workers from Supabase: ${fallback.error.message}`);
+    if (!fallback.error) {
+      const publicWorkers = persistedWorkersSchema.parse(fallback.data ?? []).map(toWorker);
+      if (publicWorkers.length > 0 || primaryWorkers.length === 0) return publicWorkers;
+    }
   }
 
+  if (!primary.error) return primaryWorkers;
   throw new Error(`Unable to load workers from Supabase: ${primary.error.message}`);
 };
 
