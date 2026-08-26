@@ -1,45 +1,660 @@
 import { useCallback, useEffect, useState } from "react";
-import { BadgeCheck, Building2, Heart, MapPin, Search as SearchIcon, Users, UserRound } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import {
+  MapPin,
+  Search as SearchIcon,
+  Heart,
+  SlidersHorizontal,
+  BadgeCheck,
+  Building2,
+  Users,
+  MessageCircle,
+  Clock,
+  Sparkles,
+  ArrowRight,
+  UserRound,
+} from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse } from "@shared/api";
+import { filterWorkers } from "@/lib/search";
 import { getSavedWorkerIds, toggleSavedWorker } from "@/lib/favorites";
 import { logAnalyticsEvent } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
 
 const categories = ["All", "Electrician", "Painter", "Plumber", "Carpenter", "Cleaner", "AC Repair", "Other"];
-const normalizeText = (v: unknown) => String(v ?? "").trim().toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
-const stemWord = (word: string) => { const w = normalizeText(word); if (w.endsWith("ians") || w.endsWith("ian")) return w.replace(/ians?$/, ""); if (w.endsWith("ers") || w.endsWith("er")) return w.replace(/ers?$/, ""); if (w.endsWith("ors") || w.endsWith("or")) return w.replace(/ors?$/, ""); if (w.endsWith("ing")) return w.replace(/ing$/, ""); if (w.endsWith("s") && w.length > 3) return w.slice(0, -1); return w; };
-const aliases: Record<string,string[]> = { electrician:["electrician","electrical","electric works"], painter:["painter","painting","paint"], plumber:["plumber","plumbing"], carpenter:["carpenter","carpentry","woodwork"], cleaner:["cleaner","cleaning","house cleaning","deep cleaning"], "ac repair":["ac repair","ac service","air conditioner","air conditioning","hvac"] };
-const categoryMatches = (value: unknown, query: unknown) => { const v=normalizeText(value), q=normalizeText(query); if(!v||!q)return false; if(v===q||v.includes(q)||q.includes(v)||stemWord(v)===stemWord(q))return true; const a=aliases[q]||[]; return a.some(x=>normalizeText(x)===v||normalizeText(x).includes(v)||v.includes(normalizeText(x))) || Object.values(aliases).some(xs=>xs.some(x=>normalizeText(x)===v)&&xs.some(x=>normalizeText(x)===q)); };
-const standardCategory = (value:string) => { if(!value||normalizeText(value)==="all")return "All"; return categories.find(c=>categoryMatches(c,value)) || value; };
 
-type Agency={id:string;name:string;phone?:string;categories:string[];service_locations:string[];location?:string;team_size_band:string;logo_url?:string|null;description:string;verified:boolean;worker_count:number};
-type SearchType="all"|"workers"|"agencies";
+const stemWord = (word: string) => {
+  const w = word.trim().toLowerCase();
+  if (w.endsWith("ians") || w.endsWith("ian")) return w.replace(/ians?$/, "");
+  if (w.endsWith("ers") || w.endsWith("er")) return w.replace(/ers?$/, "");
+  if (w.endsWith("ors") || w.endsWith("or")) return w.replace(/ors?$/, "");
+  if (w.endsWith("ing")) return w.replace(/ing$/, "");
+  if (w.endsWith("s") && w.length > 3) return w.slice(0, -1);
+  return w;
+};
 
-export default function SearchResults(){
- const [params,setParams]=useSearchParams();
- const rawType=params.get("type")?.toLowerCase();
- const [searchType,setSearchType]=useState<SearchType>(rawType==="agencies"?"agencies":rawType==="workers"?"workers":"all");
- const requestedService=params.get("service")?.trim()||"";
- const requestedLocation=params.get("location")?.trim()||"";
- const [workers,setWorkers]=useState<Worker[]>(staticWorkers); const [agencies,setAgencies]=useState<Agency[]>([]); const [saved,setSaved]=useState(getSavedWorkerIds); const [category,setCategory]=useState(standardCategory(requestedService)); const [locality,setLocality]=useState(requestedLocation);
- useEffect(()=>{const t=params.get("type")?.toLowerCase();setSearchType(t==="agencies"?"agencies":t==="workers"?"workers":"all");setCategory(standardCategory(params.get("service")?.trim()||""));setLocality(params.get("location")?.trim()||"");},[params]);
- const load=useCallback(async()=>{try{const r=await fetch(`/api/workers?availability_refresh=${Date.now()}`,{cache:"no-store"});if(r.ok)setWorkers(((await r.json()) as WorkersResponse).workers);}catch{} try{const session=(await supabase?.auth.getSession())?.data.session;const headers:Record<string,string>={};if(session?.access_token)headers.Authorization=`Bearer ${session.access_token}`;const r=await fetch(`/api/agencies?_=${Date.now()}`,{headers,cache:"no-store"}).catch(()=>null);if(r?.ok){const data=(await r.json())?.agencies||[];setAgencies(data.map((a:Agency)=>({...a,categories:Array.isArray(a.categories)?a.categories:[String(a.categories||"")],service_locations:Array.isArray(a.service_locations)?a.service_locations:[String(a.service_locations||a.location||"")]})));}}catch{}},[]);
- useEffect(()=>{void load();const i=window.setInterval(()=>void load(),10000);return()=>window.clearInterval(i)},[load]);
- useEffect(()=>{const f=()=>setSaved(getSavedWorkerIds());window.addEventListener("saved-workers-changed",f);return()=>window.removeEventListener("saved-workers-changed",f)},[]);
- useEffect(()=>{void logAnalyticsEvent("search_performed",null,{search_term:requestedService,location:requestedLocation,type:searchType})},[requestedService,requestedLocation,searchType]);
- const targetCategory=category!=="All"?category:requestedService; const targetLocation=locality.trim()||requestedLocation.trim();
- const matchingWorkers=workers.filter(w=>{const searchable=[w.category,...(w.services||[]),w.about,w.name].join(" ");return(!targetCategory||categoryMatches(searchable,targetCategory))&&(!targetLocation||normalizeText(w.locality).includes(normalizeText(targetLocation)))});
- const matchingAgencies=agencies.filter(a=>{const searchable=[a.name,...(a.categories||[]),a.description].join(" ");return(!targetCategory||categoryMatches(searchable,targetCategory))&&(!targetLocation||((a.service_locations||[]).some(l=>normalizeText(l).includes(normalizeText(targetLocation)))||(a.location&&normalizeText(a.location).includes(normalizeText(targetLocation)))))});
- const changeType=(type:SearchType)=>{setSearchType(type);const p=new URLSearchParams(params);if(type==="all")p.delete("type");else p.set("type",type);setParams(p,{replace:true})};
- const changeCategory=(c:string)=>{const p=new URLSearchParams(params);if(c==="All")p.delete("service");else p.set("service",c);setParams(p,{replace:true})};
- const changeLocation=(l:string)=>{const p=new URLSearchParams(params);if(!l.trim())p.delete("location");else p.set("location",l.trim());setParams(p,{replace:true})};
- const reset=()=>setParams(new URLSearchParams(),{replace:true});
- const items:Array<{type:"worker";data:Worker}|{type:"agency";data:Agency}>=[];
- if(searchType==="workers")matchingWorkers.forEach(w=>items.push({type:"worker",data:w})); else if(searchType==="agencies")matchingAgencies.forEach(a=>items.push({type:"agency",data:a})); else {let w=0,a=0;while(w<matchingWorkers.length||a<matchingAgencies.length){if(a<matchingAgencies.length)items.push({type:"agency",data:matchingAgencies[a++]});for(let n=0;n<2&&w<matchingWorkers.length;n++)items.push({type:"worker",data:matchingWorkers[w++]});}}
- const heading=targetCategory&&targetCategory!=="All"?(searchType==="agencies"?`${targetCategory} Agencies`:searchType==="workers"?`${targetCategory} Specialists`:`${targetCategory} Listings`):targetLocation?(searchType==="agencies"?`Agencies in ${targetLocation}`:searchType==="workers"?`Workers in ${targetLocation}`:`Listings in ${targetLocation}`):(searchType==="agencies"?"Registered Agencies":searchType==="workers"?"Individual Specialists":"Verified Local Directory");
- return <PageShell backLabel="Search"><div className="mb-5 space-y-3"><div><div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Directory / {searchType}</div><h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{heading}</h1><p className="mt-1 text-xs text-muted-foreground">{items.length} available {items.length===1?"listing":"listings"} found</p></div><div className="flex flex-wrap items-center gap-2 border-y border-border py-2.5"><div className="inline-flex rounded-lg border border-border bg-secondary/50 p-0.5 text-xs"><button onClick={()=>changeType("all")} className={`rounded-md px-2.5 py-1 font-semibold ${searchType==="all"?"bg-foreground text-background":"text-muted-foreground"}`}>All ({matchingWorkers.length+matchingAgencies.length})</button><button onClick={()=>changeType("workers")} className={`rounded-md px-2.5 py-1 font-semibold ${searchType==="workers"?"bg-foreground text-background":"text-muted-foreground"}`}>Workers ({matchingWorkers.length})</button><button onClick={()=>changeType("agencies")} className={`rounded-md px-2.5 py-1 font-semibold ${searchType==="agencies"?"bg-foreground text-background":"text-muted-foreground"}`}>Agencies ({matchingAgencies.length})</button></div><select value={category} onChange={e=>changeCategory(e.target.value)} className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold">{categories.map(c=><option key={c}>{c}</option>)}</select><input value={locality} onChange={e=>{setLocality(e.target.value);changeLocation(e.target.value)}} placeholder="Filter by locality..." className="h-8 min-w-[140px] max-w-[240px] flex-1 rounded-lg border border-border bg-card px-2.5 text-xs"/>{(category!=="All"||locality||searchType!=="all")&&<button onClick={reset} className="text-xs font-semibold text-primary">Reset</button>}</div></div>
- <div className="space-y-3">{items.length===0?<div className="rounded-xl border border-border bg-card p-8 text-center"><SearchIcon className="mx-auto mb-3 text-muted-foreground" size={28}/><p className="font-semibold">No listings found</p><p className="mt-1 text-sm text-muted-foreground">Try another category or locality.</p></div>:items.map(item=>item.type==="worker"?<Link key={`worker-${item.data.id}`} to={`/worker?worker=${encodeURIComponent(item.data.id)}`} className="block rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"><div className="flex items-center gap-4"><div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary text-sm font-bold">{item.data.photo_url?<img src={item.data.photo_url} alt={item.data.name} className="h-full w-full object-cover"/>:item.data.initials}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className="font-bold">{item.data.name}</h2>{item.data.phone_verified&&<span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"><BadgeCheck size={12}/>Verified</span>}</div><p className="mt-1 text-sm font-semibold text-primary">{item.data.category}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin size={13}/>{item.data.locality}</p></div><span className="text-xs font-semibold text-primary">View profile →</span></div><div className="mt-3 flex flex-wrap gap-1.5">{(item.data.services||[]).slice(0,4).map(s=><span key={s} className="rounded-md bg-secondary px-2 py-1 text-[11px] font-medium">{s}</span>)}</div></Link>:<Link key={`agency-${item.data.id}`} to={`/agency-profile?agency=${encodeURIComponent(item.data.id)}`} className="block rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"><div className="flex items-center gap-4"><div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary">{item.data.logo_url?<img src={item.data.logo_url} alt="" className="h-full w-full object-cover"/>:<Building2 size={25} className="text-muted-foreground"/>}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className="font-bold">{item.data.name}</h2>{item.data.verified&&<span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary"><BadgeCheck size={12}/>Verified Agency</span>}</div><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin size={13}/>{(item.data.service_locations||[]).join(", ")}</p><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Users size={13}/>{item.data.team_size_band} Team Capacity</p></div><span className="text-xs font-semibold text-primary">View profile →</span></div><div className="mt-3 flex flex-wrap gap-1.5">{(item.data.categories||[]).map(c=><span key={c} className="rounded-md bg-secondary px-2 py-1 text-[11px] font-medium">{c}</span>)}</div></Link>)}</div></PageShell>;
+const matchStandardCategory = (val: string) => {
+  if (!val || val.toLowerCase() === "all") return "All";
+  const v = val.trim().toLowerCase();
+  const found = categories.find((c) => {
+    const cl = c.toLowerCase();
+    return cl === v || v.startsWith(cl.slice(0, 5)) || cl.startsWith(v.slice(0, 5)) || stemWord(cl) === stemWord(v);
+  });
+  return found || val;
+};
+
+type Agency = {
+  id: string;
+  name: string;
+  phone?: string;
+  categories: string[];
+  service_locations: string[];
+  location?: string;
+  team_size_band: string;
+  logo_url?: string | null;
+  description: string;
+  verified: boolean;
+  worker_count: number;
+};
+
+type SearchType = "all" | "workers" | "agencies";
+
+export default function SearchResults() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const rawType = searchParams.get("type")?.toLowerCase();
+  const initialType: SearchType = rawType === "agencies" ? "agencies" : rawType === "workers" ? "workers" : "all";
+
+  const requestedService = searchParams.get("service")?.trim() || "";
+  const requestedLocation = searchParams.get("location")?.trim() || "";
+
+  const [searchType, setSearchType] = useState<SearchType>(initialType);
+  const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [savedIds, setSavedIds] = useState<string[]>(getSavedWorkerIds);
+  const [category, setCategory] = useState(() => matchStandardCategory(requestedService));
+  const [locality, setLocality] = useState(requestedLocation);
+
+  // Sync state when URL params change
+  useEffect(() => {
+    const t = searchParams.get("type")?.toLowerCase();
+    if (t === "agencies" && searchType !== "agencies") setSearchType("agencies");
+    else if (t === "workers" && searchType !== "workers") setSearchType("workers");
+    else if (!t && searchType !== "all" && rawType !== "agencies" && rawType !== "workers") setSearchType("all");
+
+    const s = searchParams.get("service")?.trim() || "";
+    setCategory(matchStandardCategory(s));
+
+    const l = searchParams.get("location")?.trim() || "";
+    setLocality(l);
+  }, [searchParams]);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/workers?availability_refresh=${Date.now()}`, { cache: "no-store" });
+      if (r.ok) {
+        const d = (await r.json()) as WorkersResponse;
+        setAvailableWorkers(d.workers);
+      }
+    } catch {}
+    try {
+      const session = (await supabase?.auth.getSession())?.data.session;
+      const token = session?.access_token;
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      let clientRes: any = null;
+      if (supabase) {
+        try {
+          clientRes = await supabase
+            .from("agencies")
+            .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,created_at");
+        } catch {}
+      }
+
+      const serverRes = await fetch(`/api/agencies?_=${Date.now()}`, { headers, cache: "no-store" }).catch(() => null);
+
+      const serverAgencies = serverRes && serverRes.ok ? ((await serverRes.json())?.agencies as Agency[]) : [];
+      const clientAgencies = clientRes && !clientRes.error && Array.isArray(clientRes.data) ? (clientRes.data as Agency[]) : [];
+
+      const mergedMap = new Map<string, Agency>();
+      for (const a of serverAgencies || []) {
+        if (a?.id) mergedMap.set(a.id, a);
+      }
+      for (const a of clientAgencies || []) {
+        if (a?.id && !mergedMap.has(a.id)) {
+          mergedMap.set(a.id, {
+            ...a,
+            categories: Array.isArray(a.categories) ? a.categories : [String(a.categories || "")],
+            service_locations: Array.isArray(a.service_locations) ? a.service_locations : [String(a.service_locations || a.location || "")],
+          });
+        }
+      }
+
+      setAgencies(Array.from(mergedMap.values()));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    void load();
+    const i = window.setInterval(() => void load(), 10000);
+    return () => window.clearInterval(i);
+  }, [load]);
+
+  useEffect(() => {
+    const refresh = () => setSavedIds(getSavedWorkerIds());
+    window.addEventListener("saved-workers-changed", refresh);
+    return () => window.removeEventListener("saved-workers-changed", refresh);
+  }, []);
+
+  useEffect(() => {
+    void logAnalyticsEvent("search_performed", null, {
+      search_term: requestedService,
+      location: requestedLocation,
+      type: searchType,
+    });
+  }, [requestedService, requestedLocation, searchType]);
+
+  const handleToggleSaved = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleSavedWorker(id);
+    setSavedIds(getSavedWorkerIds());
+  };
+
+  const handleTypeChange = (newType: SearchType) => {
+    setSearchType(newType);
+    const nextParams = new URLSearchParams(searchParams);
+    if (newType === "all") {
+      nextParams.delete("type");
+    } else {
+      nextParams.set("type", newType);
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    const next = new URLSearchParams(searchParams);
+    if (newCat === "All") next.delete("service");
+    else next.set("service", newCat);
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleLocalityChange = (newLoc: string) => {
+    setLocality(newLoc);
+    const next = new URLSearchParams(searchParams);
+    if (!newLoc.trim()) next.delete("location");
+    else next.set("location", newLoc.trim());
+    setSearchParams(next, { replace: true });
+  };
+
+  const handleResetFilters = () => {
+    setCategory("All");
+    setLocality("");
+    setSearchType("all");
+    const next = new URLSearchParams();
+    setSearchParams(next, { replace: true });
+  };
+
+  const targetCategory = category !== "All" ? category : requestedService;
+  const targetLocality = locality.trim() || requestedLocation.trim();
+
+  const matchingWorkers = availableWorkers.filter((w) => {
+    const catMatched =
+      !targetCategory ||
+      targetCategory === "All" ||
+      w.category.toLowerCase() === targetCategory.toLowerCase() ||
+      w.category.toLowerCase().includes(targetCategory.toLowerCase()) ||
+      targetCategory.toLowerCase().includes(w.category.toLowerCase()) ||
+      stemWord(w.category) === stemWord(targetCategory);
+
+    const locMatched = !targetLocality || w.locality.toLowerCase().includes(targetLocality.toLowerCase());
+
+    return catMatched && locMatched;
+  });
+
+  const matchingAgencies = agencies.filter((a) => {
+    const catMatched =
+      !targetCategory ||
+      targetCategory === "All" ||
+      (a.categories || []).some((c) => {
+        const cl = String(c).toLowerCase();
+        const ql = targetCategory.toLowerCase();
+        return cl.includes(ql) || ql.includes(cl) || stemWord(cl) === stemWord(ql);
+      });
+
+    const locMatched =
+      !targetLocality ||
+      (a.service_locations || []).some((l) => String(l).toLowerCase().includes(targetLocality.toLowerCase())) ||
+      Boolean(a.location && String(a.location).toLowerCase().includes(targetLocality.toLowerCase()));
+
+    return catMatched && locMatched;
+  });
+
+  // Combine or filter strictly according to selected searchType
+  const combined: Array<{ type: "agency"; data: Agency } | { type: "worker"; data: Worker }> = [];
+
+  if (searchType === "agencies") {
+    matchingAgencies.forEach((a) => combined.push({ type: "agency", data: a }));
+  } else if (searchType === "workers") {
+    matchingWorkers.forEach((w) => combined.push({ type: "worker", data: w }));
+  } else {
+    let wi = 0,
+      ai = 0;
+    while (wi < matchingWorkers.length || ai < matchingAgencies.length) {
+      if (ai < matchingAgencies.length) combined.push({ type: "agency", data: matchingAgencies[ai++] });
+      for (let n = 0; n < 2 && wi < matchingWorkers.length; n++) {
+        combined.push({ type: "worker", data: matchingWorkers[wi++] });
+      }
+    }
+  }
+
+  const getHeading = () => {
+    if (targetCategory && targetCategory !== "All") {
+      if (searchType === "agencies") return `${targetCategory} Agencies`;
+      if (searchType === "workers") return `${targetCategory} Specialists`;
+      return `${targetCategory} Listings`;
+    }
+    if (targetLocality) {
+      if (searchType === "agencies") return `Agencies in ${targetLocality}`;
+      if (searchType === "workers") return `Workers in ${targetLocality}`;
+      return `Listings in ${targetLocality}`;
+    }
+    if (searchType === "agencies") return "Registered Agencies";
+    if (searchType === "workers") return "Individual Specialists";
+    return "Verified Local Directory";
+  };
+
+  const hasActiveFilters = category !== "All" || locality.trim() !== "" || searchType !== "all";
+
+  return (
+    <PageShell backLabel="Search">
+      {/* Streamlined Clean Header */}
+      <div className="mb-5 space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span>Directory</span>
+              <span>/</span>
+              <span>
+                {searchType === "agencies" ? "Agencies" : searchType === "workers" ? "Workers" : "All Listings"}
+              </span>
+            </div>
+            <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {getHeading()}
+            </h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {combined.length} available {combined.length === 1 ? "listing" : "listings"} found
+              {targetLocality ? ` near ${targetLocality}` : ""}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-center">
+            <Link
+              to="/saved"
+              aria-label="Saved listings"
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground transition hover:bg-secondary"
+            >
+              <Heart size={13} className={savedIds.length ? "text-primary fill-primary" : "text-muted-foreground"} />
+              <span>Saved ({savedIds.length})</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Clean Filter Controls Bar */}
+        <div className="flex flex-wrap items-center gap-2 border-y border-border py-2.5">
+          {/* Type Toggle */}
+          <div className="inline-flex rounded-lg border border-border bg-secondary/50 p-0.5 text-xs">
+            <button
+              type="button"
+              onClick={() => handleTypeChange("all")}
+              className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
+                searchType === "all"
+                  ? "bg-foreground text-background shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              All ({matchingWorkers.length + matchingAgencies.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTypeChange("workers")}
+              className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
+                searchType === "workers"
+                  ? "bg-foreground text-background shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Workers ({matchingWorkers.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTypeChange("agencies")}
+              className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
+                searchType === "agencies"
+                  ? "bg-foreground text-background shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Agencies ({matchingAgencies.length})
+            </button>
+          </div>
+
+          {/* Category Dropdown */}
+          <select
+            value={category}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            aria-label="Filter by category"
+            className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-hidden focus:border-foreground/40 cursor-pointer"
+          >
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c === "All" ? "All Categories" : c}
+              </option>
+            ))}
+          </select>
+
+          {/* Locality Input */}
+          <div className="relative flex-1 min-w-[140px] max-w-[240px]">
+            <input
+              value={locality}
+              onChange={(e) => handleLocalityChange(e.target.value)}
+              placeholder="Filter by locality..."
+              aria-label="Filter by locality"
+              className="h-8 w-full rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground/40"
+            />
+          </div>
+
+          {/* Reset Filter Button */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Available Listings Display Section */}
+      <section className="space-y-3">
+        {combined.length ? (
+          <div className="space-y-3">
+            {combined.map((item, index) =>
+              item.type === "agency" ? (
+                <AgencyCard key={`a-${item.data.id}-${index}`} agency={item.data} />
+              ) : (
+                <WorkerCard
+                  key={`w-${item.data.id}`}
+                  worker={item.data}
+                  navigate={navigate}
+                  isSaved={savedIds.includes(item.data.id)}
+                  onToggleSaved={(e) => handleToggleSaved(item.data.id, e)}
+                />
+              ),
+            )}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <p className="text-sm font-medium text-muted-foreground">
+              {searchType === "agencies"
+                ? "No registered agencies found matching your current filters."
+                : searchType === "workers"
+                  ? "No individual workers found matching your search filters."
+                  : "No workers or agencies found matching your search criteria."}
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-90 cursor-pointer"
+                >
+                  Reset Filters
+                </button>
+              )}
+              <Link
+                to="/assistant"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-4 text-xs font-semibold text-foreground transition hover:bg-primary/20 hover:text-primary"
+              >
+                <Sparkles size={13} className="text-primary" />
+                <span>Ask AI Assistant</span>
+              </Link>
+            </div>
+          </div>
+        )}
+      </section>
+    </PageShell>
+  );
 }
+
+function AgencyCard({ agency }: { agency: Agency }) {
+  const phone = String(agency.phone || "").replace(/\D/g, "");
+  const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
+
+  return (
+    <article className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/30 sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3.5 min-w-0">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary text-foreground">
+            {agency.logo_url ? (
+              <img src={agency.logo_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <Building2 size={22} className="text-muted-foreground" />
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <h3 className="text-base font-bold text-foreground truncate">{agency.name}</h3>
+              {agency.verified && (
+                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                  <BadgeCheck size={12} className="text-primary" />
+                  Verified
+                </span>
+              )}
+              <span className="rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                Agency
+              </span>
+            </div>
+
+            <p className="mt-1 text-xs font-semibold text-primary">{agency.categories.join(" · ")}</p>
+            <p className="mt-1 text-xs text-muted-foreground truncate">{agency.service_locations.join(", ")}</p>
+
+            <div className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Users size={13} />
+              <span>
+                {agency.team_size_band} Team
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-2 sm:pt-0">
+          {whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition hover:opacity-90 cursor-pointer sm:flex-initial"
+            >
+              <MessageCircle size={14} />
+              <span>WhatsApp</span>
+            </a>
+          )}
+          <Link
+            to={`/agency-profile?agency=${encodeURIComponent(agency.id)}`}
+            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary px-3.5 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background sm:flex-initial"
+          >
+            <span>View Agency</span>
+            <ArrowRight size={13} />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function WorkerCard({
+  worker,
+  navigate,
+  isSaved,
+  onToggleSaved,
+}: {
+  worker: Worker;
+  navigate: (to: string) => void;
+  isSaved: boolean;
+  onToggleSaved: (e: React.MouseEvent) => void;
+}) {
+  const photos = Array.isArray((worker as Worker & { work_photos?: string[] }).work_photos)
+    ? (worker as Worker & { work_photos?: string[] }).work_photos!.filter(Boolean)
+    : [];
+
+  const agencyLinked = Boolean(worker.agency_id);
+  const phone = String(worker.phone || "").replace(/\D/g, "");
+  const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
+
+  const isAvailableToday = (worker as any).available_today !== false;
+  const acceptsUrgent = Boolean((worker as any).accepts_urgent);
+
+  return (
+    <article className="group relative rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/30 sm:p-5">
+      {/* Top Main Section */}
+      <div className="flex items-start justify-between gap-3">
+        <div
+          onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+          className="flex flex-1 items-start gap-3.5 min-w-0 cursor-pointer"
+        >
+          {/* Avatar */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary text-sm font-bold text-foreground">
+            {worker.photo_url ? (
+              <img src={worker.photo_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span>{worker.initials}</span>
+            )}
+          </div>
+
+          {/* Info Column */}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <h3 className="truncate text-base font-bold text-foreground group-hover:text-primary transition-colors">
+                {worker.name}
+              </h3>
+              {worker.phone_verified && (
+                <span title="Verified phone">
+                  <BadgeCheck size={15} className="shrink-0 text-primary" />
+                </span>
+              )}
+            </div>
+
+            {/* Category & Experience */}
+            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-primary">{worker.category}</span>
+              {worker.experience && (
+                <>
+                  <span className="text-muted-foreground text-[10px]">·</span>
+                  <span className="text-xs text-muted-foreground">{worker.experience} exp</span>
+                </>
+              )}
+            </div>
+
+            {/* Location & Status Badges */}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+              <span className="inline-flex items-center gap-1 text-muted-foreground">
+                <MapPin size={13} className="shrink-0" />
+                <span className="truncate">{worker.locality}</span>
+              </span>
+
+              {isAvailableToday ? (
+                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  Available Today
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  <Clock size={10} />
+                  Busy
+                </span>
+              )}
+
+              {acceptsUrgent && (
+                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                  <Sparkles size={10} className="text-primary" />
+                  Urgent
+                </span>
+              )}
+
+              {agencyLinked && (
+                <span className="rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  Agency Linked
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bookmark / Save Button */}
+        <button
+          type="button"
+          onClick={onToggleSaved}
+          aria-label={isSaved ? `Remove ${worker.name} from saved` : `Save ${worker.name}`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
+        >
+          <Heart
+            size={15}
+            className={isSaved ? "text-primary fill-primary" : "text-muted-foreground"}
+          />
+        </button>
+      </div>
+
+      {/* Optional Work Photos Showcase */}
+      {photos.length > 0 && (
+        <div
+          onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+          className="mt-3.5 grid grid-cols-3 gap-2 cursor-pointer"
+        >
+          {photos.slice(0, 3).map((photo, index) => (
+            <div
+              key={`${photo}-${index}`}
+              className="relative h-20 overflow-hidden rounded-md border border-border bg-secondary"
+            >
+              <img src={photo} alt="" className="h-full w-full object-cover" />
+              {index === 2 && photos.length > 3 && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs font-bold text-white">
+                  +{photos.length - 3}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Action Buttons Row */}
+      <div className="mt-4 pt-3 border-t border-border/80 flex items-center gap-2">
+        {whatsappUrl ? (
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition hover:opacity-90 cursor-pointer"
+          >
+            <MessageCircle size={15} />
+            <span>WhatsApp</span>
+          </a>
+        ) : null}
+        <button
+          type="button"
+          onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+          className="flex-1 inline-flex h-10 items-center justify-center rounded-lg border border-border bg-secondary px-3 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
+        >
+          View Profile
+        </button>
+      </div>
+    </article>
+  );
+}
+
