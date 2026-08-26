@@ -13,9 +13,20 @@ const toWorker = (row: unknown): Worker => persistedWorkerSchema.parse(row) as W
 const workerSelect = "id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at,available_today,away_from,away_until,urgent_today,agency_id";
 
 export const readRegisteredWorkers = async (): Promise<Worker[]> => {
-  const { data, error } = await supabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
-  if (error) throw new Error(`Unable to load workers from Supabase: ${error.message}`);
-  return persistedWorkersSchema.parse(data ?? []).map(toWorker);
+  // Prefer the server client, but fall back to the public Supabase client. This is
+  // important on Vercel where server-only Supabase variables can be missing while
+  // the public VITE Supabase configuration is correctly present. Worker directory
+  // reads are intentionally public and protected by the database's SELECT policy.
+  const primary = await supabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
+  if (!primary.error) return persistedWorkersSchema.parse(primary.data ?? []).map(toWorker);
+
+  if (publicSupabase) {
+    const fallback = await publicSupabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
+    if (!fallback.error) return persistedWorkersSchema.parse(fallback.data ?? []).map(toWorker);
+    throw new Error(`Unable to load workers from Supabase: ${fallback.error.message}`);
+  }
+
+  throw new Error(`Unable to load workers from Supabase: ${primary.error.message}`);
 };
 
 const workerRow = (worker: Worker) => ({ id: worker.id, name: worker.name, phone: worker.phone, category: worker.category, locality: worker.locality, experience: worker.experience, initials: worker.initials, tone: worker.tone, about: worker.about, services: worker.services, photo_url: worker.photo_url || null, available_today: worker.available_today ?? false, away_from: worker.away_from ?? null, away_until: worker.away_until ?? null, urgent_today: worker.urgent_today ?? false, agency_id: worker.agency_id ?? null });
