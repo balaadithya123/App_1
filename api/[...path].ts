@@ -1,9 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { createServer } from "../server/index";
+import { createServer } from "../server/index.ts";
 
-// Keep the server import static so Vercel's ESM bundler resolves and includes
-// the TypeScript server module instead of trying to resolve /var/task/server
-// as a runtime directory import.
+// Explicitly reference the TypeScript module so Vercel's ESM runtime does not
+// try to resolve /var/task/server or /var/task/server/index as a filesystem path.
 const app = createServer();
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
