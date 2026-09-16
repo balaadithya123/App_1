@@ -163,7 +163,7 @@ export default function ChatAssistantPage() {
   return (
     <PageShell
       backTo="/"
-      backLabel="Home"
+      backLabel="Back"
       containerWidth="lg"
       contentPadding="px-2 sm:px-6 py-2 sm:py-4"
     >

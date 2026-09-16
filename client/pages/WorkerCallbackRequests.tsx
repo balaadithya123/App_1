@@ -256,10 +256,10 @@ export default function WorkerCallbackRequests() {
             <div>
               <button
                 type="button"
-                onClick={() => navigate("/worker-dashboard")}
+                onClick={() => (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0 ? navigate(-1) : navigate("/worker-dashboard"))}
                 className="mb-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground cursor-pointer"
               >
-                <ArrowLeft size={14} /> Back to Worker Dashboard
+                <ArrowLeft size={14} /> Back
               </button>
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-primary">

@@ -50,7 +50,7 @@ export default function Report() {
   };
 
   return (
-    <PageShell backTo="/worker" backLabel="Worker profile">
+    <PageShell backTo="/search" backLabel="Back">
       <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 sm:px-8 sm:py-9">
         <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.045em] text-navy sm:text-4xl">
           Report or Give Feedback

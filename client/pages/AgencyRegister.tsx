@@ -136,7 +136,7 @@ export default function AgencyRegister() {
   };
 
   return (
-    <PageShell backTo="/register" backLabel="Choose registration type">
+    <PageShell backTo="/register" backLabel="Back">
       <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 dark:border-white/10 dark:bg-black sm:px-8 sm:py-9">
         <div className="flex items-center gap-3">
           <Building2 size={32} className="text-navy dark:text-white" />

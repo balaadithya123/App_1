@@ -255,7 +255,7 @@ export default function PortfolioModeration() {
   return (
     <PageShell
       backTo="/"
-      backLabel="Home"
+      backLabel="Back"
       containerWidth="xl"
       className="pb-16"
     >

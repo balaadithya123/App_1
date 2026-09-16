@@ -21,6 +21,8 @@ import {
   handleGetAgencyProjects,
   handleCreateAgencyProject,
   handleDeleteAgencyProject,
+  handleGetWorkerProjects,
+  handleUpdateWorkerProjectStatus,
 } from "./routes/agencies";
 import { handleCompletePhoneVerification } from "./routes/phone-verification";
 import { handleGeocode, handleReverseGeocode } from "./routes/maps";
@@ -40,6 +42,8 @@ import {
 
 // Production runtime: Supabase credentials are supplied through Vercel environment variables; Gemini remains optional.
 export function createServer(){const app=express();app.use(cors());app.use(express.json({limit:"15mb"}));app.use(express.urlencoded({extended:true,limit:"15mb"}));app.get("/api/ping",(_req,res)=>res.json({message:process.env.PING_MESSAGE??"ping"}));app.get("/api/maps/geocode",handleGeocode);app.get("/api/maps/reverse-geocode",handleReverseGeocode);app.post("/api/chat",handleServiceChat);app.post("/api/voice-onboarding",handleVoiceOnboarding);app.post("/api/portfolio/screen",handleScreenPortfolio);app.post("/api/ranking/evaluate",handleEvaluateRanking);app.get("/api/workers",handleGetWorkers);app.post("/api/workers/register",handleRegisterWorker);app.post("/api/workers/profile",handleUpdateWorkerProfile);app.post("/api/workers/photo",handleUpdateWorkerPhoto);app.post("/api/workers/availability",handleUpdateWorkerAvailability);app.post("/api/phone-verification/complete",handleCompletePhoneVerification);app.get("/api/callback-requests",handleGetWorkerCallbackRequests);app.delete("/api/callback-requests/:id",handleDeleteWorkerCallbackRequest);app.patch("/api/callback-requests/:id",handleUpdateWorkerCallbackStatus);app.get("/api/worker-stats",handleGetWorkerStats);app.post("/api/worker-referral",handleRecordWorkerReferral);app.post("/api/notifications/watch",handleWatchWorker);app.get("/api/notifications",handleGetNotifications);app.post("/api/agencies/register",handleRegisterAgency);app.get("/api/agencies/me",handleGetMyAgency);app.get("/api/agencies/dashboard",handleGetAgencyDashboard);app.patch("/api/agencies/callbacks/:id",handleUpdateAgencyCallbackStatus);app.post("/api/agencies/regenerate-code",handleRegenerateAgencyCode);app.post("/api/agencies/join",handleJoinAgency);app.post("/api/agencies/leave",handleLeaveAgency);app.post("/api/agencies/remove-worker",handleRemoveWorkerFromAgency);app.get("/api/agencies/projects",handleGetAgencyProjects);app.post("/api/agencies/projects",handleCreateAgencyProject);app.delete("/api/agencies/projects/:id",handleDeleteAgencyProject);app.get("/api/agencies/worker-affiliation",handleGetWorkerAffiliation);app.get("/api/agencies",handleGetAgencies);
+app.get("/api/workers/projects", handleGetWorkerProjects);
+app.patch("/api/workers/projects/:id/status", handleUpdateWorkerProjectStatus);
 app.get("/api/agencies/:id",handleGetAgencyTeam);
 app.get("/api/workers/portfolio/my",handleGetMyPortfolio);
 app.get("/api/workers/:id/portfolio",handleGetWorkerPortfolio);

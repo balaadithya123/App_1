@@ -499,7 +499,7 @@ export default function VoiceOnboarding() {
   };
 
   return (
-    <PageShell backTo="/" backLabel="Home">
+    <PageShell backTo="/" backLabel="Back">
       <div className="mx-auto max-w-3xl space-y-6 pb-12">
         {/* Header with Language Selector */}
         <header className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">

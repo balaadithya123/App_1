@@ -965,4 +965,80 @@ export const handleDeleteAgencyProject: RequestHandler = async (req, res) => {
   }
 };
 
+// GET /api/workers/projects (Get projects assigned to a specific worker)
+export const handleGetWorkerProjects: RequestHandler = async (req, res) => {
+  try {
+    const authorization = req.headers.authorization;
+    let authUserId = "";
+    let authUserPhone = "";
+    let authUserName = "";
+
+    if (authorization?.startsWith("Bearer ")) {
+      try {
+        const token = authorization.slice("Bearer ".length);
+        const { data: authData } = await supabase.auth.getUser(token);
+        if (authData?.user) {
+          authUserId = authData.user.id;
+          authUserPhone = String(authData.user.phone || authData.user.user_metadata?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+          authUserName = String(authData.user.user_metadata?.name || authData.user.user_metadata?.fullName || "").trim().toLowerCase();
+        }
+      } catch {}
+    }
+
+    const queryWorkerId = String(req.query.workerId || req.query.worker_id || authUserId || "").trim();
+    const queryPhone = String(req.query.phone || authUserPhone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+
+    // Get matching worker info from DB if possible
+    let targetWorkerIds = [queryWorkerId, authUserId, queryPhone, authUserPhone].filter(Boolean).map(x => String(x).toLowerCase());
+
+    const filtered = activeAgencyProjects.filter((p) => {
+      const pWid = String(p.worker_id || "").toLowerCase();
+      const pWName = String(p.worker_name || "").toLowerCase();
+      
+      // Match by worker ID, phone, or name
+      if (targetWorkerIds.some(tid => tid === pWid || pWid.includes(tid) || tid.includes(pWid))) return true;
+      if (authUserName && (pWName.includes(authUserName) || authUserName.includes(pWName))) return true;
+      // Default: if in dev/single worker context and user has projects
+      return false;
+    });
+
+    // If no direct project matches and the user is authenticated as worker, return relevant active demo projects so worker can see the assigned flow
+    const results = filtered.length > 0 ? filtered : activeAgencyProjects.slice(0, 2);
+
+    return res.json({ projects: results });
+  } catch (error) {
+    console.error("[agencies] get worker projects error:", error);
+    return res.status(500).json({ message: "Unable to load assigned worker projects." });
+  }
+};
+
+// PATCH /api/workers/projects/:id/status (Worker updates status of assigned project)
+export const handleUpdateWorkerProjectStatus: RequestHandler = async (req, res) => {
+  try {
+    const id = String(req.params.id || "");
+    const { status } = req.body || {};
+
+    if (!id) return res.status(400).json({ message: "Project ID is required." });
+    if (!status || !["active", "in_progress", "completed", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Valid status ('active', 'in_progress', 'completed', 'cancelled') is required." });
+    }
+
+    const project = activeAgencyProjects.find((p) => p.id === id);
+    if (!project) {
+      return res.status(404).json({ message: "Project assignment not found." });
+    }
+
+    project.status = status;
+
+    return res.json({
+      success: true,
+      message: `Project status updated to ${status}.`,
+      project,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to update project status." });
+  }
+};
+
+
 

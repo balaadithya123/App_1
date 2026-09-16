@@ -126,7 +126,7 @@ export default function AgencyProfile() {
   const whatsappUrl = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hello ${agency?.name}, I found your agency on LocalWorker.`)}` : "";
 
   return (
-    <PageShell backTo="/search?type=agencies" backLabel="Search" containerWidth="md">
+    <PageShell backTo="/search?type=agencies" backLabel="Back" containerWidth="md">
       <div className="space-y-5">
         {loading ? (
           <div className="flex min-h-[300px] items-center justify-center">

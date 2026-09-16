@@ -9,6 +9,7 @@ interface PageShellProps {
   children: ReactNode;
   backTo?: string;
   backLabel?: string;
+  onBack?: () => void;
   hideBack?: boolean;
   hideHome?: boolean;
   disableBrandNavigation?: boolean;
@@ -27,8 +28,9 @@ const maxWidthMap = {
 
 export default function PageShell({
   children,
-  backTo = "/",
-  backLabel = "Home",
+  backTo,
+  backLabel = "Back",
+  onBack,
   hideBack = false,
   hideHome = false,
   disableBrandNavigation = false,
@@ -38,6 +40,20 @@ export default function PageShell({
 }: PageShellProps) {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0) {
+      navigate(-1);
+    } else if (backTo) {
+      navigate(backTo);
+    } else {
+      navigate(-1);
+    }
+  };
 
   useEffect(() => {
     if (!supabase) return;
@@ -92,8 +108,8 @@ export default function PageShell({
             ) : (
               <button
                 type="button"
-                onClick={() => navigate(backTo)}
-                aria-label={backLabel}
+                onClick={() => navigate("/")}
+                aria-label="Go to homepage"
                 className="text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
               >
                 {brand}
@@ -151,8 +167,8 @@ export default function PageShell({
             <div className="mb-5">
               <button
                 type="button"
-                onClick={() => navigate(backTo)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-secondary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={handleBack}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition hover:bg-secondary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
               >
                 <ArrowLeft size={14} />
                 <span>{backLabel}</span>

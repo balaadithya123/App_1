@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabase";
 import WorkerGrowthCard from "@/components/WorkerGrowthCard";
 import WorkerPortfolioManager from "@/components/WorkerPortfolioManager";
 import WorkerAgencyAffiliation from "@/components/WorkerAgencyAffiliation";
+import WorkerAssignedProjects from "@/components/WorkerAssignedProjects";
 
 const isoToday = () => {
   const d = new Date();
@@ -288,6 +289,13 @@ export default function WorkerDashboard() {
 
         {/* Agency Affiliation & Team Joining */}
         <WorkerAgencyAffiliation userId={user?.id} userPhone={user?.user_metadata?.phone || user?.phone} />
+
+        {/* Agency Assigned Projects */}
+        <WorkerAssignedProjects
+          workerId={user?.id}
+          workerPhone={user?.user_metadata?.phone || user?.phone}
+          workerName={name}
+        />
 
         {/* Availability Management Panel */}
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">

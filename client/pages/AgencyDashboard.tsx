@@ -447,7 +447,7 @@ export default function AgencyDashboard() {
 
   if (error || !dashboard) {
     return (
-      <PageShell backTo="/" backLabel="Home">
+      <PageShell backTo="/" backLabel="Back">
         <div className="mx-auto max-w-md rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center">
           <ShieldAlert size={36} className="mx-auto text-destructive" />
           <h1 className="mt-3 text-base font-bold text-foreground">Error Loading Dashboard</h1>
@@ -471,7 +471,7 @@ export default function AgencyDashboard() {
   const pending = dashboard.callbacks.filter((c) => c.status === "new").length;
 
   return (
-    <PageShell backTo="/" backLabel="Home" containerWidth="lg">
+    <PageShell backTo="/" backLabel="Back" containerWidth="lg">
       <div className="space-y-6">
         {/* Agency Profile Header Card */}
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">

@@ -178,10 +178,10 @@ export default function AgencyProfileCompleteness() {
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
           <button
             type="button"
-            onClick={() => navigate("/agency/dashboard")}
+            onClick={() => (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0 ? navigate(-1) : navigate("/agency/dashboard"))}
             className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground cursor-pointer"
           >
-            <ArrowLeft size={14} /> Back to Agency Dashboard
+            <ArrowLeft size={14} /> Back
           </button>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

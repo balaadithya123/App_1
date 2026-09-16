@@ -91,7 +91,7 @@ export default function WorkerProfile() {
   };
 
   return (
-    <PageShell backTo="/search" backLabel="Search" containerWidth="md">
+    <PageShell backTo="/search" backLabel="Back" containerWidth="md">
       {/* Profile Header Hero Card */}
       <section className="rounded-2xl border border-border bg-card p-5 sm:p-7">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">

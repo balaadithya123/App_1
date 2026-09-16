@@ -331,7 +331,7 @@ export default function Register() {
 
   if (!role) {
     return (
-      <PageShell backTo="/" backLabel="Home">
+      <PageShell backTo="/" backLabel="Back">
         <section className="rounded-[16px] border border-line bg-background px-5 py-8 text-center dark:border-white/10 dark:bg-black sm:px-8 sm:py-10">
           <h1 className="text-3xl font-extrabold text-navy dark:text-white sm:text-4xl">Register</h1>
           <p className="mx-auto mt-3 max-w-xl text-sm text-slate dark:text-slate-300">
@@ -378,7 +378,17 @@ export default function Register() {
 
   if (role === "worker") {
     return (
-      <PageShell backTo="/register" backLabel="Choose registration type">
+      <PageShell
+        backTo="/register"
+        backLabel="Back"
+        onBack={() => {
+          if (refCode && window.history.state?.idx > 0) {
+            navigate(-1);
+          } else {
+            setRole(null);
+          }
+        }}
+      >
         <Header
           title="Register as a Worker"
           text="Email is your login. Phone verification is separate and powers your contact verification badge."
@@ -591,7 +601,11 @@ export default function Register() {
   }
 
   return (
-    <PageShell backTo="/register" backLabel="Choose registration type">
+    <PageShell
+      backTo="/register"
+      backLabel="Back"
+      onBack={() => setRole(null)}
+    >
       <Header
         title="Register as a Client"
         text="Email is your login. Phone verification is separate and required for contact purposes."

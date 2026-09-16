@@ -423,7 +423,7 @@ export default function SearchResults() {
   const hasActiveFilters = category !== "All" || locality.trim() !== "" || searchType !== "all";
 
   return (
-    <PageShell backLabel="Search">
+    <PageShell backLabel="Back" backTo="/">
       {/* Streamlined Clean Header */}
       <div className="mb-5 space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
