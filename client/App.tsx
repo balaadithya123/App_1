@@ -29,7 +29,8 @@ import Inbox from "./pages/Inbox";
 import WorkerCallbackRequests from "./pages/WorkerCallbackRequests";
 import AdminDashboard from "./pages/AdminDashboard";
 import ChatAssistantPage from "./pages/ChatAssistantPage";
-import FloatingChatButton from "./components/FloatingChatButton";
+import VoiceOnboarding from "./pages/VoiceOnboarding";
+import PortfolioModeration from "./pages/PortfolioModeration";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,8 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/voice-onboarding" element={<VoiceOnboarding />} />
+            <Route path="/voice" element={<VoiceOnboarding />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/assistant" element={<ChatAssistantPage />} />
             <Route path="/chat" element={<ChatAssistantPage />} />
@@ -49,7 +52,11 @@ export default function App() {
             <Route path="/recently-viewed" element={<RecentlyViewed />} />
             <Route path="/profile-completeness" element={<ProfileCompleteness />} />
             <Route path="/worker" element={<WorkerProfile />} />
+            <Route path="/worker/:id" element={<WorkerProfile />} />
+            <Route path="/workers/:id" element={<WorkerProfile />} />
             <Route path="/agency-profile" element={<AgencyProfile />} />
+            <Route path="/agency/:id" element={<AgencyProfile />} />
+            <Route path="/agencies/:id" element={<AgencyProfile />} />
             <Route path="/register" element={<Register />} />
             <Route path="/register-agency" element={<AgencyRegister />} />
             <Route path="/agency" element={<AgencyDashboard />} />
@@ -63,11 +70,18 @@ export default function App() {
             <Route path="/worker-commitments" element={<WorkerCommitments />} />
             <Route path="/callback-requests" element={<WorkerCallbackRequests />} />
             <Route path="/inbox" element={<Inbox />} />
+            <Route path="/portfolio-screen" element={<PortfolioModeration />} />
+            <Route path="/portfolio-screening" element={<PortfolioModeration />} />
+            <Route path="/portfolio-moderation" element={<PortfolioModeration />} />
+            <Route path="/admin/portfolio" element={<PortfolioModeration />} />
+            <Route path="/ranking-engine" element={<SearchResults />} />
+            <Route path="/ranking" element={<SearchResults />} />
+            <Route path="/worker-ranking" element={<SearchResults />} />
+            <Route path="/admin/ranking" element={<SearchResults />} />
             <Route path="/admin/analytics" element={<AdminDashboard />} />
             <Route path="/report" element={<Report />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <FloatingChatButton />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

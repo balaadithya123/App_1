@@ -103,13 +103,6 @@ export default function PageShell({
             {/* Desktop Quick Nav Links */}
             <nav className="hidden md:flex items-center gap-1 text-xs font-semibold text-muted-foreground">
               <Link
-                to="/assistant"
-                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-foreground bg-primary/10 transition hover:bg-primary/20 hover:text-primary"
-              >
-                <Sparkles size={14} className="text-primary" />
-                <span>AI Assistant</span>
-              </Link>
-              <Link
                 to="/search?type=workers"
                 className="flex items-center gap-1.5 rounded-md px-3 py-1.5 transition hover:bg-secondary hover:text-foreground"
               >

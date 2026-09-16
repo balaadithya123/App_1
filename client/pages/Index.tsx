@@ -12,26 +12,26 @@ import {
   Zap,
   Wrench,
   Building2,
-  Sparkles,
   Navigation,
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 import { logAnalyticsEvent } from "@/lib/analytics";
 
-const services = [
+const categories = [
   { name: "Electrician", icon: Zap },
   { name: "Plumber", icon: Wrench },
   { name: "Carpenter", icon: Hammer },
   { name: "Painter", icon: Paintbrush },
   { name: "Cleaner", icon: Brush },
-  { name: "Other", icon: ChevronRight },
+  { name: "All Services", icon: ChevronRight },
 ];
 
 export default function Index() {
   const navigate = useNavigate();
-  const [work, setWork] = useState("");
+  const [service, setService] = useState("");
   const [location, setLocation] = useState("");
+  const [activeTab, setActiveTab] = useState<"all" | "workers" | "agencies">("all");
   const [gpsLoading, setGpsLoading] = useState(false);
   const [session, setSession] = useState<any>(null);
 
@@ -42,10 +42,7 @@ export default function Index() {
       setSession(data.session);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, s) => setSession(s),
-    );
-
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -53,16 +50,8 @@ export default function Index() {
   const userRole = session?.user?.user_metadata?.role;
   const isWorker = userRole === "worker";
   const isAgency = userRole === "agency";
-  const portalPath = isWorker
-    ? "/worker-dashboard"
-    : isAgency
-      ? "/agency/dashboard"
-      : "/profile";
-  const portalLabel = isWorker
-    ? "Worker Dashboard"
-    : isAgency
-      ? "Agency Dashboard"
-      : "Profile Settings";
+  const portalPath = isWorker ? "/worker-dashboard" : isAgency ? "/agency/dashboard" : "/profile";
+  const portalLabel = isWorker ? "Worker Dashboard" : isAgency ? "Agency Dashboard" : "Profile Settings";
 
   const handleGps = () => {
     if (!navigator.geolocation) return;
@@ -84,41 +73,43 @@ export default function Index() {
         }
       },
       () => setGpsLoading(false),
-      { timeout: 8000, enableHighAccuracy: true }
+      { timeout: 8000, enableHighAccuracy: true },
     );
   };
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const service = work.trim();
+    const s = service.trim();
     const loc = location.trim();
 
     void logAnalyticsEvent("search_performed", null, {
-      search_term: service,
+      search_term: s,
       location: loc,
+      type: activeTab,
     });
 
     const params = new URLSearchParams();
-    if (service) params.set("service", service);
+    if (s) params.set("service", s);
     if (loc) params.set("location", loc);
+    if (activeTab !== "all") params.set("type", activeTab);
 
     navigate(`/search?${params.toString()}`);
   };
 
   return (
-    <main className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/20 selection:text-primary">
+    <main className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top Header */}
       <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-xs">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2.5">
+        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-foreground text-background font-bold text-sm">
               L
             </span>
             <span className="text-base font-bold tracking-tight text-foreground">
               Local<span className="text-primary">Worker</span>
             </span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -144,118 +135,131 @@ export default function Index() {
         </div>
       </header>
 
-      {/* Main Content Body */}
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:py-10">
-        {/* Hero Section */}
+      {/* Main Hero & Search Area */}
+      <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
+        {/* Simple, Clean Headline */}
         <div className="mb-6 text-center sm:text-left">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Find local workers & agencies
+            Find Local Workers & Agencies
           </h1>
-          <p className="mt-1.5 text-xs text-muted-foreground sm:text-sm">
-            Connect directly with verified specialists and licensed service agencies in your locality.
+          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+            Search trusted professionals in your area for home repairs, maintenance, and services.
           </p>
         </div>
 
-        {/* Directory & AI Fast Switcher */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <Link
-              to="/search?type=workers"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground transition hover:bg-secondary"
-            >
-              <UserRound size={13} className="text-primary" />
-              <span>Workers</span>
-            </Link>
-
-            <Link
-              to="/search?type=agencies"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground transition hover:bg-secondary"
-            >
-              <Building2 size={13} className="text-primary" />
-              <span>Agencies</span>
-            </Link>
-          </div>
-
-          <Link
-            to="/assistant"
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-foreground transition hover:bg-primary/20 hover:text-primary"
+        {/* Filter Tabs */}
+        <div className="mb-3 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveTab("all")}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              activeTab === "all"
+                ? "bg-foreground text-background"
+                : "border border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
           >
-            <Sparkles size={13} className="text-primary" />
-            <span>AI Match Assistant</span>
-            <ChevronRight size={13} className="text-muted-foreground" />
-          </Link>
+            All
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("workers")}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              activeTab === "workers"
+                ? "bg-foreground text-background"
+                : "border border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <UserRound size={13} />
+            <span>Workers</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("agencies")}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+              activeTab === "agencies"
+                ? "bg-foreground text-background"
+                : "border border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Building2 size={13} />
+            <span>Agencies</span>
+          </button>
         </div>
 
-        {/* Search Box */}
+        {/* Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="rounded-xl border border-border bg-card p-2 shadow-2xs transition-colors focus-within:border-foreground/40 sm:p-2.5"
+          className="rounded-xl border border-border bg-card p-2.5 shadow-2xs transition focus-within:border-foreground/30 sm:p-3"
         >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            {/* Service Input */}
             <div className="flex min-w-0 flex-1 items-center rounded-lg bg-secondary/50 px-3 py-1 focus-within:bg-secondary min-h-[44px]">
               <Search size={16} className="mr-2.5 shrink-0 text-muted-foreground" />
               <input
-                id="work"
-                value={work}
-                onChange={(e) => setWork(e.target.value)}
-                placeholder="What service do you need?"
-                className="h-10 w-full min-w-0 bg-transparent text-sm text-foreground outline-hidden placeholder:text-muted-foreground"
+                id="service-input"
+                value={service}
+                onChange={(e) => setService(e.target.value)}
+                placeholder="What service do you need? (e.g. Electrician, Plumber)"
+                className="h-10 w-full min-w-0 bg-transparent text-xs sm:text-sm text-foreground outline-hidden placeholder:text-muted-foreground"
               />
             </div>
 
+            {/* Location Input */}
             <div className="flex min-w-0 flex-1 items-center rounded-lg bg-secondary/50 px-3 py-1 focus-within:bg-secondary min-h-[44px]">
               <MapPin size={16} className="mr-2.5 shrink-0 text-muted-foreground" />
               <input
-                id="location"
+                id="location-input"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Locality, city or pincode"
-                className="h-10 w-full min-w-0 bg-transparent text-sm text-foreground outline-hidden placeholder:text-muted-foreground"
+                placeholder="Location (e.g. Area, City, Pincode)"
+                className="h-10 w-full min-w-0 bg-transparent text-xs sm:text-sm text-foreground outline-hidden placeholder:text-muted-foreground"
               />
               <button
                 type="button"
                 onClick={handleGps}
                 disabled={gpsLoading}
-                title="Use Current GPS Location"
-                aria-label="Use Current GPS Location"
-                className="ml-1 flex h-7 items-center gap-1 rounded-md px-1.5 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground"
+                title="Use Current Location"
+                aria-label="Use Current Location"
+                className="ml-1 flex h-7 items-center gap-1 rounded-md px-1.5 text-[11px] font-semibold text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer"
               >
                 <Navigation size={12} className={gpsLoading ? "animate-spin text-primary" : "text-primary"} />
                 <span className="hidden sm:inline">GPS</span>
               </button>
             </div>
 
+            {/* Search Button */}
             <button
               type="submit"
-              className="flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:opacity-90 sm:w-auto"
+              className="flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-lg bg-foreground px-6 text-xs sm:text-sm font-semibold text-background transition hover:opacity-90 sm:w-auto"
             >
               Search
             </button>
           </div>
         </form>
 
-        {/* Popular Services Section */}
+        {/* Categories Grid */}
         <section className="mt-8">
-          <div className="mb-3 flex items-center justify-between border-b border-border pb-2">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Browse by Category
-            </h2>
-          </div>
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Popular Categories
+          </h2>
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {services.map(({ name, icon: Icon }) => (
+            {categories.map(({ name, icon: Icon }) => (
               <Link
                 key={name}
-                to={`/search?service=${encodeURIComponent(name)}`}
+                to={name === "All Services" ? "/search" : `/search?service=${encodeURIComponent(name)}`}
                 className="group flex items-center justify-between rounded-lg border border-border bg-card p-3 text-foreground transition hover:border-foreground/30 hover:bg-secondary/40 min-h-[48px]"
               >
                 <span className="flex items-center gap-2.5">
                   <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
-                    <Icon size={15} />
+                    <Icon size={14} />
                   </span>
                   <span className="text-xs font-semibold sm:text-sm">{name}</span>
                 </span>
-                <ChevronRight size={14} className="text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+                <ChevronRight
+                  size={14}
+                  className="text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground"
+                />
               </Link>
             ))}
           </div>

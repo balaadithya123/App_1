@@ -10,10 +10,11 @@ import {
   Clock3,
   ShieldCheck,
   Building2,
-  Sparkles,
   ChevronRight,
   Bookmark,
   Compass,
+  BrainCircuit,
+  Sparkles,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -185,22 +186,6 @@ export default function MobileMenu() {
             <div className="mb-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Explore Services
             </div>
-            <Link
-              to="/assistant"
-              onClick={() => setOpen(false)}
-              className="mb-1.5 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/10 p-2.5 transition hover:bg-primary/20"
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-foreground text-background">
-                  <Sparkles size={13} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-foreground">AI Assistant</div>
-                  <div className="text-[10px] text-muted-foreground">Find matching specialists by requirement</div>
-                </div>
-              </div>
-              <ChevronRight size={13} className="text-primary" />
-            </Link>
             <div className="grid grid-cols-2 gap-1.5">
               <Link
                 to="/search?type=workers"

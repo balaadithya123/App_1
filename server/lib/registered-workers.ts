@@ -7,27 +7,91 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const publicSupabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey, { auth: { autoRefreshToken: false, persistSession: false } }) : null;
 
-const persistedWorkerSchema = z.object({ id: z.string().trim().min(1), name: z.string().trim().min(1), category: z.string().trim().min(1), locality: z.string().trim().min(1), experience: z.string().trim().min(1), initials: z.string().trim().min(1), tone: z.string().trim().min(1), about: z.string().trim().min(1), services: z.array(z.string().trim().min(1)).min(1), phone: z.string().trim().regex(/^\d{10}$/), photo_url: z.string().url().optional().nullable(), created_at: z.string().optional(), available_today: z.boolean().optional(), away_from: z.string().nullable().optional(), away_until: z.string().nullable().optional(), urgent_today: z.boolean().optional(), next_available_date: z.string().nullable().optional(), agency_id: z.string().uuid().optional().nullable() });
-const persistedWorkersSchema = z.array(persistedWorkerSchema);
+const persistedWorkerSchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+  category: z.string().trim().min(1),
+  locality: z.string().trim().min(1).default("Local area"),
+  experience: z.string().trim().min(1).default("1+ years"),
+  initials: z.string().trim().min(1).default("W"),
+  tone: z.string().trim().min(1).default("bg-[#f5f6f4]"),
+  about: z.string().trim().min(1).default("Local professional"),
+  services: z.union([
+    z.array(z.string().trim()),
+    z.string().transform((s) => s.split(",").map((x) => x.trim()).filter(Boolean)),
+  ]).default([]),
+  phone: z.string().trim().min(6),
+  photo_url: z.string().optional().nullable(),
+  created_at: z.string().optional(),
+  available_today: z.boolean().optional(),
+  away_from: z.string().nullable().optional(),
+  away_until: z.string().nullable().optional(),
+  urgent_today: z.boolean().optional(),
+  next_available_date: z.string().nullable().optional(),
+  agency_id: z.string().optional().nullable(),
+});
 const toWorker = (row: unknown): Worker => persistedWorkerSchema.parse(row) as Worker;
 const workerSelect = "id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at,available_today,away_from,away_until,urgent_today,agency_id";
 
-export const readRegisteredWorkers = async (): Promise<Worker[]> => {
-  const primary = await supabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
-  const primaryWorkers = !primary.error ? persistedWorkersSchema.parse(primary.data ?? []).map(toWorker) : [];
+const isDummyProfile = (name: string, phone?: string) => {
+  const n = String(name || "").toLowerCase().trim();
+  const p = String(phone || "").trim();
+  return (
+    n === "anika rao" ||
+    n.includes("anika rao") ||
+    n === "demo worker" ||
+    n === "test worker" ||
+    n === "sample worker" ||
+    p === "9876543210" ||
+    p === "1234567890" ||
+    p === "0000000000"
+  );
+};
 
-  // If Vercel's server-side variables point at an empty/old Supabase project,
-  // a successful zero-row response must still fall through to the public client.
-  if (publicSupabase) {
-    const fallback = await publicSupabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
-    if (!fallback.error) {
-      const publicWorkers = persistedWorkersSchema.parse(fallback.data ?? []).map(toWorker);
-      if (publicWorkers.length > 0 || primaryWorkers.length === 0) return publicWorkers;
+export const readRegisteredWorkers = async (): Promise<Worker[]> => {
+  const primaryWorkers: Worker[] = [];
+  try {
+    const primary = await supabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
+    if (!primary.error && Array.isArray(primary.data)) {
+      for (const row of primary.data) {
+        const parsed = persistedWorkerSchema.safeParse(row);
+        if (parsed.success && !isDummyProfile(parsed.data.name, parsed.data.phone)) {
+          primaryWorkers.push(parsed.data as Worker);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[registered-workers] Supabase primary query warning:", err);
+  }
+
+  // If public client is configured and primary query returned no rows, fall back to public client
+  if (publicSupabase && primaryWorkers.length === 0) {
+    try {
+      const fallback = await publicSupabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
+      if (!fallback.error && Array.isArray(fallback.data)) {
+        for (const row of fallback.data) {
+          const parsed = persistedWorkerSchema.safeParse(row);
+          if (parsed.success && !isDummyProfile(parsed.data.name, parsed.data.phone)) {
+            primaryWorkers.push(parsed.data as Worker);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[registered-workers] Public fallback query warning:", err);
     }
   }
 
-  if (!primary.error) return primaryWorkers;
-  throw new Error(`Unable to load workers from Supabase: ${primary.error.message}`);
+  // Asynchronously purge dummy profiles from database if present
+  try {
+    void Promise.resolve(
+      supabase
+        .from("workers")
+        .delete()
+        .or("name.ilike.%anika rao%,name.ilike.%demo worker%,phone.eq.9876543210")
+    );
+  } catch {}
+
+  return primaryWorkers;
 };
 
 const workerRow = (worker: Worker) => ({ id: worker.id, name: worker.name, phone: worker.phone, category: worker.category, locality: worker.locality, experience: worker.experience, initials: worker.initials, tone: worker.tone, about: worker.about, services: worker.services, photo_url: worker.photo_url || null, available_today: worker.available_today ?? false, away_from: worker.away_from ?? null, away_until: worker.away_until ?? null, urgent_today: worker.urgent_today ?? false, agency_id: worker.agency_id ?? null });

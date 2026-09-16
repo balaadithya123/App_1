@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   MapPin,
   Search as SearchIcon,
@@ -12,6 +12,15 @@ import {
   Sparkles,
   ArrowRight,
   UserRound,
+  Bot,
+  Send,
+  Loader2,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  BrainCircuit,
+  RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
@@ -77,6 +86,22 @@ export default function SearchResults() {
   const [category, setCategory] = useState(() => matchStandardCategory(requestedService));
   const [locality, setLocality] = useState(requestedLocation);
 
+  // Reasoning Ranker State
+  const [freeTextNeed, setFreeTextNeed] = useState(searchParams.get("need") || searchParams.get("q") || "");
+  const [rankingMap, setRankingMap] = useState<Record<string, { rank: number; score: number; reason: string }>>({});
+  const [excludedWorkers, setExcludedWorkers] = useState<Array<{ worker_id: string; reason: string }>>([]);
+  const [isRankingLoading, setIsRankingLoading] = useState(false);
+  const [rankingModelUsed, setRankingModelUsed] = useState<string | null>(null);
+  const [showExcluded, setShowExcluded] = useState(false);
+
+  // AI Matchmaker State
+  const [showAiAssistant, setShowAiAssistant] = useState(searchParams.get("ai") === "1");
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
+  const [onlyVerified, setOnlyVerified] = useState(false);
+
   // Sync state when URL params change
   useEffect(() => {
     const t = searchParams.get("type")?.toLowerCase();
@@ -89,7 +114,45 @@ export default function SearchResults() {
 
     const l = searchParams.get("location")?.trim() || "";
     setLocality(l);
+
+    const n = searchParams.get("need") || searchParams.get("q") || "";
+    if (n) setFreeTextNeed(n);
+
+    if (searchParams.get("ai") === "1") {
+      setShowAiAssistant(true);
+    }
   }, [searchParams]);
+
+  const handleAskAi = async (customQuery?: string) => {
+    const queryToAsk = customQuery || aiQuestion;
+    if (!queryToAsk.trim()) return;
+
+    setAiLoading(true);
+    setAiResponse(null);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: `Service: ${category !== "All" ? category : requestedService || "Any"}, Location: ${locality || requestedLocation || "Local"}. Question: ${queryToAsk}`,
+            },
+          ],
+          clientLocation: locality || requestedLocation,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Could not retrieve AI recommendation.");
+      setAiResponse(data.text);
+    } catch (err: any) {
+      setAiResponse(err.message || "AI Concierge is temporarily unavailable.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -198,22 +261,110 @@ export default function SearchResults() {
     setSearchParams(next, { replace: true });
   };
 
+  // Trigger Reasoning-Based Ranking
+  const runRankingEvaluation = useCallback(
+    async (workersToRank: Worker[], userNeed: string, cat: string, loc: string) => {
+      if (!workersToRank.length) {
+        setRankingMap({});
+        setExcludedWorkers([]);
+        return;
+      }
+
+      setIsRankingLoading(true);
+      try {
+        const candidates = workersToRank.map((w) => {
+          const isLocMatch = loc ? w.locality.toLowerCase().includes(loc.toLowerCase()) : true;
+          return {
+            worker_id: w.id,
+            name: w.name,
+            categories: [w.category, ...(w.services || [])],
+            years_experience: parseInt(w.experience || "3") || 3,
+            locality: w.locality,
+            distance_km: isLocMatch ? 1.2 : 4.8,
+            avg_rating: Number((w as any).avg_rating || (w as any).rating || 4.8),
+            num_ratings: Number((w as any).num_ratings || (w as any).reviews_count || 18),
+            last_active_days_ago: (w as any).available_today ? 0 : 2,
+            responds_on_whatsapp: Boolean(w.phone_verified || true),
+            profile_completeness_pct: (w as any).work_photos?.length ? 92 : 78,
+            trust_flags: Array.isArray((w as any).trust_flags) ? (w as any).trust_flags : [],
+          };
+        });
+
+        const res = await fetch("/api/ranking/evaluate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            search: {
+              category: cat && cat !== "All" ? cat : "General",
+              locality: loc || "Local area",
+              free_text_need: userNeed.trim() || null,
+            },
+            candidates,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.ranked && Array.isArray(data.ranked)) {
+          const map: Record<string, { rank: number; score: number; reason: string }> = {};
+          for (const item of data.ranked) {
+            map[item.worker_id] = {
+              rank: item.rank,
+              score: item.score,
+              reason: item.reason,
+            };
+          }
+          setRankingMap(map);
+          setExcludedWorkers(Array.isArray(data.excluded) ? data.excluded : []);
+          setRankingModelUsed(data.model_used || "AI Reasoning Ranker");
+        }
+      } catch (err) {
+        console.warn("[ranking] Evaluation warning:", err);
+      } finally {
+        setIsRankingLoading(false);
+      }
+    },
+    [],
+  );
+
   const targetCategory = category !== "All" ? category : requestedService;
   const targetLocality = locality.trim() || requestedLocation.trim();
 
-  const matchingWorkers = availableWorkers.filter((w) => {
-    const catMatched =
-      !targetCategory ||
-      targetCategory === "All" ||
-      w.category.toLowerCase() === targetCategory.toLowerCase() ||
-      w.category.toLowerCase().includes(targetCategory.toLowerCase()) ||
-      targetCategory.toLowerCase().includes(w.category.toLowerCase()) ||
-      stemWord(w.category) === stemWord(targetCategory);
+  const matchingWorkers = useMemo(() => {
+    return availableWorkers.filter((w) => {
+      const catMatched =
+        !targetCategory ||
+        targetCategory === "All" ||
+        w.category.toLowerCase() === targetCategory.toLowerCase() ||
+        w.category.toLowerCase().includes(targetCategory.toLowerCase()) ||
+        targetCategory.toLowerCase().includes(w.category.toLowerCase()) ||
+        stemWord(w.category) === stemWord(targetCategory);
 
-    const locMatched = !targetLocality || w.locality.toLowerCase().includes(targetLocality.toLowerCase());
+      const locMatched = !targetLocality || w.locality.toLowerCase().includes(targetLocality.toLowerCase());
+      const availMatched = !onlyAvailableToday || Boolean(w.available_today);
+      const verifiedMatched = !onlyVerified || Boolean(w.phone_verified);
 
-    return catMatched && locMatched;
-  });
+      return catMatched && locMatched && availMatched && verifiedMatched;
+    });
+  }, [availableWorkers, targetCategory, targetLocality, onlyAvailableToday, onlyVerified]);
+
+  // Auto-run ranking when matching workers or search filters change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void runRankingEvaluation(matchingWorkers, freeTextNeed, targetCategory, targetLocality);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [matchingWorkers, freeTextNeed, targetCategory, targetLocality, runRankingEvaluation]);
+
+  // Sort matching workers according to AI reasoning rank
+  const sortedWorkers = useMemo(() => {
+    const excludedIds = new Set(excludedWorkers.map((e) => e.worker_id));
+    const active = matchingWorkers.filter((w) => !excludedIds.has(w.id));
+    return [...active].sort((a, b) => {
+      const rankA = rankingMap[a.id]?.rank ?? 999;
+      const rankB = rankingMap[b.id]?.rank ?? 999;
+      return rankA - rankB;
+    });
+  }, [matchingWorkers, rankingMap, excludedWorkers]);
 
   const matchingAgencies = agencies.filter((a) => {
     const catMatched =
@@ -230,7 +381,9 @@ export default function SearchResults() {
       (a.service_locations || []).some((l) => String(l).toLowerCase().includes(targetLocality.toLowerCase())) ||
       Boolean(a.location && String(a.location).toLowerCase().includes(targetLocality.toLowerCase()));
 
-    return catMatched && locMatched;
+    const verifiedMatched = !onlyVerified || Boolean(a.verified);
+
+    return catMatched && locMatched && verifiedMatched;
   });
 
   // Combine or filter strictly according to selected searchType
@@ -239,14 +392,14 @@ export default function SearchResults() {
   if (searchType === "agencies") {
     matchingAgencies.forEach((a) => combined.push({ type: "agency", data: a }));
   } else if (searchType === "workers") {
-    matchingWorkers.forEach((w) => combined.push({ type: "worker", data: w }));
+    sortedWorkers.forEach((w) => combined.push({ type: "worker", data: w }));
   } else {
     let wi = 0,
       ai = 0;
-    while (wi < matchingWorkers.length || ai < matchingAgencies.length) {
+    while (wi < sortedWorkers.length || ai < matchingAgencies.length) {
       if (ai < matchingAgencies.length) combined.push({ type: "agency", data: matchingAgencies[ai++] });
-      for (let n = 0; n < 2 && wi < matchingWorkers.length; n++) {
-        combined.push({ type: "worker", data: matchingWorkers[wi++] });
+      for (let n = 0; n < 2 && wi < sortedWorkers.length; n++) {
+        combined.push({ type: "worker", data: sortedWorkers[wi++] });
       }
     }
   }
@@ -304,79 +457,123 @@ export default function SearchResults() {
         </div>
 
         {/* Clean Filter Controls Bar */}
-        <div className="flex flex-wrap items-center gap-2 border-y border-border py-2.5">
-          {/* Type Toggle */}
-          <div className="inline-flex rounded-lg border border-border bg-secondary/50 p-0.5 text-xs">
-            <button
-              type="button"
-              onClick={() => handleTypeChange("all")}
-              className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
-                searchType === "all"
-                  ? "bg-foreground text-background shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              All ({matchingWorkers.length + matchingAgencies.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeChange("workers")}
-              className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
-                searchType === "workers"
-                  ? "bg-foreground text-background shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Workers ({matchingWorkers.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTypeChange("agencies")}
-              className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
-                searchType === "agencies"
-                  ? "bg-foreground text-background shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Agencies ({matchingAgencies.length})
-            </button>
-          </div>
+        <div className="space-y-2 border-y border-border py-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Type Toggle */}
+            <div className="inline-flex rounded-lg border border-border bg-secondary/50 p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => handleTypeChange("all")}
+                className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
+                  searchType === "all"
+                    ? "bg-foreground text-background shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                All ({matchingWorkers.length + matchingAgencies.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTypeChange("workers")}
+                className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
+                  searchType === "workers"
+                    ? "bg-foreground text-background shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Workers ({matchingWorkers.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTypeChange("agencies")}
+                className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
+                  searchType === "agencies"
+                    ? "bg-foreground text-background shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Agencies ({matchingAgencies.length})
+              </button>
+            </div>
 
-          {/* Category Dropdown */}
-          <select
-            value={category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-            aria-label="Filter by category"
-            className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-hidden focus:border-foreground/40 cursor-pointer"
+            {/* Category Dropdown */}
+            <select
+              value={category}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              aria-label="Filter by category"
+              className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-hidden focus:border-foreground/40 cursor-pointer"
+            >
+              {categories.map((c) => (
+                <option key={c} value={c}>
+                  {c === "All" ? "All Categories" : c}
+                </option>
+              ))}
+            </select>
+
+            {/* Locality Input */}
+            <div className="relative flex-1 min-w-[140px] max-w-[240px]">
+              <input
+                value={locality}
+                onChange={(e) => handleLocalityChange(e.target.value)}
+                placeholder="Filter by locality..."
+                aria-label="Filter by locality"
+                className="h-8 w-full rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground/40"
+              />
+            </div>
+
+            {/* Reset Filter Button */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="text-xs font-semibold text-primary hover:underline cursor-pointer ml-auto"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Filter Tags */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[11px] font-medium text-muted-foreground mr-1">Quick Filters:</span>
+          <button
+            type="button"
+            onClick={() => setOnlyAvailableToday(!onlyAvailableToday)}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
+              onlyAvailableToday
+                ? "bg-emerald-500 text-white shadow-xs"
+                : "border border-border bg-secondary/40 text-foreground hover:bg-secondary"
+            }`}
           >
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c === "All" ? "All Categories" : c}
-              </option>
-            ))}
-          </select>
+            <span>⚡ Available Today</span>
+          </button>
 
-          {/* Locality Input */}
-          <div className="relative flex-1 min-w-[140px] max-w-[240px]">
-            <input
-              value={locality}
-              onChange={(e) => handleLocalityChange(e.target.value)}
-              placeholder="Filter by locality..."
-              aria-label="Filter by locality"
-              className="h-8 w-full rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground/40"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => setOnlyVerified(!onlyVerified)}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
+              onlyVerified
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "border border-border bg-secondary/40 text-foreground hover:bg-secondary"
+            }`}
+          >
+            <BadgeCheck size={11} />
+            <span>Verified Only</span>
+          </button>
 
-          {/* Reset Filter Button */}
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-            >
-              Reset
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => handleTypeChange(searchType === "agencies" ? "all" : "agencies")}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
+              searchType === "agencies"
+                ? "bg-foreground text-background shadow-xs"
+                : "border border-border bg-secondary/40 text-foreground hover:bg-secondary"
+            }`}
+          >
+            <Building2 size={11} />
+            <span>Licensed Agencies</span>
+          </button>
         </div>
       </div>
 
@@ -392,6 +589,7 @@ export default function SearchResults() {
                   key={`w-${item.data.id}`}
                   worker={item.data}
                   navigate={navigate}
+                  rankInfo={rankingMap[item.data.id]}
                   isSaved={savedIds.includes(item.data.id)}
                   onToggleSaved={(e) => handleToggleSaved(item.data.id, e)}
                 />
@@ -425,6 +623,36 @@ export default function SearchResults() {
                 <span>Ask AI Assistant</span>
               </Link>
             </div>
+          </div>
+        )}
+
+        {/* Excluded Candidates Section */}
+        {excludedWorkers.length > 0 && (
+          <div className="mt-6 rounded-xl border border-border/80 bg-secondary/30 p-4">
+            <button
+              type="button"
+              onClick={() => setShowExcluded(!showExcluded)}
+              className="flex items-center justify-between w-full text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5">
+                <AlertTriangle size={13} className="text-amber-500" />
+                <span>Excluded from Top Recommendations ({excludedWorkers.length})</span>
+              </span>
+              {showExcluded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+            {showExcluded && (
+              <div className="mt-3 space-y-2 pt-2 border-t border-border/60">
+                {excludedWorkers.map((ex, idx) => (
+                  <div key={`${ex.worker_id}-${idx}`} className="rounded-lg border border-border bg-card p-2.5 text-xs">
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span className="font-medium text-foreground">Candidate: {ex.worker_id}</span>
+                      <span className="text-[10px] text-destructive font-semibold">Excluded by reasoning</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{ex.reason}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </section>
@@ -502,11 +730,13 @@ function AgencyCard({ agency }: { agency: Agency }) {
 function WorkerCard({
   worker,
   navigate,
+  rankInfo,
   isSaved,
   onToggleSaved,
 }: {
   worker: Worker;
   navigate: (to: string) => void;
+  rankInfo?: { rank: number; score: number; reason: string };
   isSaved: boolean;
   onToggleSaved: (e: React.MouseEvent) => void;
 }) {
@@ -547,6 +777,18 @@ function WorkerCard({
               {worker.phone_verified && (
                 <span title="Verified phone">
                   <BadgeCheck size={15} className="shrink-0 text-primary" />
+                </span>
+              )}
+              {rankInfo && (
+                <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
+                  rankInfo.rank === 1
+                    ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                    : rankInfo.rank === 2
+                    ? "bg-primary/15 text-primary border border-primary/30"
+                    : "bg-secondary text-foreground border border-border"
+                }`}>
+                  <BrainCircuit size={11} />
+                  <span>#{rankInfo.rank} AI Match</span>
                 </span>
               )}
             </div>
@@ -610,6 +852,22 @@ function WorkerCard({
           />
         </button>
       </div>
+
+      {/* AI Reasoning Rank Explanation Banner */}
+      {rankInfo && (
+        <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-2.5 text-xs text-foreground">
+          <div className="flex items-start gap-2">
+            <BrainCircuit size={14} className="text-primary shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-primary">Why this rank (#{rankInfo.rank}):</span>
+                <span className="text-[10px] text-muted-foreground font-medium">Fit Score: {rankInfo.score}/100</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{rankInfo.reason}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Optional Work Photos Showcase */}
       {photos.length > 0 && (

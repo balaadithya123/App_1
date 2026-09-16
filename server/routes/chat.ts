@@ -126,40 +126,37 @@ ${JSON.stringify(agenciesSummary, null, 2)}`;
           parts: [{ text: m.content }],
         }));
 
-        // Call Gemini with a timeout race so users get rapid responses even under quota / rate limits
-        const geminiPromise = ai.models.generateContent({
-          model: "gemini-3.7-flash",
-          contents: formattedContents,
-          config: {
-            systemInstruction,
-          },
-        });
+        const candidateModels = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+        for (const modelName of candidateModels) {
+          try {
+            const geminiPromise = ai.models.generateContent({
+              model: modelName,
+              contents: formattedContents,
+              config: {
+                systemInstruction,
+              },
+            });
 
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Gemini timeout")), 3500)
-        );
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("Gemini timeout")), 3500)
+            );
 
-        const response: any = await Promise.race([geminiPromise, timeoutPromise]);
-
-        replyText = response.text || "";
-
-        // Extract Google Maps grounding chunks if present
-        const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-        if (Array.isArray(chunks)) {
-          groundingChunks = chunks;
+            const response: any = await Promise.race([geminiPromise, timeoutPromise]);
+            const txt = response?.text || "";
+            if (txt) {
+              replyText = txt;
+              const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+              if (Array.isArray(chunks)) {
+                groundingChunks = chunks;
+              }
+              break;
+            }
+          } catch {
+            // Try next fallback model
+          }
         }
       } catch (geminiError: any) {
-        const isQuota =
-          geminiError?.status === 429 ||
-          geminiError?.code === 429 ||
-          String(geminiError?.message || "").includes("quota") ||
-          String(geminiError?.message || "").includes("429") ||
-          String(geminiError?.message || "").includes("RESOURCE_EXHAUSTED");
-        if (isQuota) {
-          console.info("[chat] Gemini quota/rate-limit reached; using local intelligent directory matching engine.");
-        } else {
-          console.info("[chat] Gemini fallback active:", geminiError?.message || "fallback");
-        }
+        console.info("[chat] Gemini fallback active:", geminiError?.message || "fallback");
       }
     }
 

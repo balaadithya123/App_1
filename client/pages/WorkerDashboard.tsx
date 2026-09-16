@@ -18,6 +18,8 @@ import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
 import WorkerGrowthCard from "@/components/WorkerGrowthCard";
+import WorkerPortfolioManager from "@/components/WorkerPortfolioManager";
+import WorkerAgencyAffiliation from "@/components/WorkerAgencyAffiliation";
 
 const isoToday = () => {
   const d = new Date();
@@ -280,6 +282,12 @@ export default function WorkerDashboard() {
 
         {/* Growth & Metric Summaries */}
         <WorkerGrowthCard />
+
+        {/* Work Portfolio Upload & Management */}
+        <WorkerPortfolioManager />
+
+        {/* Agency Affiliation & Team Joining */}
+        <WorkerAgencyAffiliation userId={user?.id} userPhone={user?.user_metadata?.phone || user?.phone} />
 
         {/* Availability Management Panel */}
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">

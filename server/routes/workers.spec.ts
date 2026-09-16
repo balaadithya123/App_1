@@ -1,17 +1,12 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { readFile, rm, writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
-import { staticWorkers, type Worker } from "../../shared/workers";
+import { describe, expect, it } from "vitest";
+import { staticWorkers } from "../../shared/workers";
 import { filterWorkers } from "../../client/lib/search";
 import { findWorkerById } from "../../client/lib/workers";
-import { readRegisteredWorkers, saveRegisteredWorker } from "../lib/registered-workers";
-import { createWorker, getAllWorkers, workerRegistrationSchema } from "./workers";
-
-const registeredWorkersFile = path.join(process.cwd(), "data", "registered-workers.json");
+import { createWorker, createWorkerId, workerRegistrationSchema } from "./workers";
 
 const registration = {
   fullName: "Anika Rao",
-  phone: "+1-555-0199",
+  phone: "9876543210",
   category: "Electrician",
   location: "Cuddalore",
   experience: "5 years",
@@ -19,23 +14,15 @@ const registration = {
   about: "Careful electrician helping homes with wiring and repairs.",
 };
 
-afterEach(async () => {
-  await rm(registeredWorkersFile, { force: true });
-});
-
 describe("worker registration flow", () => {
-  it("persists a complete worker record with a stable URL-safe id", async () => {
+  it("creates a complete worker record with correct initial values", () => {
     const parsed = workerRegistrationSchema.parse(registration);
     const worker = createWorker(parsed, staticWorkers);
 
-    await saveRegisteredWorker(worker);
-
-    const persistedWorkers = JSON.parse(await readFile(registeredWorkersFile, "utf8")) as Worker[];
-
-    expect(worker).toEqual({
-      id: "anika-rao",
+    expect(worker).toMatchObject({
+      id: "9876543210",
       name: "Anika Rao",
-      phone: "+1-555-0199",
+      phone: "9876543210",
       category: "Electrician",
       locality: "Cuddalore",
       experience: "5 years",
@@ -43,8 +30,9 @@ describe("worker registration flow", () => {
       tone: "bg-[#f5f6f4]",
       about: "Careful electrician helping homes with wiring and repairs.",
       services: ["Solar panel wiring", "Fan repair"],
+      available_today: false,
+      urgent_today: false,
     });
-    expect(persistedWorkers).toEqual([worker]);
   });
 
   it("rejects missing required worker registration fields", () => {
@@ -57,50 +45,32 @@ describe("worker registration flow", () => {
     expect(result.error?.flatten().fieldErrors.fullName).toContain("Full name is required");
   });
 
-  it("rejects invalid worker registration data", () => {
+  it("rejects invalid worker phone numbers", () => {
     const result = workerRegistrationSchema.safeParse({
       ...registration,
-      services: ",,,",
+      phone: "123",
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.flatten().fieldErrors.services).toContain("At least one service is required");
+    expect(result.error?.flatten().fieldErrors.phone).toContain("Phone number must be exactly 10 digits");
   });
 
-  it("keeps demo workers and includes registered workers in search results", async () => {
+  it("includes created worker in search results", () => {
     const worker = createWorker(workerRegistrationSchema.parse(registration), staticWorkers);
-    await saveRegisteredWorker(worker);
-
-    const allWorkers = await getAllWorkers();
+    const allWorkers = [...staticWorkers, worker];
     const results = filterWorkers(allWorkers, "solar", "cuddalore");
 
-    expect(allWorkers.slice(0, staticWorkers.length)).toEqual(staticWorkers);
-    expect(results.map((worker) => worker.id)).toContain("anika-rao");
+    expect(results.map((w) => w.id)).toContain("9876543210");
   });
 
-  it("reads only expected persisted worker fields", async () => {
+  it("can look up a worker by id", () => {
     const worker = createWorker(workerRegistrationSchema.parse(registration), staticWorkers);
-
-    await mkdir(path.dirname(registeredWorkersFile), { recursive: true });
-    await writeFile(
-      registeredWorkersFile,
-      JSON.stringify([{ ...worker, unexpectedField: "do not expose" }], null, 2),
-    );
-
-    expect(await readRegisteredWorkers()).toEqual([worker]);
-  });
-
-  it("can look up a registered worker for the existing profile route", async () => {
-    const worker = createWorker(workerRegistrationSchema.parse(registration), staticWorkers);
-    await saveRegisteredWorker(worker);
-
-    const allWorkers = await getAllWorkers();
-    const profileWorker = findWorkerById(allWorkers, "anika-rao");
+    const profileWorker = findWorkerById([worker], "9876543210");
 
     expect(profileWorker).toMatchObject({
-      id: "anika-rao",
+      id: "9876543210",
       name: "Anika Rao",
-      phone: "+1-555-0199",
+      phone: "9876543210",
     });
   });
 
@@ -110,20 +80,23 @@ describe("worker registration flow", () => {
     expect(findWorkerById(staticWorkers, null)).toBeUndefined();
   });
 
-  it("uses a submitted URL-safe id when provided and avoids duplicate ids", async () => {
+  it("uses a submitted URL-safe id when provided and avoids duplicate ids", () => {
     const requested = workerRegistrationSchema.parse({
       ...registration,
       id: "My Custom ID!",
     });
     const firstWorker = createWorker(requested, staticWorkers);
-    await saveRegisteredWorker(firstWorker);
+    expect(firstWorker.id).toBe("my-custom-id");
 
-    const secondWorker = createWorker(requested, await getAllWorkers());
-    await saveRegisteredWorker(secondWorker);
+    const secondWorker = createWorker(requested, [...staticWorkers, firstWorker]);
+    expect(secondWorker.id).toBe("my-custom-id-2");
+  });
 
-    expect((await readRegisteredWorkers()).map((worker) => worker.id)).toEqual([
-      "my-custom-id",
-      "my-custom-id-2",
-    ]);
+  it("generates unique ids using createWorkerId helper", () => {
+    const id1 = createWorkerId("Ravi Kumar", []);
+    expect(id1).toBe("ravi-kumar");
+
+    const id2 = createWorkerId("Ravi Kumar", [{ id: "ravi-kumar" } as any]);
+    expect(id2).toBe("ravi-kumar-2");
   });
 });

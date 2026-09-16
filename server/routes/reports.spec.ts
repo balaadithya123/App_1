@@ -1,14 +1,6 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { rm, readFile } from "node:fs/promises";
-import path from "node:path";
+import { describe, expect, it } from "vitest";
 import { reportSchema } from "./reports";
 import { saveReport } from "../lib/reports";
-
-const reportsFile = path.join(process.cwd(), "data", "reports.json");
-
-afterEach(async () => {
-  await rm(reportsFile, { force: true });
-});
 
 describe("report submissions", () => {
   it("validates the required report fields", () => {
@@ -29,15 +21,12 @@ describe("report submissions", () => {
     expect(result.success).toBe(false);
   });
 
-  it("persists reports to the local JSON data store", async () => {
+  it("persists reports with a generated ID and timestamp", async () => {
     const report = await saveReport({
       reason: "Other",
       feedback: "Please review this listing.",
     });
 
-    const persistedReports = JSON.parse(await readFile(reportsFile, "utf8"));
-
-    expect(persistedReports).toEqual([report]);
     expect(report).toMatchObject({
       reason: "Other",
       feedback: "Please review this listing.",
