@@ -323,31 +323,31 @@ export default function PortfolioModeration() {
             <span className="text-xs text-muted-foreground">uploaded</span>
           </div>
         </div>
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 shadow-xs dark:bg-emerald-950/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+        <div className="rounded-[16px] border border-emerald-200 bg-emerald-50/50 p-3.5 shadow-soft">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
             Approved
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-300">{approvedCount}</span>
-            <span className="text-xs text-emerald-700/70 dark:text-emerald-400">ready to display</span>
+            <span className="text-2xl font-black text-emerald-600">{approvedCount}</span>
+            <span className="text-xs text-emerald-700/70">ready to display</span>
           </div>
         </div>
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 shadow-xs dark:bg-amber-950/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+        <div className="rounded-[16px] border border-amber-200 bg-amber-50/50 p-3.5 shadow-soft">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
             Needs Review
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600 dark:text-amber-300">{needsReviewCount}</span>
-            <span className="text-xs text-amber-700/70 dark:text-amber-400">triage required</span>
+            <span className="text-2xl font-black text-amber-600">{needsReviewCount}</span>
+            <span className="text-xs text-amber-700/70">triage required</span>
           </div>
         </div>
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3.5 shadow-xs dark:bg-red-950/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-red-700 dark:text-red-400">
+        <div className="rounded-[16px] border border-rose-200 bg-rose-50/50 p-3.5 shadow-soft">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-rose-700">
             Rejected
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-red-600 dark:text-red-300">{rejectedCount}</span>
-            <span className="text-xs text-red-700/70 dark:text-red-400">policy violation</span>
+            <span className="text-2xl font-black text-rose-600">{rejectedCount}</span>
+            <span className="text-xs text-rose-700/70">policy violation</span>
           </div>
         </div>
       </div>
@@ -420,8 +420,8 @@ export default function PortfolioModeration() {
 
             {/* Error Message */}
             {error && (
-              <div className="mt-3 flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs font-bold text-red-600 dark:text-red-400">
-                <AlertTriangle size={15} className="shrink-0" />
+              <div className="mt-3 flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700">
+                <AlertTriangle size={15} className="shrink-0 text-rose-600" />
                 <span>{error}</span>
               </div>
             )}
@@ -715,7 +715,7 @@ export default function PortfolioModeration() {
                               "Confirmed rejection: photo does not comply with trade portfolio standards."
                             )
                           }
-                          className="flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-500/20 active:scale-95 dark:text-red-400"
+                          className="flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 active:scale-95 shadow-subtle cursor-pointer"
                         >
                           <X size={13} />
                           <span>Confirm Reject</span>
@@ -898,7 +898,7 @@ export default function PortfolioModeration() {
                         "Photo permanently rejected per directory quality and authenticity standards."
                       )
                     }
-                    className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-500/20 dark:text-red-400"
+                    className="flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 shadow-subtle cursor-pointer"
                   >
                     <X size={14} />
                     <span>Reject Photo</span>
@@ -1004,37 +1004,37 @@ function ResultCard({
           {/* Mini Check Tags */}
           <div className="flex flex-wrap gap-1">
             {item.checks.is_stock_photo && (
-              <span className="rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-bold text-red-600 dark:text-red-400">
+              <span className="rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-700">
                 Stock Photo
               </span>
             )}
             {item.checks.is_duplicate_style && (
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+              <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                 Meme/Graphic
               </span>
             )}
             {!item.checks.shows_actual_work && (
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+              <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                 Not Trade Work
               </span>
             )}
             {item.checks.image_quality_issue && (
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+              <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                 Quality Issue
               </span>
             )}
             {item.checks.contains_identifiable_third_party && (
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+              <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                 Privacy Flag
               </span>
             )}
             {item.checks.contains_inappropriate_content && (
-              <span className="rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-bold text-red-600 dark:text-red-400">
+              <span className="rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-700">
                 Inappropriate
               </span>
             )}
             {item.verdict === "approved" && (
-              <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                 Authentic Work Proof
               </span>
             )}
@@ -1055,7 +1055,7 @@ function ResultCard({
 function VerdictBadge({ verdict }: { verdict: ScreeningVerdict }) {
   if (verdict === "approved") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-0.5 text-xs font-extrabold text-white shadow-xs">
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-xs font-bold text-emerald-700 shadow-subtle">
         <CheckCircle2 size={13} />
         <span>Approved</span>
       </span>
@@ -1063,14 +1063,14 @@ function VerdictBadge({ verdict }: { verdict: ScreeningVerdict }) {
   }
   if (verdict === "needs_review") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-amber-600 px-2 py-0.5 text-xs font-extrabold text-white shadow-xs">
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-bold text-amber-700 shadow-subtle">
         <AlertTriangle size={13} />
         <span>Needs Review</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-red-600 px-2 py-0.5 text-xs font-extrabold text-white shadow-xs">
+    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-200 px-2.5 py-0.5 text-xs font-bold text-rose-700 shadow-subtle">
       <XCircle size={13} />
       <span>Rejected</span>
     </span>
@@ -1089,24 +1089,24 @@ function CheckRow({
 }) {
   return (
     <div
-      className={`flex items-start gap-2.5 rounded-lg border p-2.5 text-xs ${
+      className={`flex items-start gap-2.5 rounded-[12px] border p-2.5 text-xs ${
         failed
-          ? "border-red-500/30 bg-red-500/5 text-foreground dark:bg-red-950/20"
-          : "border-border bg-card text-muted-foreground"
+          ? "border-rose-200 bg-rose-50 text-[#2C2C2C]"
+          : "border-border bg-card text-[#67696D]"
       }`}
     >
       <div className="mt-0.5">
         {failed ? (
-          <XCircle size={15} className="text-red-600 dark:text-red-400" />
+          <XCircle size={15} className="text-rose-600" />
         ) : (
-          <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
+          <CheckCircle2 size={15} className="text-emerald-600" />
         )}
       </div>
       <div>
-        <div className={`font-bold ${failed ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+        <div className={`font-bold ${failed ? "text-rose-700" : "text-[#2C2C2C]"}`}>
           {label}: {failed ? "Flagged / Failed" : "Passed"}
         </div>
-        <div className="text-[11px] text-muted-foreground">{description}</div>
+        <div className="text-[11px] text-[#67696D]">{description}</div>
       </div>
     </div>
   );
@@ -1116,7 +1116,7 @@ function CheckRow({
 function CheckTag({ label, failed }: { label: string; failed: boolean }) {
   if (!failed) return null;
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-bold text-amber-700 dark:text-amber-300">
+    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-bold text-amber-700">
       <AlertTriangle size={10} />
       <span>{label} Flag</span>
     </span>

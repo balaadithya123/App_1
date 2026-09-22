@@ -4,9 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import GoogleLocationInput from "@/components/GoogleLocationInput";
 import { supabase } from "@/lib/supabase";
+import { setStandardLocation } from "@/lib/location";
 
 const categoryOptions = ["Electrician", "Plumber", "Carpenter", "Painter", "Cleaner", "Other"];
-const inputClass = "h-11 w-full rounded-[9px] border border-line bg-[#fbfcfc] px-3 text-sm outline-none dark:border-white/10 dark:bg-[#050505] dark:text-white";
+const inputClass = "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 text-sm text-[#2C2C2C] placeholder:text-[#989EA7] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition";
 const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 export default function AgencyRegister() {
@@ -58,6 +59,10 @@ export default function AgencyRegister() {
     if (!serviceLocations.length) {
       setError("Add at least one service area.");
       return;
+    }
+
+    if (serviceLocations[0]) {
+      setStandardLocation(serviceLocations[0], true);
     }
 
     setBusy(true);
@@ -137,21 +142,21 @@ export default function AgencyRegister() {
 
   return (
     <PageShell backTo="/register" backLabel="Back">
-      <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 dark:border-white/10 dark:bg-black sm:px-8 sm:py-9">
+      <section className="rounded-[16px] border border-[#E7ECF1] bg-white px-5 py-7 sm:px-8 sm:py-8 shadow-soft">
         <div className="flex items-center gap-3">
-          <Building2 size={32} className="text-navy dark:text-white" />
+          <Building2 size={32} className="text-primary" />
           <div>
-            <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.045em] text-navy dark:text-white">
+            <h1 className="text-[26px] sm:text-[30px] font-bold leading-tight tracking-tight text-[#2C2C2C]">
               Register as an Agency
             </h1>
-            <p className="mt-2 text-sm text-slate dark:text-slate-300">
+            <p className="mt-2 text-sm text-[#67696D]">
               Create an agency profile to get listed in the directory and manage local service bookings.
             </p>
           </div>
         </div>
       </section>
 
-      <form onSubmit={submit} className="mt-7 space-y-4 rounded-[13px] border border-line bg-white p-5 shadow-sm dark:border-white/10 dark:bg-black sm:p-7">
+      <form onSubmit={submit} className="mt-6 space-y-5 rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft sm:p-7">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field name="name" label="Agency Name" required placeholder="Your agency name" />
           <Field name="contactPersonName" label="Contact Person Name" required placeholder="Person responsible for the agency" />
@@ -161,16 +166,17 @@ export default function AgencyRegister() {
         </div>
 
         <div>
-          <label className="mb-2 block text-[13px] font-bold text-navy dark:text-slate-100">Service Categories</label>
+          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">Service Categories</label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {categoryOptions.map((c) => (
-              <label key={c} className="flex cursor-pointer items-center gap-2 rounded-[9px] border border-line px-3 py-2.5 text-sm dark:border-white/10">
+              <label key={c} className="flex cursor-pointer items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-2.5 text-sm text-[#2C2C2C] hover:border-primary/50 transition">
                 <input
                   type="checkbox"
                   checked={categories.includes(c)}
                   onChange={() => setCategories((v) => (v.includes(c) ? v.filter((x) => x !== c) : [...v, c]))}
+                  className="rounded text-primary focus:ring-primary"
                 />
-                <span className="dark:text-white">{c}</span>
+                <span>{c}</span>
               </label>
             ))}
           </div>
@@ -181,15 +187,17 @@ export default function AgencyRegister() {
             name="serviceLocations"
             label="Primary Service Area / Coverage Hub"
             required
+            autoDetectGPSOnMount={true}
+            setAsStandardOnSelect={true}
             value={serviceAreaInput}
             onChange={(loc) => setServiceAreaInput(loc)}
-            placeholder="e.g. Kattur, Trichy, Srirangam (or search Google Maps)"
-            helperText="Search your primary service area or tap Use My GPS. Multiple areas can be comma separated."
+            placeholder="Auto-detecting via GPS or search..."
+            helperText="Auto-detected via GPS. Multiple service coverage areas can be comma separated."
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-[13px] font-bold text-navy dark:text-slate-100">Team Size</label>
+          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">Team Size</label>
           <select name="teamSizeBand" defaultValue="2-5" className={inputClass}>
             <option value="2-5">2–5 workers</option>
             <option value="6-15">6–15 workers</option>
@@ -203,18 +211,18 @@ export default function AgencyRegister() {
         </div>
 
         <div>
-          <label className="mb-2 block text-[13px] font-bold text-navy dark:text-slate-100">About the Agency</label>
+          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">About the Agency</label>
           <textarea
             name="description"
             rows={4}
             placeholder="Tell people what your agency does"
-            className="w-full resize-none rounded-[9px] border border-line bg-[#fbfcfc] px-3 py-3 text-sm outline-none dark:border-white/10 dark:bg-[#050505] dark:text-white"
+            className="w-full resize-none rounded-[12px] border border-[#E7ECF1] bg-white px-3 py-3 text-sm text-[#2C2C2C] placeholder:text-[#989EA7] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
           />
         </div>
 
-        {error && <p role="alert" className="text-center text-[13px] font-semibold text-red-600">{error}</p>}
+        {error && <p role="alert" className="text-center text-xs font-semibold text-rose-600">{error}</p>}
         {success && (
-          <div role="status" className="flex items-center justify-center gap-2 rounded-[9px] bg-emerald-50 px-3 py-2.5 text-center text-[13px] font-semibold text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300">
+          <div role="status" className="flex items-center justify-center gap-2 rounded-[12px] bg-emerald-50 border border-emerald-500/20 px-3 py-2.5 text-center text-xs font-semibold text-emerald-700">
             <CheckCircle2 size={16} />
             <span>{success}</span>
           </div>
@@ -222,7 +230,7 @@ export default function AgencyRegister() {
 
         <button
           disabled={busy}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-navy text-sm font-bold text-white disabled:opacity-70 cursor-pointer"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-60 cursor-pointer active:scale-[0.99]"
         >
           {busy ? (
             <>
@@ -233,9 +241,9 @@ export default function AgencyRegister() {
           )}
         </button>
 
-        <p className="text-center text-sm text-slate">
+        <p className="text-center text-sm text-[#67696D]">
           Already registered?{" "}
-          <Link to="/login" className="font-bold text-navy dark:text-white">
+          <Link to="/login" className="font-semibold text-primary hover:underline">
             Sign in
           </Link>
         </p>
@@ -261,9 +269,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-[13px] font-bold text-navy dark:text-slate-100">
+      <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
         {label}
-        {!required && <span className="ml-1 font-normal text-slate">(optional)</span>}
+        {!required && <span className="ml-1 font-normal text-[#67696D]">(optional)</span>}
       </label>
       <input
         name={name}

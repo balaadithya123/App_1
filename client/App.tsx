@@ -31,10 +31,16 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ChatAssistantPage from "./pages/ChatAssistantPage";
 import VoiceOnboarding from "./pages/VoiceOnboarding";
 import PortfolioModeration from "./pages/PortfolioModeration";
+import { applyTheme, getInitialTheme } from "./lib/theme";
 
 const queryClient = new QueryClient();
 
 export default function App() {
+  React.useEffect(() => {
+    const initial = getInitialTheme();
+    applyTheme(initial);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -49,6 +55,7 @@ export default function App() {
             <Route path="/assistant" element={<ChatAssistantPage />} />
             <Route path="/chat" element={<ChatAssistantPage />} />
             <Route path="/saved" element={<SavedWorkers />} />
+            <Route path="/my-circle" element={<SavedWorkers />} />
             <Route path="/recently-viewed" element={<RecentlyViewed />} />
             <Route path="/profile-completeness" element={<ProfileCompleteness />} />
             <Route path="/worker" element={<WorkerProfile />} />
@@ -90,6 +97,10 @@ export default function App() {
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  createRoot(rootElement).render(<App />);
+  const globalWithRoot = window as unknown as { __reactRoot?: ReturnType<typeof createRoot> };
+  if (!globalWithRoot.__reactRoot) {
+    globalWithRoot.__reactRoot = createRoot(rootElement);
+  }
+  globalWithRoot.__reactRoot.render(<App />);
 }
 

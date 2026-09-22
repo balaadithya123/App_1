@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { recordContactForTrackRecord } from "@/lib/track-record";
 
 type AnalyticsMetadata = Record<string, unknown>;
 
@@ -20,7 +21,18 @@ export const logAnalyticsEvent = async (
   }
 };
 
-export const logContactEvent = async (workerId: string, source: "whatsapp") => {
+export const logContactEvent = async (
+  workerId: string,
+  source: "whatsapp" | "call" | string,
+  details?: { name?: string; category?: string }
+) => {
+  // Always trigger local track record pending entry
+  try {
+    recordContactForTrackRecord(workerId, source, details?.name, details?.category);
+  } catch (err) {
+    console.warn("[contact-events] track record record error:", err);
+  }
+
   if (!supabase) return;
   try {
     const { error } = await supabase.from("contact_events").insert({ worker_id: workerId, source });

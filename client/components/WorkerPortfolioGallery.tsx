@@ -40,18 +40,18 @@ export default function WorkerPortfolioGallery({ workerId, workerName }: Props) 
   if (photos.length === 0) return null;
 
   return (
-    <section className="rounded-[13px] border border-line bg-white p-5 dark:border-white/10 dark:bg-[#151515]">
+    <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Camera size={18} className="text-teal" />
-          <h2 className="font-extrabold text-navy dark:text-white">Work Portfolio</h2>
+          <Camera size={18} className="text-primary" />
+          <h2 className="font-bold text-base text-[#2C2C2C]">Work Portfolio</h2>
         </div>
-        <span className="text-xs font-semibold text-slate dark:text-slate-400">
+        <span className="text-xs font-semibold text-[#67696D]">
           {photos.length} {photos.length === 1 ? "photo" : "photos"}
         </span>
       </div>
 
-      <p className="mt-1 text-[13px] text-slate dark:text-slate-400">
+      <p className="mt-1 text-xs text-[#67696D]">
         Recent projects and completed jobs by {workerName}
       </p>
 
@@ -61,7 +61,7 @@ export default function WorkerPortfolioGallery({ workerId, workerName }: Props) 
             key={photo.id || idx}
             type="button"
             onClick={() => setActivePhoto(photo)}
-            className="group relative aspect-square overflow-hidden rounded-[10px] border border-line bg-secondary/30 text-left transition hover:border-teal/50 hover:shadow-sm dark:border-white/10 cursor-pointer"
+            className="group relative aspect-square overflow-hidden rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] text-left transition hover:border-primary hover:shadow-subtle cursor-pointer"
           >
             <img
               src={photo.image_url}
@@ -82,19 +82,19 @@ export default function WorkerPortfolioGallery({ workerId, workerName }: Props) 
       {/* Clean lightbox preview modal */}
       {activePhoto && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
           onClick={() => setActivePhoto(null)}
         >
           <div
-            className="relative max-h-[90vh] max-w-2xl overflow-hidden rounded-[14px] bg-background shadow-2xl"
+            className="relative max-h-[90vh] max-w-2xl overflow-hidden rounded-[20px] bg-white border border-[#E7ECF1] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActivePhoto(null)}
-              className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black"
+              className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80 cursor-pointer"
               aria-label="Close photo preview"
             >
               <X size={18} />
@@ -106,7 +106,7 @@ export default function WorkerPortfolioGallery({ workerId, workerName }: Props) 
               referrerPolicy="no-referrer"
             />
             {activePhoto.label && (
-              <div className="p-3 text-center text-xs font-semibold text-foreground border-t border-border">
+              <div className="p-3.5 text-center text-xs font-semibold text-[#2C2C2C] border-t border-[#E7ECF1]">
                 {activePhoto.label}
               </div>
             )}

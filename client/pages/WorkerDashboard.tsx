@@ -21,6 +21,7 @@ import WorkerGrowthCard from "@/components/WorkerGrowthCard";
 import WorkerPortfolioManager from "@/components/WorkerPortfolioManager";
 import WorkerAgencyAffiliation from "@/components/WorkerAgencyAffiliation";
 import WorkerAssignedProjects from "@/components/WorkerAssignedProjects";
+import WorkerTrackRecordSection from "@/components/WorkerTrackRecordSection";
 
 const isoToday = () => {
   const d = new Date();
@@ -212,8 +213,8 @@ export default function WorkerDashboard() {
   if (loading) {
     return (
       <PageShell hideBack hideHome>
-        <section className="rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground">Loading your worker portal...</p>
+        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center shadow-soft">
+          <p className="text-sm font-medium text-[#67696D]">Loading your worker portal...</p>
         </section>
       </PageShell>
     );
@@ -231,37 +232,37 @@ export default function WorkerDashboard() {
     <PageShell hideBack hideHome>
       <div className="mx-auto max-w-4xl space-y-4">
         {/* Worker Profile Header Card */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary text-foreground">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-[#2C2C2C] shadow-subtle">
                 {avatar ? (
                   <img src={avatar} alt="Profile" className="h-full w-full object-cover" />
                 ) : (
-                  <UserRound size={24} className="text-muted-foreground" />
+                  <UserRound size={24} className="text-primary" />
                 )}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
                     Worker Dashboard
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary/80 px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/50 bg-primary-100/15 px-2.5 py-0.5 text-[10px] font-semibold text-primary">
                     <BadgeCheck size={12} className="text-primary" />
                     Verified Pro
                   </span>
                 </div>
-                <h1 className="mt-0.5 truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                <h1 className="mt-0.5 truncate text-xl font-bold tracking-tight text-[#2C2C2C] sm:text-2xl">
                   {name}
                 </h1>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#67696D]">
                   <span className="flex items-center gap-1 text-primary font-semibold">
                     <BriefcaseBusiness size={13} />
                     {category}
                   </span>
                   <span>·</span>
                   <span className="flex items-center gap-1">
-                    <MapPin size={13} />
+                    <MapPin size={13} className="text-[#989EA7]" />
                     {location}
                   </span>
                 </div>
@@ -272,7 +273,7 @@ export default function WorkerDashboard() {
               <button
                 type="button"
                 onClick={() => navigate("/profile")}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-secondary px-3 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E7ECF1] bg-white px-4 text-xs font-semibold text-primary transition hover:bg-[#F6F9FC] hover:border-primary/50 shadow-subtle cursor-pointer active:scale-95"
               >
                 <Edit3 size={13} />
                 <span>Edit Profile</span>
@@ -283,6 +284,9 @@ export default function WorkerDashboard() {
 
         {/* Growth & Metric Summaries */}
         <WorkerGrowthCard />
+
+        {/* Public Track Record Timeline */}
+        <WorkerTrackRecordSection workerId={user?.id || "1"} workerName={name} />
 
         {/* Work Portfolio Upload & Management */}
         <WorkerPortfolioManager />
@@ -298,48 +302,48 @@ export default function WorkerDashboard() {
         />
 
         {/* Availability Management Panel */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100/20 text-primary">
               <CalendarDays size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-foreground">Availability & Scheduling</h2>
-              <p className="text-xs text-muted-foreground">Control when clients see you as available.</p>
+              <h2 className="text-sm font-bold text-[#2C2C2C]">Availability & Scheduling</h2>
+              <p className="text-xs text-[#67696D]">Control when clients see you as available.</p>
             </div>
           </div>
 
           {error && (
             <p
               role="alert"
-              className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive"
+              className="mt-3 rounded-[12px] border border-rose-500/20 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600"
             >
               {error}
             </p>
           )}
 
           {/* Today's Availability Switch */}
-          <div className="mt-4 rounded-lg border border-border bg-secondary/40 p-4">
+          <div className="mt-4 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0">
                 <span
-                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-xs font-bold ${
+                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
                     availableToday && !isAway
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-                      : "border-border bg-secondary text-muted-foreground"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
+                      : "border-[#E7ECF1] bg-white text-[#989EA7]"
                   }`}
                 >
                   {availableToday && !isAway ? <Check size={14} /> : <X size={14} />}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-foreground sm:text-sm">
+                  <p className="truncate text-xs font-bold text-[#2C2C2C] sm:text-sm">
                     {isAway
                       ? `Away until ${formatDate(awayUntil)}`
                       : availableToday
                         ? "Available for work today"
                         : "Currently busy today"}
                   </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-[#67696D]">
                     {isAway
                       ? "Your availability automatically resumes after this away window."
                       : availableToday
@@ -358,11 +362,11 @@ export default function WorkerDashboard() {
                   onClick={toggleToday}
                   disabled={saving}
                   className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
-                    availableToday ? "bg-primary" : "bg-muted border border-border"
+                    availableToday ? "bg-primary" : "bg-[#E7ECF1] border border-[#E7ECF1]"
                   }`}
                 >
                   <span
-                    className={`block h-5 w-5 rounded-full bg-background shadow-xs transition-transform ${
+                    className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
                       availableToday ? "translate-x-5" : "translate-x-0.5"
                     }`}
                   />
@@ -372,12 +376,12 @@ export default function WorkerDashboard() {
           </div>
 
           {/* Urgent / Same-Day Work Option */}
-          <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-secondary/20 p-3.5">
+          <div className="mt-3 flex items-center justify-between rounded-[12px] border border-[#E7ECF1] bg-white p-3.5 shadow-subtle">
             <div className="flex items-center gap-2.5 min-w-0">
-              <Flame size={15} className={urgent && !todayIsUnavailable ? "text-primary" : "text-muted-foreground"} />
+              <Flame size={15} className={urgent && !todayIsUnavailable ? "text-primary" : "text-[#989EA7]"} />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-foreground">Urgent / same-day jobs</p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs font-bold text-[#2C2C2C]">Urgent / same-day jobs</p>
+                <p className="text-[11px] text-[#67696D]">
                   {todayIsUnavailable
                     ? "Enable 'Available today' first to accept emergency jobs."
                     : "Show an urgent badge to employers needing immediate assistance."}
@@ -391,11 +395,11 @@ export default function WorkerDashboard() {
               disabled={saving || todayIsUnavailable}
               aria-label="Toggle urgent work status"
               className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
-                urgent && !todayIsUnavailable ? "bg-primary" : "bg-muted border border-border"
+                urgent && !todayIsUnavailable ? "bg-primary" : "bg-[#E7ECF1] border border-[#E7ECF1]"
               }`}
             >
               <span
-                className={`block h-5 w-5 rounded-full bg-background shadow-xs transition-transform ${
+                className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
                   urgent && !todayIsUnavailable ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
@@ -403,34 +407,34 @@ export default function WorkerDashboard() {
           </div>
 
           {/* Away Mode Range Box */}
-          <div className="mt-3 rounded-lg border border-border bg-secondary/20 p-3.5">
+          <div className="mt-3 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-3.5">
             <div className="flex items-center gap-2">
-              <Plane size={14} className="text-muted-foreground" />
-              <p className="text-xs font-bold text-foreground">Away Window / Vacation</p>
+              <Plane size={14} className="text-[#67696D]" />
+              <p className="text-xs font-bold text-[#2C2C2C]">Away Window / Vacation</p>
             </div>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
+            <p className="mt-0.5 text-[11px] text-[#67696D]">
               Select date ranges when you will be out of town or taking leave.
             </p>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <label className="text-[11px] font-semibold text-muted-foreground">
+              <label className="text-[11px] font-semibold text-[#67696D]">
                 From
                 <input
                   type="date"
                   min={tomorrow}
                   value={awayFrom}
                   onChange={(e) => setAwayFrom(e.target.value)}
-                  className="mt-1 h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground outline-hidden focus:border-foreground/40"
+                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-2.5 text-xs text-[#2C2C2C] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </label>
-              <label className="text-[11px] font-semibold text-muted-foreground">
+              <label className="text-[11px] font-semibold text-[#67696D]">
                 Until
                 <input
                   type="date"
                   min={awayFrom || tomorrow}
                   value={awayUntil}
                   onChange={(e) => setAwayUntil(e.target.value)}
-                  className="mt-1 h-8 w-full rounded-md border border-border bg-background px-2.5 text-xs text-foreground outline-hidden focus:border-foreground/40"
+                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-2.5 text-xs text-[#2C2C2C] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </label>
             </div>
@@ -440,7 +444,7 @@ export default function WorkerDashboard() {
                 type="button"
                 onClick={saveAway}
                 disabled={!awayFrom || !awayUntil || awayUntil < awayFrom || saving}
-                className="inline-flex h-8 items-center rounded-md bg-foreground px-3 text-xs font-semibold text-background transition hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                className="inline-flex h-8 items-center rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
               >
                 Set away window
               </button>
@@ -449,7 +453,7 @@ export default function WorkerDashboard() {
                   type="button"
                   onClick={clearAway}
                   disabled={saving}
-                  className="inline-flex h-8 items-center rounded-md border border-border bg-card px-3 text-xs font-semibold text-foreground transition hover:bg-secondary cursor-pointer"
+                  className="inline-flex h-8 items-center rounded-full border border-[#E7ECF1] bg-white px-4 text-xs font-semibold text-[#2C2C2C] transition hover:bg-[#F6F9FC] cursor-pointer"
                 >
                   Clear
                 </button>
@@ -463,71 +467,71 @@ export default function WorkerDashboard() {
           <button
             type="button"
             onClick={() => navigate("/worker-commitments")}
-            className="group flex items-center justify-between rounded-xl border border-border bg-card p-3.5 text-left transition hover:border-foreground/30 hover:bg-secondary/40 cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 text-left transition hover:border-primary/40 hover:shadow-soft cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
                 <ClipboardList size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-foreground">Commitments</strong>
-                <span className="text-[11px] text-muted-foreground">Job schedule</span>
+                <strong className="block text-xs font-bold text-[#2C2C2C]">Commitments</strong>
+                <span className="text-[11px] text-[#67696D]">Job schedule</span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+            <ChevronRight size={13} className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]" />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/callback-requests")}
-            className="group flex items-center justify-between rounded-xl border border-border bg-card p-3.5 text-left transition hover:border-foreground/30 hover:bg-secondary/40 cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 text-left transition hover:border-primary/40 hover:shadow-soft cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
                 <ClipboardList size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-foreground">
+                <strong className="block text-xs font-bold text-[#2C2C2C]">
                   Callbacks {callbackCount > 0 && `(${callbackCount})`}
                 </strong>
-                <span className="text-[11px] text-muted-foreground">Direct leads</span>
+                <span className="text-[11px] text-[#67696D]">Direct leads</span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+            <ChevronRight size={13} className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]" />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/profile")}
-            className="group flex items-center justify-between rounded-xl border border-border bg-card p-3.5 text-left transition hover:border-foreground/30 hover:bg-secondary/40 cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 text-left transition hover:border-primary/40 hover:shadow-soft cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
                 <Edit3 size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-foreground">Profile Details</strong>
-                <span className="text-[11px] text-muted-foreground">Skills & rates</span>
+                <strong className="block text-xs font-bold text-[#2C2C2C]">Profile Details</strong>
+                <span className="text-[11px] text-[#67696D]">Skills & rates</span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-foreground" />
+            <ChevronRight size={13} className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]" />
           </button>
 
           <button
             type="button"
             onClick={logout}
-            className="group flex items-center justify-between rounded-xl border border-destructive/30 bg-destructive/10 p-3.5 text-left transition hover:bg-destructive/15 cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-rose-500/20 bg-rose-50/50 p-3.5 text-left transition hover:bg-rose-50 hover:border-rose-500/30 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md border border-destructive/30 bg-destructive/20 text-destructive">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-500/20 bg-rose-100/50 text-rose-600">
                 <LogOut size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-destructive">Sign Out</strong>
-                <span className="text-[11px] text-destructive/80">End session</span>
+                <strong className="block text-xs font-bold text-rose-700">Sign Out</strong>
+                <span className="text-[11px] text-rose-600/80">End session</span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-destructive/80 transition group-hover:translate-x-0.5 group-hover:text-destructive" />
+            <ChevronRight size={13} className="text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-rose-600" />
           </button>
         </section>
       </div>

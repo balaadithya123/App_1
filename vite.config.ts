@@ -1,5 +1,6 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
 import { createServer } from "./server";
 
@@ -17,7 +18,40 @@ export default defineConfig(({ mode }) => ({
   build: {
     outDir: "dist/spa",
   },
-  plugins: [react(), expressPlugin()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: "autoUpdate",
+      injectRegister: "auto",
+      manifest: {
+        name: "Local Worker Discovery",
+        short_name: "Workora",
+        description: "Platform for discovering, contacting, and managing local workers and agencies.",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#1D90F3",
+        icons: [
+          {
+            src: "/pwa-icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "/pwa-icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,png,svg}"],
+      },
+    }),
+    expressPlugin(),
+  ],
   resolve: {
     dedupe: ["react", "react-dom", "react-router-dom"],
     alias: {

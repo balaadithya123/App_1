@@ -4,7 +4,8 @@ import { Eye, UserPlus, ArrowUpRight, Check, Copy } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function WorkerGrowthCard() {
-  const [views, setViews] = useState(0);
+  const [viewsTotal, setViewsTotal] = useState(0);
+  const [viewsThisWeek, setViewsThisWeek] = useState(0);
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState(false);
@@ -22,7 +23,8 @@ export default function WorkerGrowthCard() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result?.message || "Unable to load reach");
-      setViews(Number(result.profileViewsThisWeek) || 0);
+      setViewsTotal(Number(result.profileViewsTotal) || 0);
+      setViewsThisWeek(Number(result.profileViewsThisWeek) || 0);
       setReferralCode(result.referralCode || null);
       setVerified(Boolean(result.phoneVerified));
       setError(false);
@@ -51,7 +53,7 @@ export default function WorkerGrowthCard() {
 
   return (
     <div className={`grid gap-3 ${verified && referralCode ? "sm:grid-cols-2" : "grid-cols-1"}`}>
-      {/* Metric 1: Weekly Profile Reach */}
+      {/* Metric 1: Profile Reach */}
       <section className="rounded-xl border border-border bg-card p-4 transition-colors">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -61,9 +63,15 @@ export default function WorkerGrowthCard() {
             <Eye size={14} />
           </span>
         </div>
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-3xl font-bold tracking-tight text-foreground">{views}</span>
-          <span className="text-xs text-muted-foreground">views this week</span>
+        <div className="mt-3 grid grid-cols-2 gap-4">
+          <div>
+            <span className="text-2xl font-bold tracking-tight text-foreground">{viewsThisWeek}</span>
+            <span className="text-[10px] text-muted-foreground block">This week</span>
+          </div>
+          <div>
+            <span className="text-2xl font-bold tracking-tight text-foreground">{viewsTotal}</span>
+            <span className="text-[10px] text-muted-foreground block">Total</span>
+          </div>
         </div>
         <div className="mt-3 flex items-center justify-between border-t border-border/80 pt-3">
           {error ? (
@@ -83,7 +91,7 @@ export default function WorkerGrowthCard() {
               <ArrowUpRight size={13} />
             </Link>
           )}
-          <span className="text-[11px] text-muted-foreground">7d active</span>
+          <span className="text-[11px] text-muted-foreground">Active</span>
         </div>
       </section>
 

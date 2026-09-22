@@ -3,10 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BuilderCo - Find Local Workers & Services</title>
-    <meta name="description" content="Find local workers and service providers with BuilderCo. Discover skilled professionals for your building and home service needs." />
+    <title>Local Worker Discovery - Find Local Workers & Services</title>
+    <meta name="description" content="Platform for discovering, contacting, and managing local workers and agencies with AI requirements assistant, voice onboarding, portfolio photo screener, and reasoning-based worker ranking engine." />
+    <meta property="og:title" content="Local Worker Discovery - Find Local Workers & Services" />
+    <meta property="og:description" content="Platform for discovering, contacting, and managing local workers and agencies with AI requirements assistant, voice onboarding, portfolio photo screener, and reasoning-based worker ranking engine." />
     <meta name="google-site-verification" content="gaAJHd0hJKdWuHKMFpPI1vBD2M1N_hWpYhOO5fmbTXs" />
+    <meta name="theme-color" content="#1D90F3" />
+    <link rel="apple-touch-icon" href="/pwa-icon-512.png" />
     <link rel="canonical" href="https://builderco.vercel.app/" />
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('localworker_theme');
+          if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>

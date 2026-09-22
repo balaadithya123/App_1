@@ -1,83 +1,115 @@
 /** @import must precede all other statements */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    /* Explicit Color Tokens */
+    --color-primary-100: #5DB1F8;   /* light blue — subtle highlights, hover backgrounds */
+    --color-primary-500: #38A3FF;   /* mid blue — secondary actions, links, active icons */
+    --color-primary-600: #1D90F3;   /* core blue — primary buttons, active nav state, focus rings */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --color-neutral-300: #989EA7;   /* placeholder text, disabled states, dividers */
+    --color-neutral-500: #67696D;   /* secondary/body text */
+    --color-neutral-900: #2C2C2C;   /* headings, primary text */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --color-surface: #FFFFFF;        /* cards, sheets, modals */
+    --color-background: #F6F9FC;     /* page background — light blue-gray */
+    --color-border: #E7ECF1;         /* hairline borders, card outlines */
 
-    /* Brand Primary Accent */
-    --primary: 18 85% 42%;
+    /* WhatsApp Green standard token */
+    --color-whatsapp: #25D366;
+    --color-whatsapp-hover: #20BA5A;
+
+    /* Theme mappings (HSL) for Tailwind compatibility */
+    --background: 210 43% 98%;       /* #F6F9FC */
+    --foreground: 0 0% 17%;          /* #2C2C2C */
+
+    --card: 0 0% 100%;               /* #FFFFFF */
+    --card-foreground: 0 0% 17%;     /* #2C2C2C */
+
+    --popover: 0 0% 100%;            /* #FFFFFF */
+    --popover-foreground: 0 0% 17%;  /* #2C2C2C */
+
+    /* Primary: #1D90F3 (Core Blue) */
+    --primary: 208 90% 53%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Clean Neutral Surface */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 12%;
+    /* Secondary: very soft cool neutral */
+    --secondary: 210 25% 96%;
+    --secondary-foreground: 0 0% 17%;
 
-    /* Muted: Secondary text & subtle divider fills */
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    /* Muted: #67696D */
+    --muted: 210 25% 95%;
+    --muted-foreground: 225 3% 42%;
 
-    --accent: 18 85% 42%;
+    --accent: 208 90% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 89%;
-    --input: 0 0% 89%;
-    --ring: 0 0% 9%;
-    --radius: 0.5rem;
+    --border: 210 25% 93%;           /* #E7ECF1 */
+    --input: 210 25% 93%;            /* #E7ECF1 */
+    --ring: 208 90% 53%;             /* #1D90F3 */
+    --radius: 1rem;                  /* 16px base card radius */
   }
 
   .dark {
-    /* Pure black (#000000) ChatGPT-style interface dark mode */
-    --background: 0 0% 0%;       /* #000000 pure true black */
-    --foreground: 0 0% 93%;      /* #ececec clean crisp text */
+    --color-primary-100: #1A365D;   /* dark blue highlight container */
+    --color-primary-500: #38A3FF;   /* mid blue */
+    --color-primary-600: #1D90F3;   /* core blue */
 
-    --card: 0 0% 6%;             /* #0f0f0f deep black panel surface */
-    --card-foreground: 0 0% 93%;
+    --color-neutral-300: #71717A;   /* placeholders & subtle dividers */
+    --color-neutral-500: #A1A1AA;   /* secondary text */
+    --color-neutral-900: #F4F4F5;   /* primary text */
 
-    --popover: 0 0% 6%;          /* #0f0f0f */
-    --popover-foreground: 0 0% 93%;
+    --color-surface: #0A0A0A;        /* card surface: deep pitch dark */
+    --color-background: #000000;     /* page background: pure black */
+    --color-border: #1F1F1F;         /* hairline border */
 
-    /* Primary Accent in dark mode */
-    --primary: 18 80% 56%;       /* #e06c3a crisp terracotta */
+    /* WhatsApp Green standard token */
+    --color-whatsapp: #25D366;
+    --color-whatsapp-hover: #20BA5A;
+
+    /* Theme mappings (HSL) for pure black OLED dark mode */
+    --background: 0 0% 0%;           /* #000000 Pure Black */
+    --foreground: 0 0% 96%;          /* #F4F4F5 */
+
+    --card: 0 0% 4%;                 /* #0A0A0A */
+    --card-foreground: 0 0% 96%;     /* #F4F4F5 */
+
+    --popover: 0 0% 4%;              /* #0A0A0A */
+    --popover-foreground: 0 0% 96%;  /* #F4F4F5 */
+
+    --primary: 208 90% 53%;          /* #1D90F3 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 10%;       /* #1a1a1a deep black secondary */
-    --secondary-foreground: 0 0% 93%;
+    --secondary: 0 0% 9%;            /* #171717 */
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 10%;           /* #1a1a1a */
-    --muted-foreground: 0 0% 60%;/* #999999 */
+    --muted: 0 0% 9%;                /* #171717 */
+    --muted-foreground: 240 5% 65%;  /* #A1A1AA */
 
-    --accent: 18 80% 56%;
+    --accent: 208 90% 53%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 48%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14%;          /* #242424 crisp 1px pure black border */
-    --input: 0 0% 14%;
-    --ring: 0 0% 93%;
+    --border: 0 0% 14%;              /* #242424 */
+    --input: 0 0% 14%;               /* #242424 */
+    --ring: 208 90% 53%;
 
-    /* Sidebar / Navigation panels */
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 93%;
-    --sidebar-primary: 18 80% 56%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 208 90% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 93%;
+    --sidebar-accent: 0 0% 9%;
+    --sidebar-accent-foreground: 0 0% 96%;
     --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 0 0% 93%;
+    --sidebar-ring: 208 90% 53%;
   }
 
   * {
@@ -90,7 +122,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: hsl(var(--background));
@@ -117,21 +149,131 @@
 
   /* Smooth focus ring outline standard */
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 2px solid #1D90F3;
     outline-offset: 2px;
   }
-
-  /* Scoped semantic helper styles */
-  .contact-glass {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(12px);
-  }
-
-  html:not(.dark) .contact-glass {
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(12px);
-  }
 }
+
+/* Typography scale utilities based on design brief */
+.font-title-1 {
+  font-size: 36px;
+  line-height: 50px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #2C2C2C;
+}
+
+.font-heading-1 {
+  font-size: 24px;
+  line-height: 36px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #2C2C2C;
+}
+
+.font-heading-2 {
+  font-size: 21px;
+  line-height: 30px;
+  font-weight: 700;
+  color: #2C2C2C;
+}
+
+.font-body-1 {
+  font-size: 15px;
+  line-height: 24px;
+  font-weight: 500;
+  color: #2C2C2C;
+}
+
+.font-body-2 {
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: #67696D;
+}
+
+.font-body-meta {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: #67696D;
+}
+
+/* Dark mode typography */
+html.dark .font-title-1,
+html.dark .font-heading-1,
+html.dark .font-heading-2,
+html.dark .font-body-1 {
+  color: #F4F4F5;
+}
+
+html.dark .font-body-2,
+html.dark .font-body-meta {
+  color: #A1A1AA;
+}
+
+/* Soft shadows */
+.shadow-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-soft {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-subtle {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Pure Black Dark Mode Overrides for hardcoded utility classes */
+html.dark {
+  color-scheme: dark;
+  background-color: #000000;
+  color: #F4F4F5;
+}
+
+html.dark body {
+  background-color: #000000;
+  color: #F4F4F5;
+}
+
+html.dark header,
+html.dark [role="banner"],
+html.dark .bg-white\/95,
+html.dark .bg-white\/90,
+html.dark .bg-white\/80 {
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  border-color: #1F1F1F !important;
+}
+
+html.dark .bg-\[\#F6F9FC\] {
+  background-color: #0c0c0c !important;
+}
+
+html.dark .bg-white {
+  background-color: #050505 !important;
+}
+
+html.dark .border-\[\#E7ECF1\] {
+  border-color: #1F1F1F !important;
+}
+
+html.dark .text-\[\#2C2C2C\] {
+  color: #F4F4F5 !important;
+}
+
+html.dark .text-\[\#67696D\] {
+  color: #A1A1AA !important;
+}
+
+html.dark .text-\[\#989EA7\] {
+  color: #71717A !important;
+}
+
+html.dark .shadow-card,
+html.dark .shadow-soft,
+html.dark .shadow-subtle {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
 

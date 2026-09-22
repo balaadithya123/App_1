@@ -118,28 +118,28 @@ export default function RequestCallbackForm({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-xs sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-xs sm:items-center"
       role="dialog"
       aria-modal="true"
     >
-      <section className="w-full max-w-md rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6">
+      <section className="w-full max-w-md rounded-[20px] border border-[#E7ECF1] bg-white p-5 shadow-xl sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100/20 text-primary">
                 <PhoneCall size={15} />
               </span>
-              <h2 className="text-lg font-extrabold text-foreground">Request a Callback</h2>
+              <h2 className="text-lg font-bold text-[#2C2C2C]">Request a Callback</h2>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Ask <span className="font-semibold text-foreground">{targetName}</span> to contact you directly.
+            <p className="mt-1 text-xs text-[#67696D]">
+              Ask <span className="font-semibold text-[#2C2C2C]">{targetName}</span> to contact you directly.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground cursor-pointer"
+            className="rounded-full p-1.5 text-[#989EA7] transition hover:bg-[#F6F9FC] hover:text-[#2C2C2C] cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -147,17 +147,17 @@ export default function RequestCallbackForm({
 
         {message ? (
           <div className="mt-5 space-y-4 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-foreground">Request Sent</h3>
-              <p className="mt-1 text-xs text-muted-foreground">{message}</p>
+              <h3 className="text-sm font-bold text-[#2C2C2C]">Request Sent</h3>
+              <p className="mt-1 text-xs text-[#67696D]">{message}</p>
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-foreground text-xs font-bold text-background transition hover:opacity-90 cursor-pointer"
+              className="inline-flex h-10 w-full items-center justify-center rounded-full bg-primary text-xs font-bold text-white transition hover:bg-[#157ad4] shadow-subtle cursor-pointer active:scale-95"
             >
               Done
             </button>
@@ -165,29 +165,29 @@ export default function RequestCallbackForm({
         ) : (
           <form onSubmit={submit} className="mt-5 space-y-3.5">
             {/* Account Holder Verified Identification (No manual name input) */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-border bg-secondary/40 p-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-card text-primary">
+            <div className="flex items-center gap-2.5 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E7ECF1] bg-white text-primary shadow-subtle">
                 <UserCheck size={16} />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#67696D]">
                   Account Holder
                 </span>
-                <p className="truncate text-xs font-bold text-foreground">
+                <p className="truncate text-xs font-bold text-[#2C2C2C]">
                   {loadingUser ? "Loading account..." : accountName || "Verified Account Holder"}
                 </p>
               </div>
-              <span className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+              <span className="rounded-full border border-primary-100/40 bg-primary-100/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
                 Verified
               </span>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
                 Contact Phone
               </label>
-              <div className="mt-1 flex h-10 overflow-hidden rounded-lg border border-border bg-background">
-                <span className="flex items-center border-r border-border bg-secondary px-3 text-xs font-bold text-muted-foreground">
+              <div className="mt-1 flex h-10 overflow-hidden rounded-[12px] border border-[#E7ECF1] bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                <span className="flex items-center border-r border-[#E7ECF1] bg-[#F6F9FC] px-3 text-xs font-bold text-[#67696D]">
                   +91
                 </span>
                 <input
@@ -197,13 +197,13 @@ export default function RequestCallbackForm({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                   placeholder="10-digit mobile number"
-                  className="min-w-0 flex-1 bg-transparent px-3 text-xs font-medium text-foreground outline-hidden"
+                  className="min-w-0 flex-1 bg-transparent px-3 text-xs font-medium text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
                 Service Needed
               </label>
               <input
@@ -211,28 +211,28 @@ export default function RequestCallbackForm({
                 value={serviceNeeded}
                 onChange={(e) => setServiceNeeded(e.target.value)}
                 placeholder="e.g. Electrical wiring repair, Fan installation"
-                className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-xs font-medium text-foreground outline-hidden focus:border-foreground/40"
+                className="mt-1 h-10 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 text-xs font-medium text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
                 Preferred Time
               </label>
-              <div className="mt-1 flex items-center rounded-lg border border-border bg-background px-3">
-                <Clock size={13} className="text-muted-foreground shrink-0 mr-2" />
+              <div className="mt-1 flex items-center rounded-[12px] border border-[#E7ECF1] bg-white px-3 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                <Clock size={13} className="text-[#989EA7] shrink-0 mr-2" />
                 <input
                   required
                   value={preferredTime}
                   onChange={(e) => setPreferredTime(e.target.value)}
                   placeholder="e.g. Today 4:00 PM, Tomorrow Morning"
-                  className="h-10 w-full bg-transparent text-xs font-medium text-foreground outline-hidden"
+                  className="h-10 w-full bg-transparent text-xs font-medium text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
                 Notes / Address Details (Optional)
               </label>
               <textarea
@@ -240,14 +240,14 @@ export default function RequestCallbackForm({
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
                 placeholder="Brief description or locality details..."
-                className="mt-1 w-full resize-none rounded-lg border border-border bg-background p-2.5 text-xs font-medium text-foreground outline-hidden focus:border-foreground/40"
+                className="mt-1 w-full resize-none rounded-[12px] border border-[#E7ECF1] bg-white p-2.5 text-xs font-medium text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {error && (
               <p
                 role="alert"
-                className="flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 p-2.5 text-xs font-semibold text-destructive"
+                className="flex items-center gap-1.5 rounded-[12px] border border-destructive/30 bg-destructive/10 p-2.5 text-xs font-semibold text-destructive"
               >
                 <ShieldAlert size={14} className="shrink-0" />
                 <span>{error}</span>
@@ -257,7 +257,7 @@ export default function RequestCallbackForm({
             <button
               type="submit"
               disabled={saving}
-              className="flex h-10 w-full items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-xs transition hover:opacity-90 disabled:opacity-60 cursor-pointer"
+              className="flex h-10 w-full items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-subtle transition hover:bg-[#157ad4] disabled:opacity-60 cursor-pointer active:scale-95"
             >
               {saving ? "Sending Request..." : "Submit Callback Request"}
             </button>

@@ -46,16 +46,35 @@ export const handleGetWorkerStats: RequestHandler = async (req, res) => {
     }
     if (!worker) return res.json({ profileViewsThisWeek: 0, referralCode: null, phoneVerified: false });
 
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count, error: analyticsError } = await supabase
+    // 1. Total views
+    const { count: totalCount, error: totalError } = await supabase
+      .from("analytics_events")
+      .select("id", { count: "exact", head: true })
+      .eq("event_type", "profile_view")
+      .eq("worker_id", worker.id);
+    if (totalError) throw totalError;
+
+    // 2. Fixed-week views (from Monday)
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfWeekISO = startOfWeek.toISOString();
+
+    const { count: weeklyCount, error: weeklyError } = await supabase
       .from("analytics_events")
       .select("id", { count: "exact", head: true })
       .eq("event_type", "profile_view")
       .eq("worker_id", worker.id)
-      .gte("created_at", since);
-    if (analyticsError) throw analyticsError;
+      .gte("created_at", startOfWeekISO);
+    if (weeklyError) throw weeklyError;
 
-    return res.json({ profileViewsThisWeek: count ?? 0, referralCode: worker.referral_code ?? null, phoneVerified: Boolean(worker.phone_verified) });
+    return res.json({ 
+        profileViewsTotal: totalCount ?? 0, 
+        profileViewsThisWeek: weeklyCount ?? 0, 
+        referralCode: worker.referral_code ?? null, 
+        phoneVerified: Boolean(worker.phone_verified) 
+    });
   } catch (error) {
     console.error("[worker-stats] failed:", error);
     return res.status(500).json({ message: "Unable to load your profile reach right now." });

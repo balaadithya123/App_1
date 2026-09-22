@@ -72,11 +72,11 @@ export default function ChatAssistantPage() {
           const res = await fetch(`/api/maps/reverse-geocode?lat=${latitude}&lng=${longitude}`);
           const data = await res.json();
           if (data.status === "OK") {
-            const loc = data.locality || data.city || `${latitude.toFixed(3)}, ${longitude.toFixed(3)}`;
+            const loc = data.place_name || data.city || data.locality || "Local Area";
             setClientLocation(loc);
           }
         } catch {
-          setClientLocation(`${latitude.toFixed(3)}, ${longitude.toFixed(3)}`);
+          setClientLocation("Local Area");
         } finally {
           setIsLocating(false);
         }

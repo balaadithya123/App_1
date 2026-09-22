@@ -3,35 +3,48 @@ import {
   MapPin,
   Search as SearchIcon,
   Heart,
-  SlidersHorizontal,
   BadgeCheck,
   Building2,
   Users,
   MessageCircle,
+  Phone,
   Clock,
   Sparkles,
   ArrowRight,
-  UserRound,
-  Bot,
-  Send,
-  Loader2,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   BrainCircuit,
   RotateCcw,
   AlertTriangle,
+  X,
+  Zap,
+  Wrench,
+  Hammer,
+  Paintbrush,
+  Brush,
+  Wind,
+  LayoutGrid,
+  Star,
 } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
+import NavBar from "@/components/NavBar";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse } from "@shared/api";
-import { filterWorkers } from "@/lib/search";
 import { getSavedWorkerIds, toggleSavedWorker } from "@/lib/favorites";
-import { logAnalyticsEvent } from "@/lib/analytics";
+import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
+import { getStandardLocation, setStandardLocation, detectGpsLocation } from "@/lib/location";
 
-const categories = ["All", "Electrician", "Painter", "Plumber", "Carpenter", "Cleaner", "AC Repair", "Other"];
+const categoryList = [
+  { name: "All", label: "All Services", icon: LayoutGrid },
+  { name: "Electrician", label: "Electricians", icon: Zap },
+  { name: "Plumber", label: "Plumbers", icon: Wrench },
+  { name: "Carpenter", label: "Carpenters", icon: Hammer },
+  { name: "Painter", label: "Painters", icon: Paintbrush },
+  { name: "Cleaner", label: "Cleaners", icon: Brush },
+  { name: "AC Repair", label: "AC Repair", icon: Wind },
+];
 
 const stemWord = (word: string) => {
   const w = word.trim().toLowerCase();
@@ -44,13 +57,26 @@ const stemWord = (word: string) => {
 };
 
 const matchStandardCategory = (val: string) => {
-  if (!val || val.toLowerCase() === "all") return "All";
-  const v = val.trim().toLowerCase();
-  const found = categories.find((c) => {
-    const cl = c.toLowerCase();
-    return cl === v || v.startsWith(cl.slice(0, 5)) || cl.startsWith(v.slice(0, 5)) || stemWord(cl) === stemWord(v);
+  if (!val || val.toLowerCase() === "all" || val.toLowerCase() === "all services") return "All";
+  const v = val.trim().toLowerCase().replace(/-/g, " ");
+  if (v.includes("ac") || v.includes("air conditioner")) return "AC Repair";
+  if (v.includes("plumb") || v.includes("geyser") || v.includes("water purifier") || v.includes("ro") || v.includes("water pump") || v.includes("tank") || v.includes("sump")) return "Plumber";
+  if (v.includes("electric") || v.includes("inverter") || v.includes("battery") || v.includes("washing machine")) return "Electrician";
+  if (v.includes("clean") || v.includes("pest") || v.includes("chimney") || v.includes("exhaust")) return "Cleaner";
+  if (v.includes("paint")) return "Painter";
+  if (v.includes("carpent")) return "Carpenter";
+  const found = categoryList.find((c) => {
+    const cl = c.name.toLowerCase();
+    return cl === v || v.startsWith(cl.slice(0, 4)) || cl.startsWith(v.slice(0, 4)) || stemWord(cl) === stemWord(v);
   });
-  return found || val;
+  return found ? found.name : val;
+};
+
+const getCategoryHeaderTitle = (cat: string) => {
+  if (!cat || cat === "All") return "All Services";
+  const match = categoryList.find((c) => c.name.toLowerCase() === cat.toLowerCase());
+  if (match) return match.label;
+  return `${cat}s`;
 };
 
 type Agency = {
@@ -76,7 +102,7 @@ export default function SearchResults() {
   const rawType = searchParams.get("type")?.toLowerCase();
   const initialType: SearchType = rawType === "agencies" ? "agencies" : rawType === "workers" ? "workers" : "all";
 
-  const requestedService = searchParams.get("service")?.trim() || "";
+  const requestedService = searchParams.get("service") || searchParams.get("category") || "";
   const requestedLocation = searchParams.get("location")?.trim() || "";
 
   const [searchType, setSearchType] = useState<SearchType>(initialType);
@@ -86,21 +112,16 @@ export default function SearchResults() {
   const [category, setCategory] = useState(() => matchStandardCategory(requestedService));
   const [locality, setLocality] = useState(requestedLocation);
 
-  // Reasoning Ranker State
+  // Search filter inputs
   const [freeTextNeed, setFreeTextNeed] = useState(searchParams.get("need") || searchParams.get("q") || "");
-  const [rankingMap, setRankingMap] = useState<Record<string, { rank: number; score: number; reason: string }>>({});
-  const [excludedWorkers, setExcludedWorkers] = useState<Array<{ worker_id: string; reason: string }>>([]);
-  const [isRankingLoading, setIsRankingLoading] = useState(false);
-  const [rankingModelUsed, setRankingModelUsed] = useState<string | null>(null);
-  const [showExcluded, setShowExcluded] = useState(false);
-
-  // AI Matchmaker State
-  const [showAiAssistant, setShowAiAssistant] = useState(searchParams.get("ai") === "1");
-  const [aiQuestion, setAiQuestion] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
   const [onlyVerified, setOnlyVerified] = useState(false);
+  const [minRating4Plus, setMinRating4Plus] = useState(false);
+
+  // Reasoning Ranker State
+  const [rankingMap, setRankingMap] = useState<Record<string, { rank: number; score: number; reason: string }>>({});
+  const [excludedWorkers, setExcludedWorkers] = useState<Array<{ worker_id: string; reason: string }>>([]);
+  const [showExcluded, setShowExcluded] = useState(false);
 
   // Sync state when URL params change
   useEffect(() => {
@@ -109,7 +130,7 @@ export default function SearchResults() {
     else if (t === "workers" && searchType !== "workers") setSearchType("workers");
     else if (!t && searchType !== "all" && rawType !== "agencies" && rawType !== "workers") setSearchType("all");
 
-    const s = searchParams.get("service")?.trim() || "";
+    const s = searchParams.get("service") || searchParams.get("category") || "";
     setCategory(matchStandardCategory(s));
 
     const l = searchParams.get("location")?.trim() || "";
@@ -117,42 +138,7 @@ export default function SearchResults() {
 
     const n = searchParams.get("need") || searchParams.get("q") || "";
     if (n) setFreeTextNeed(n);
-
-    if (searchParams.get("ai") === "1") {
-      setShowAiAssistant(true);
-    }
   }, [searchParams]);
-
-  const handleAskAi = async (customQuery?: string) => {
-    const queryToAsk = customQuery || aiQuestion;
-    if (!queryToAsk.trim()) return;
-
-    setAiLoading(true);
-    setAiResponse(null);
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `Service: ${category !== "All" ? category : requestedService || "Any"}, Location: ${locality || requestedLocation || "Local"}. Question: ${queryToAsk}`,
-            },
-          ],
-          clientLocation: locality || requestedLocation,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Could not retrieve AI recommendation.");
-      setAiResponse(data.text);
-    } catch (err: any) {
-      setAiResponse(err.message || "AI Concierge is temporarily unavailable.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const load = useCallback(async () => {
     try {
@@ -240,23 +226,54 @@ export default function SearchResults() {
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
     const next = new URLSearchParams(searchParams);
-    if (newCat === "All") next.delete("service");
-    else next.set("service", newCat);
+    if (newCat === "All") {
+      next.delete("service");
+      next.delete("category");
+    } else {
+      next.set("service", newCat);
+      next.set("category", newCat);
+    }
     setSearchParams(next, { replace: true });
   };
 
   const handleLocalityChange = (newLoc: string) => {
-    setLocality(newLoc);
+    const trimmed = newLoc.trim();
+    setLocality(trimmed);
+    if (trimmed) {
+      setStandardLocation(trimmed);
+    }
     const next = new URLSearchParams(searchParams);
-    if (!newLoc.trim()) next.delete("location");
-    else next.set("location", newLoc.trim());
+    if (!trimmed) next.delete("location");
+    else next.set("location", trimmed);
     setSearchParams(next, { replace: true });
+  };
+
+  const [gpsDetecting, setGpsDetecting] = useState(false);
+  const handleQuickGps = async () => {
+    if (!navigator.geolocation) return;
+    setGpsDetecting(true);
+    try {
+      const details = await detectGpsLocation(true);
+      if (details) {
+        const detected = details.locality || details.city || details.formatted;
+        if (detected) {
+          handleLocalityChange(detected);
+        }
+      }
+    } catch {}
+    finally {
+      setGpsDetecting(false);
+    }
   };
 
   const handleResetFilters = () => {
     setCategory("All");
     setLocality("");
+    setFreeTextNeed("");
     setSearchType("all");
+    setOnlyAvailableToday(false);
+    setOnlyVerified(false);
+    setMinRating4Plus(false);
     const next = new URLSearchParams();
     setSearchParams(next, { replace: true });
   };
@@ -270,7 +287,6 @@ export default function SearchResults() {
         return;
       }
 
-      setIsRankingLoading(true);
       try {
         const candidates = workersToRank.map((w) => {
           const isLocMatch = loc ? w.locality.toLowerCase().includes(loc.toLowerCase()) : true;
@@ -315,12 +331,9 @@ export default function SearchResults() {
           }
           setRankingMap(map);
           setExcludedWorkers(Array.isArray(data.excluded) ? data.excluded : []);
-          setRankingModelUsed(data.model_used || "AI Reasoning Ranker");
         }
       } catch (err) {
         console.warn("[ranking] Evaluation warning:", err);
-      } finally {
-        setIsRankingLoading(false);
       }
     },
     [],
@@ -330,60 +343,106 @@ export default function SearchResults() {
   const targetLocality = locality.trim() || requestedLocation.trim();
 
   const matchingWorkers = useMemo(() => {
+    const qLower = freeTextNeed.trim().toLowerCase();
+
     return availableWorkers.filter((w) => {
       const catMatched =
         !targetCategory ||
         targetCategory === "All" ||
-        w.category.toLowerCase() === targetCategory.toLowerCase() ||
         w.category.toLowerCase().includes(targetCategory.toLowerCase()) ||
         targetCategory.toLowerCase().includes(w.category.toLowerCase()) ||
         stemWord(w.category) === stemWord(targetCategory);
 
-      const locMatched = !targetLocality || w.locality.toLowerCase().includes(targetLocality.toLowerCase());
+      const locMatched =
+        !targetLocality ||
+        w.locality.toLowerCase().includes(targetLocality.toLowerCase()) ||
+        targetLocality.toLowerCase().includes(w.locality.toLowerCase());
+
       const availMatched = !onlyAvailableToday || Boolean(w.available_today);
       const verifiedMatched = !onlyVerified || Boolean(w.phone_verified);
+      const ratingMatched = !minRating4Plus || Number(w.avg_rating || w.rating || 4.8) >= 4.5;
 
-      return catMatched && locMatched && availMatched && verifiedMatched;
+      const qMatched =
+        !qLower ||
+        w.name.toLowerCase().includes(qLower) ||
+        w.category.toLowerCase().includes(qLower) ||
+        (w.locality || "").toLowerCase().includes(qLower) ||
+        (w.services || []).some((s) => s.toLowerCase().includes(qLower));
+
+      return catMatched && locMatched && qMatched && availMatched && verifiedMatched && ratingMatched;
     });
-  }, [availableWorkers, targetCategory, targetLocality, onlyAvailableToday, onlyVerified]);
+  }, [availableWorkers, targetCategory, targetLocality, freeTextNeed, onlyAvailableToday, onlyVerified, minRating4Plus]);
 
   // Auto-run ranking when matching workers or search filters change
   useEffect(() => {
-    const timer = setTimeout(() => {
-      void runRankingEvaluation(matchingWorkers, freeTextNeed, targetCategory, targetLocality);
-    }, 350);
-    return () => clearTimeout(timer);
+    if (matchingWorkers.length > 0 && freeTextNeed.trim()) {
+      const timer = setTimeout(() => {
+        void runRankingEvaluation(matchingWorkers, freeTextNeed, targetCategory, targetLocality);
+      }, 350);
+      return () => clearTimeout(timer);
+    } else {
+      setRankingMap({});
+      setExcludedWorkers([]);
+    }
   }, [matchingWorkers, freeTextNeed, targetCategory, targetLocality, runRankingEvaluation]);
 
-  // Sort matching workers according to AI reasoning rank
   const sortedWorkers = useMemo(() => {
-    const excludedIds = new Set(excludedWorkers.map((e) => e.worker_id));
-    const active = matchingWorkers.filter((w) => !excludedIds.has(w.id));
-    return [...active].sort((a, b) => {
-      const rankA = rankingMap[a.id]?.rank ?? 999;
-      const rankB = rankingMap[b.id]?.rank ?? 999;
-      return rankA - rankB;
+    return [...matchingWorkers].sort((a, b) => {
+      // 1. AI Reasoning rank if available
+      const rA = rankingMap[a.id]?.rank;
+      const rB = rankingMap[b.id]?.rank;
+      if (rA !== undefined && rB !== undefined) return rA - rB;
+      if (rA !== undefined) return -1;
+      if (rB !== undefined) return 1;
+
+      // 2. Locality match priority
+      if (targetLocality) {
+        const aLoc = (a.locality || "").toLowerCase().includes(targetLocality.toLowerCase()) ? 1 : 0;
+        const bLoc = (b.locality || "").toLowerCase().includes(targetLocality.toLowerCase()) ? 1 : 0;
+        if (bLoc !== aLoc) return bLoc - aLoc;
+      }
+
+      // 3. Verified pro priority
+      const aVer = a.phone_verified ? 1 : 0;
+      const bVer = b.phone_verified ? 1 : 0;
+      if (bVer !== aVer) return bVer - aVer;
+
+      // 4. Rating priority
+      const aRating = Number(a.avg_rating || a.rating || 4.8);
+      const bRating = Number(b.avg_rating || b.rating || 4.8);
+      if (bRating !== aRating) return bRating - aRating;
+
+      // 5. Available today
+      if (b.available_today && !a.available_today) return 1;
+      if (!b.available_today && a.available_today) return -1;
+
+      return 0;
     });
-  }, [matchingWorkers, rankingMap, excludedWorkers]);
+  }, [matchingWorkers, rankingMap, targetLocality]);
 
   const matchingAgencies = agencies.filter((a) => {
+    const qLower = freeTextNeed.trim().toLowerCase();
+
     const catMatched =
       !targetCategory ||
       targetCategory === "All" ||
-      (a.categories || []).some((c) => {
-        const cl = String(c).toLowerCase();
-        const ql = targetCategory.toLowerCase();
-        return cl.includes(ql) || ql.includes(cl) || stemWord(cl) === stemWord(ql);
-      });
+      (a.categories || []).some((c) => String(c).toLowerCase().includes(targetCategory.toLowerCase())) ||
+      (a.categories || []).some((c) => stemWord(String(c)) === stemWord(targetCategory));
 
     const locMatched =
       !targetLocality ||
       (a.service_locations || []).some((l) => String(l).toLowerCase().includes(targetLocality.toLowerCase())) ||
       Boolean(a.location && String(a.location).toLowerCase().includes(targetLocality.toLowerCase()));
 
+    const qMatched =
+      !qLower ||
+      a.name.toLowerCase().includes(qLower) ||
+      (a.categories || []).some((c) => String(c).toLowerCase().includes(qLower)) ||
+      (a.service_locations || []).some((l) => String(l).toLowerCase().includes(qLower));
+
     const verifiedMatched = !onlyVerified || Boolean(a.verified);
 
-    return catMatched && locMatched && verifiedMatched;
+    return catMatched && locMatched && qMatched && verifiedMatched;
   });
 
   // Combine or filter strictly according to selected searchType
@@ -404,183 +463,176 @@ export default function SearchResults() {
     }
   }
 
-  const getHeading = () => {
-    if (targetCategory && targetCategory !== "All") {
-      if (searchType === "agencies") return `${targetCategory} Agencies`;
-      if (searchType === "workers") return `${targetCategory} Specialists`;
-      return `${targetCategory} Listings`;
-    }
-    if (targetLocality) {
-      if (searchType === "agencies") return `Agencies in ${targetLocality}`;
-      if (searchType === "workers") return `Workers in ${targetLocality}`;
-      return `Listings in ${targetLocality}`;
-    }
-    if (searchType === "agencies") return "Registered Agencies";
-    if (searchType === "workers") return "Individual Specialists";
-    return "Verified Local Directory";
-  };
-
-  const hasActiveFilters = category !== "All" || locality.trim() !== "" || searchType !== "all";
+  const hasActiveFilters =
+    category !== "All" ||
+    locality.trim() !== "" ||
+    searchType !== "all" ||
+    onlyAvailableToday ||
+    onlyVerified ||
+    minRating4Plus ||
+    freeTextNeed.trim() !== "";
 
   return (
-    <PageShell backLabel="Back" backTo="/">
-      {/* Streamlined Clean Header */}
-      <div className="mb-5 space-y-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              <span>Directory</span>
-              <span>/</span>
-              <span>
-                {searchType === "agencies" ? "Agencies" : searchType === "workers" ? "Workers" : "All Listings"}
-              </span>
-            </div>
-            <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              {getHeading()}
-            </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {combined.length} available {combined.length === 1 ? "listing" : "listings"} found
-              {targetLocality ? ` near ${targetLocality}` : ""}
-            </p>
-          </div>
+    <PageShell
+      backLabel="Back"
+      backTo="/"
+      headerTitle={getCategoryHeaderTitle(category)}
+      headerRight={
+        <Link
+          to="/saved"
+          aria-label="Saved listings"
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] px-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle hover:border-primary/40 active:scale-95"
+        >
+          <Heart size={13} className={savedIds.length ? "text-primary fill-primary" : "text-[#989EA7]"} />
+          <span>{savedIds.length}</span>
+        </Link>
+      }
+      containerWidth="lg"
+      className="pb-24"
+    >
+      {/* 1. HORIZONTAL CATEGORY SELECTOR CAROUSEL */}
+      <div className="mb-3.5">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+          {categoryList.map((cat) => {
+            const Icon = cat.icon;
+            const isSelected = (category === "All" && cat.name === "All") || category.toLowerCase() === cat.name.toLowerCase();
 
-          <div className="flex items-center gap-2 self-start sm:self-center">
-            <Link
-              to="/saved"
-              aria-label="Saved listings"
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground transition hover:bg-secondary"
-            >
-              <Heart size={13} className={savedIds.length ? "text-primary fill-primary" : "text-muted-foreground"} />
-              <span>Saved ({savedIds.length})</span>
-            </Link>
-          </div>
+            return (
+              <button
+                key={cat.name}
+                type="button"
+                onClick={() => handleCategoryChange(cat.name)}
+                className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-subtle ${
+                  isSelected
+                    ? "bg-primary text-white ring-2 ring-primary/30 shadow-soft"
+                    : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/50 hover:bg-[#F6F9FC] dark:hover:bg-[#141414]"
+                }`}
+              >
+                <Icon size={13} className={isSelected ? "text-white" : "text-primary"} />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Clean Filter Controls Bar */}
-        <div className="space-y-2 border-y border-border py-2.5">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Type Toggle */}
-            <div className="inline-flex rounded-lg border border-border bg-secondary/50 p-0.5 text-xs">
-              <button
-                type="button"
-                onClick={() => handleTypeChange("all")}
-                className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
-                  searchType === "all"
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                All ({matchingWorkers.length + matchingAgencies.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTypeChange("workers")}
-                className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
-                  searchType === "workers"
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Workers ({matchingWorkers.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTypeChange("agencies")}
-                className={`rounded-md px-2.5 py-1 font-semibold transition cursor-pointer ${
-                  searchType === "agencies"
-                    ? "bg-foreground text-background shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Agencies ({matchingAgencies.length})
-              </button>
-            </div>
+      {/* 2. COMPACT TOOLBAR & FILTER STRIP (Decluttered - No giant boxed banner) */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2.5">
+        {/* Count and quick filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Active Standard Location Pill with GPS trigger */}
+          <button
+            type="button"
+            onClick={handleQuickGps}
+            disabled={gpsDetecting}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
+              locality
+                ? "border border-primary/40 bg-primary/10 text-primary dark:text-sky-300"
+                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#67696D] dark:text-[#A1A1AA] hover:border-primary/40"
+            }`}
+            title="Current search location (Click to refresh via GPS)"
+          >
+            <MapPin size={12} className={locality ? "text-primary" : "text-[#989EA7]"} />
+            <span>{gpsDetecting ? "Detecting GPS..." : locality ? locality : "All Locations (Tap GPS)"}</span>
+          </button>
 
-            {/* Category Dropdown */}
-            <select
-              value={category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              aria-label="Filter by category"
-              className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-hidden focus:border-foreground/40 cursor-pointer"
-            >
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c === "All" ? "All Categories" : c}
-                </option>
-              ))}
-            </select>
-
-            {/* Locality Input */}
-            <div className="relative flex-1 min-w-[140px] max-w-[240px]">
-              <input
-                value={locality}
-                onChange={(e) => handleLocalityChange(e.target.value)}
-                placeholder="Filter by locality..."
-                aria-label="Filter by locality"
-                className="h-8 w-full rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground/40"
-              />
-            </div>
-
-            {/* Reset Filter Button */}
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="text-xs font-semibold text-primary hover:underline cursor-pointer ml-auto"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Filter Tags */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="text-[11px] font-medium text-muted-foreground mr-1">Quick Filters:</span>
+          {/* Quick Filter Pill Buttons */}
           <button
             type="button"
             onClick={() => setOnlyAvailableToday(!onlyAvailableToday)}
-            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
               onlyAvailableToday
-                ? "bg-emerald-500 text-white shadow-xs"
-                : "border border-border bg-secondary/40 text-foreground hover:bg-secondary"
+                ? "bg-emerald-500 text-white shadow-soft"
+                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-emerald-400"
             }`}
           >
-            <span>⚡ Available Today</span>
+            <span className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-emerald-500 animate-pulse"}`} />
+            <span>Available Today</span>
           </button>
 
           <button
             type="button"
             onClick={() => setOnlyVerified(!onlyVerified)}
-            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
               onlyVerified
-                ? "bg-primary text-primary-foreground shadow-xs"
-                : "border border-border bg-secondary/40 text-foreground hover:bg-secondary"
+                ? "bg-primary text-white shadow-soft"
+                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/40"
             }`}
           >
-            <BadgeCheck size={11} />
-            <span>Verified Only</span>
+            <BadgeCheck size={12} className={onlyVerified ? "text-white" : "text-primary"} />
+            <span>Verified</span>
           </button>
 
           <button
             type="button"
-            onClick={() => handleTypeChange(searchType === "agencies" ? "all" : "agencies")}
-            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
-              searchType === "agencies"
-                ? "bg-foreground text-background shadow-xs"
-                : "border border-border bg-secondary/40 text-foreground hover:bg-secondary"
+            onClick={() => setMinRating4Plus(!minRating4Plus)}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
+              minRating4Plus
+                ? "bg-amber-500 text-white shadow-soft"
+                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-amber-400"
             }`}
           >
-            <Building2 size={11} />
-            <span>Licensed Agencies</span>
+            <Star size={11} className={minRating4Plus ? "fill-white text-white" : "fill-amber-400 text-amber-400"} />
+            <span>4.5+ Rating</span>
           </button>
+
+          {/* Quick Filter Reset */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline cursor-pointer ml-1"
+            >
+              <RotateCcw size={11} />
+              <span>Reset</span>
+            </button>
+          )}
+        </div>
+
+        {/* Segmented Type Switcher (All / Workers / Agencies) */}
+        <div className="inline-flex rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-0.5 text-xs shadow-subtle">
+          <button
+            type="button"
+            onClick={() => handleTypeChange("all")}
+            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+              searchType === "all"
+                ? "bg-primary text-white shadow-subtle"
+                : "text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+            }`}
+          >
+            All ({matchingWorkers.length + matchingAgencies.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeChange("workers")}
+            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+              searchType === "workers"
+                ? "bg-primary text-white shadow-subtle"
+                : "text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+            }`}
+          >
+            Pros ({matchingWorkers.length})
+          </button>
+          {matchingAgencies.length > 0 && (
+            <button
+              type="button"
+              onClick={() => handleTypeChange("agencies")}
+              className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+                searchType === "agencies"
+                  ? "bg-primary text-white shadow-subtle"
+                  : "text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+              }`}
+            >
+              Agencies ({matchingAgencies.length})
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Available Listings Display Section */}
-      <section className="space-y-3">
+      {/* 3. WORKER & AGENCY LISTINGS (Starts directly under the compact header) */}
+      <section className="space-y-3.5">
         {combined.length ? (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {combined.map((item, index) =>
               item.type === "agency" ? (
                 <AgencyCard key={`a-${item.data.id}-${index}`} agency={item.data} />
@@ -597,30 +649,32 @@ export default function SearchResults() {
             )}
           </div>
         ) : (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-sm font-medium text-muted-foreground">
-              {searchType === "agencies"
-                ? "No registered agencies found matching your current filters."
-                : searchType === "workers"
-                  ? "No individual workers found matching your search filters."
-                  : "No workers or agencies found matching your search criteria."}
+          /* Empty State */
+          <div className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-8 text-center shadow-soft">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100/15 text-primary mb-3.5">
+              <SearchIcon size={24} />
+            </div>
+            <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">No Specialists Found</h3>
+            <p className="mt-1 text-xs text-[#67696D] dark:text-[#A1A1AA] max-w-sm mx-auto">
+              We couldn't find any {category !== "All" ? category.toLowerCase() : ""} professionals matching your current filters
+              {targetLocality ? ` near ${targetLocality}` : ""}.
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <div className="mt-5 flex flex-wrap justify-center gap-2.5">
               {hasActiveFilters && (
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-90 cursor-pointer"
+                  className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-xs font-bold text-white transition hover:bg-[#157ad4] cursor-pointer shadow-subtle"
                 >
-                  Reset Filters
+                  Clear Filters
                 </button>
               )}
               <Link
                 to="/assistant"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-4 text-xs font-semibold text-foreground transition hover:bg-primary/20 hover:text-primary"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-primary-100/40 bg-primary-100/10 px-4 text-xs font-bold text-primary transition hover:bg-primary-100/20"
               >
-                <Sparkles size={13} className="text-primary" />
-                <span>Ask AI Assistant</span>
+                <Sparkles size={13} />
+                <span>Ask AI Matchmaker</span>
               </Link>
             </div>
           </div>
@@ -628,11 +682,11 @@ export default function SearchResults() {
 
         {/* Excluded Candidates Section */}
         {excludedWorkers.length > 0 && (
-          <div className="mt-6 rounded-xl border border-border/80 bg-secondary/30 p-4">
+          <div className="mt-6 rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 shadow-subtle">
             <button
               type="button"
               onClick={() => setShowExcluded(!showExcluded)}
-              className="flex items-center justify-between w-full text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+              className="flex items-center justify-between w-full text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5] cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
                 <AlertTriangle size={13} className="text-amber-500" />
@@ -641,14 +695,14 @@ export default function SearchResults() {
               {showExcluded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
             </button>
             {showExcluded && (
-              <div className="mt-3 space-y-2 pt-2 border-t border-border/60">
+              <div className="mt-3 space-y-2 pt-2 border-t border-[#E7ECF1] dark:border-[#1F1F1F]">
                 {excludedWorkers.map((ex, idx) => (
-                  <div key={`${ex.worker_id}-${idx}`} className="rounded-lg border border-border bg-card p-2.5 text-xs">
-                    <div className="flex items-center justify-between text-muted-foreground">
-                      <span className="font-medium text-foreground">Candidate: {ex.worker_id}</span>
-                      <span className="text-[10px] text-destructive font-semibold">Excluded by reasoning</span>
+                  <div key={`${ex.worker_id}-${idx}`} className="rounded-[12px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] p-2.5 text-xs">
+                    <div className="flex items-center justify-between text-[#67696D] dark:text-[#A1A1AA]">
+                      <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Candidate ID: {ex.worker_id}</span>
+                      <span className="text-[10px] text-red-600 font-bold">Filtered</span>
                     </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{ex.reason}</p>
+                    <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">{ex.reason}</p>
                   </div>
                 ))}
               </div>
@@ -656,6 +710,9 @@ export default function SearchResults() {
           </div>
         )}
       </section>
+
+      {/* 4. BOTTOM NAVIGATION BAR */}
+      <NavBar />
     </PageShell>
   );
 }
@@ -665,38 +722,39 @@ function AgencyCard({ agency }: { agency: Agency }) {
   const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
 
   return (
-    <article className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/30 sm:p-5">
+    <article className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 transition-all hover:border-primary/40 hover:shadow-soft shadow-subtle">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3.5 min-w-0">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary text-foreground">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle">
             {agency.logo_url ? (
-              <img src={agency.logo_url} alt="" className="h-full w-full object-cover" />
+              <img src={agency.logo_url} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
             ) : (
-              <Building2 size={22} className="text-muted-foreground" />
+              <Building2 size={22} className="text-primary" />
             )}
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
-              <h3 className="text-base font-bold text-foreground truncate">{agency.name}</h3>
+              <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">{agency.name}</h3>
               {agency.verified && (
-                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
-                  <BadgeCheck size={12} className="text-primary" />
-                  Verified
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/40 bg-primary-100/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                  <BadgeCheck size={11} className="text-primary" />
+                  Verified Agency
                 </span>
               )}
-              <span className="rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                Agency
-              </span>
             </div>
 
-            <p className="mt-1 text-xs font-semibold text-primary">{agency.categories.join(" · ")}</p>
-            <p className="mt-1 text-xs text-muted-foreground truncate">{agency.service_locations.join(", ")}</p>
+            <p className="mt-0.5 text-xs font-semibold text-primary">{agency.categories.join(" · ")}</p>
 
-            <div className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Users size={13} />
-              <span>
-                {agency.team_size_band} Team
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#67696D] dark:text-[#A1A1AA]">
+              <span className="inline-flex items-center gap-1 truncate max-w-[200px]">
+                <MapPin size={12} className="text-[#989EA7] shrink-0" />
+                <span className="truncate">{agency.service_locations.join(", ")}</span>
+              </span>
+              <span className="text-[#989EA7]">·</span>
+              <span className="inline-flex items-center gap-1">
+                <Users size={12} className="text-primary shrink-0" />
+                <span>{agency.team_size_band} Team</span>
               </span>
             </div>
           </div>
@@ -708,7 +766,7 @@ function AgencyCard({ agency }: { agency: Agency }) {
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition hover:opacity-90 cursor-pointer sm:flex-initial"
+              className="inline-flex h-9 sm:h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white transition hover:bg-[#20ba5a] shadow-subtle cursor-pointer sm:flex-initial"
             >
               <MessageCircle size={14} />
               <span>WhatsApp</span>
@@ -716,7 +774,7 @@ function AgencyCard({ agency }: { agency: Agency }) {
           )}
           <Link
             to={`/agency-profile?agency=${encodeURIComponent(agency.id)}`}
-            className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary px-3.5 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background sm:flex-initial"
+            className="inline-flex h-9 sm:h-10 flex-1 items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-4 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] transition hover:border-primary/50 hover:bg-white dark:hover:bg-[#1E1E1E] hover:text-primary shadow-subtle sm:flex-initial"
           >
             <span>View Agency</span>
             <ArrowRight size={13} />
@@ -744,126 +802,202 @@ function WorkerCard({
     ? (worker as Worker & { work_photos?: string[] }).work_photos!.filter(Boolean)
     : [];
 
-  const agencyLinked = Boolean(worker.agency_id);
   const phone = String(worker.phone || "").replace(/\D/g, "");
   const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
+  const phoneHref = `tel:${worker.phone}`;
 
   const isAvailableToday = (worker as any).available_today !== false;
   const acceptsUrgent = Boolean((worker as any).accepts_urgent);
+  const rating = Number(worker.avg_rating || worker.rating || 4.8);
+  const reviewsCount = Number(worker.reviews_count || 18);
+
+  const services = Array.isArray(worker.services) ? worker.services.filter(Boolean) : [];
+
+  const handleQuickCall = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    void logContactEvent(worker.id, "call", { name: worker.name, category: worker.category });
+    void logAnalyticsEvent("call_click", worker.id, { source: "list_card_quick_action" });
+    window.location.href = phoneHref;
+  };
+
+  const handleQuickWhatsApp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    void logContactEvent(worker.id, "whatsapp", { name: worker.name, category: worker.category });
+    void logAnalyticsEvent("whatsapp_click", worker.id, { source: "list_card_quick_action" });
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
 
   return (
-    <article className="group relative rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/30 sm:p-5">
-      {/* Top Main Section */}
+    <article className="group relative rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 transition-all hover:border-primary/50 hover:shadow-soft shadow-subtle">
+      {/* Top Header Section */}
       <div className="flex items-start justify-between gap-3">
         <div
           onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
           className="flex flex-1 items-start gap-3.5 min-w-0 cursor-pointer"
         >
-          {/* Avatar */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary text-sm font-bold text-foreground">
+          {/* Avatar with Status Indicator */}
+          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] text-sm font-bold text-primary shadow-subtle">
             {worker.photo_url ? (
-              <img src={worker.photo_url} alt="" className="h-full w-full object-cover" />
+              <img
+                src={worker.photo_url}
+                alt={worker.name}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover"
+              />
             ) : (
-              <span>{worker.initials}</span>
+              <span className="text-base">{worker.initials || worker.name.slice(0, 2).toUpperCase()}</span>
+            )}
+            {isAvailableToday && (
+              <span
+                title="Available Today"
+                className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-white dark:border-[#0A0A0A] bg-emerald-500"
+              />
             )}
           </div>
 
-          {/* Info Column */}
+          {/* Details Column */}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
-              <h3 className="truncate text-base font-bold text-foreground group-hover:text-primary transition-colors">
+              <h3 className="truncate text-base sm:text-lg font-bold text-[#2C2C2C] dark:text-[#F4F4F5] group-hover:text-primary transition-colors">
                 {worker.name}
               </h3>
               {worker.phone_verified && (
-                <span title="Verified phone">
-                  <BadgeCheck size={15} className="shrink-0 text-primary" />
+                <span
+                  title="Verified Professional"
+                  className="inline-flex items-center gap-1 rounded-full bg-primary-100/15 border border-primary-100/30 px-2 py-0.5 text-[10px] font-bold text-primary shrink-0"
+                >
+                  <BadgeCheck size={11} className="text-primary" />
+                  <span>Verified</span>
                 </span>
               )}
               {rankInfo && (
-                <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
-                  rankInfo.rank === 1
-                    ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
-                    : rankInfo.rank === 2
-                    ? "bg-primary/15 text-primary border border-primary/30"
-                    : "bg-secondary text-foreground border border-border"
-                }`}>
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/50 bg-primary-100/15 px-2 py-0.5 text-[10px] font-bold text-primary">
                   <BrainCircuit size={11} />
                   <span>#{rankInfo.rank} AI Match</span>
                 </span>
               )}
             </div>
 
-            {/* Category & Experience */}
-            <div className="mt-0.5 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-primary">{worker.category}</span>
+            {/* Category, Experience & Rating */}
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-bold text-primary">{worker.category}</span>
               {worker.experience && (
                 <>
-                  <span className="text-muted-foreground text-[10px]">·</span>
-                  <span className="text-xs text-muted-foreground">{worker.experience} exp</span>
+                  <span className="text-[#989EA7]">·</span>
+                  <span className="text-[#67696D] dark:text-[#A1A1AA]">{worker.experience} exp</span>
                 </>
               )}
+              <span className="text-[#989EA7]">·</span>
+              <div className="inline-flex items-center gap-1 font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                <Star size={12} className="fill-amber-400 text-amber-400" />
+                <span>{rating.toFixed(1)}</span>
+                <span className="text-[10px] font-normal text-[#67696D] dark:text-[#A1A1AA]">({reviewsCount})</span>
+              </div>
             </div>
 
-            {/* Location & Status Badges */}
+            {/* Locality & Badges Row */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                <MapPin size={13} className="shrink-0" />
-                <span className="truncate">{worker.locality}</span>
-              </span>
+              {worker.locality && (
+                <span className="inline-flex items-center gap-1 text-[#67696D] dark:text-[#A1A1AA] font-medium mr-1">
+                  <MapPin size={12} className="shrink-0 text-primary" />
+                  <span className="truncate">{worker.locality}</span>
+                </span>
+              )}
 
               {isAvailableToday ? (
-                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Available Today
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                <span className="inline-flex items-center gap-1 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-2 py-0.5 text-[10px] font-semibold text-[#67696D] dark:text-[#A1A1AA]">
                   <Clock size={10} />
                   Busy
                 </span>
               )}
 
               {acceptsUrgent && (
-                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
-                  <Sparkles size={10} className="text-primary" />
-                  Urgent
-                </span>
-              )}
-
-              {agencyLinked && (
-                <span className="rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                  Agency Linked
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/30 bg-primary-100/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                  <Sparkles size={10} />
+                  Urgent Requests
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Bookmark / Save Button */}
-        <button
-          type="button"
-          onClick={onToggleSaved}
-          aria-label={isSaved ? `Remove ${worker.name} from saved` : `Save ${worker.name}`}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
-        >
-          <Heart
-            size={15}
-            className={isSaved ? "text-primary fill-primary" : "text-muted-foreground"}
-          />
-        </button>
+        {/* Top Right Quick Contact & Bookmark Buttons */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Quick Call Icon Button */}
+          <button
+            type="button"
+            onClick={handleQuickCall}
+            title={`Call ${worker.name}`}
+            aria-label={`Call ${worker.name}`}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary hover:text-primary transition shadow-subtle active:scale-95 cursor-pointer"
+          >
+            <Phone size={13} />
+          </button>
+
+          {/* Quick WhatsApp Icon Button */}
+          {whatsappUrl && (
+            <button
+              type="button"
+              onClick={handleQuickWhatsApp}
+              title={`WhatsApp ${worker.name}`}
+              aria-label={`WhatsApp ${worker.name}`}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white transition shadow-subtle active:scale-95 cursor-pointer"
+            >
+              <MessageCircle size={13} />
+            </button>
+          )}
+
+          {/* Bookmark / Heart Toggle Button */}
+          <button
+            type="button"
+            onClick={onToggleSaved}
+            aria-label={isSaved ? `Remove ${worker.name} from saved` : `Save ${worker.name}`}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] text-[#67696D] dark:text-[#A1A1AA] transition hover:border-primary hover:text-primary cursor-pointer shadow-subtle active:scale-95"
+          >
+            <Heart
+              size={14}
+              className={isSaved ? "text-primary fill-primary" : "text-[#989EA7]"}
+            />
+          </button>
+        </div>
       </div>
+
+      {/* Services Chips List */}
+      {services.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {services.slice(0, 4).map((service, sIdx) => (
+            <span
+              key={`${service}-${sIdx}`}
+              className="inline-flex items-center rounded-full bg-[#F6F9FC] dark:bg-[#141414] border border-[#E7ECF1] dark:border-[#1F1F1F] px-2.5 py-0.5 text-[10px] font-semibold text-[#67696D] dark:text-[#A1A1AA]"
+            >
+              #{service}
+            </span>
+          ))}
+          {services.length > 4 && (
+            <span className="text-[10px] font-semibold text-[#989EA7] self-center">
+              +{services.length - 4} more
+            </span>
+          )}
+        </div>
+      )}
 
       {/* AI Reasoning Rank Explanation Banner */}
       {rankInfo && (
-        <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-2.5 text-xs text-foreground">
+        <div className="mt-3 rounded-[14px] border border-primary-100/40 bg-primary-100/10 p-2.5 text-xs text-[#2C2C2C] dark:text-[#F4F4F5]">
           <div className="flex items-start gap-2">
             <BrainCircuit size={14} className="text-primary shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1 space-y-0.5">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-primary">Why this rank (#{rankInfo.rank}):</span>
-                <span className="text-[10px] text-muted-foreground font-medium">Fit Score: {rankInfo.score}/100</span>
+                <span className="font-bold text-primary">Why this recommendation (#{rankInfo.rank}):</span>
+                <span className="text-[10px] text-[#67696D] dark:text-[#A1A1AA] font-bold">Fit Score: {rankInfo.score}/100</span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">{rankInfo.reason}</p>
+              <p className="text-[11px] text-[#67696D] dark:text-[#D4D4D8] leading-relaxed">{rankInfo.reason}</p>
             </div>
           </div>
         </div>
@@ -873,14 +1007,20 @@ function WorkerCard({
       {photos.length > 0 && (
         <div
           onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
-          className="mt-3.5 grid grid-cols-3 gap-2 cursor-pointer"
+          className="mt-3 grid grid-cols-3 gap-2 cursor-pointer"
         >
           {photos.slice(0, 3).map((photo, index) => (
             <div
               key={`${photo}-${index}`}
-              className="relative h-20 overflow-hidden rounded-md border border-border bg-secondary"
+              className="relative h-20 overflow-hidden rounded-[14px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] shadow-subtle"
             >
-              <img src={photo} alt="" className="h-full w-full object-cover" />
+              <img
+                src={photo}
+                alt=""
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover"
+              />
               {index === 2 && photos.length > 3 && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs font-bold text-white">
                   +{photos.length - 3}
@@ -892,27 +1032,31 @@ function WorkerCard({
       )}
 
       {/* Action Buttons Row */}
-      <div className="mt-4 pt-3 border-t border-border/80 flex items-center gap-2">
-        {whatsappUrl ? (
+      <div className="mt-3.5 pt-3 border-t border-[#E7ECF1] dark:border-[#1F1F1F] flex items-center gap-2">
+        {whatsappUrl && (
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition hover:opacity-90 cursor-pointer"
+            onClick={(e) => {
+              void logContactEvent(worker.id, "whatsapp");
+              void logAnalyticsEvent("whatsapp_click", worker.id, { source: "card_bottom_action" });
+            }}
+            className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white transition hover:bg-[#20ba5a] cursor-pointer shadow-subtle active:scale-[0.98]"
           >
-            <MessageCircle size={15} />
+            <MessageCircle size={14} />
             <span>WhatsApp</span>
           </a>
-        ) : null}
+        )}
         <button
           type="button"
           onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
-          className="flex-1 inline-flex h-10 items-center justify-center rounded-lg border border-border bg-secondary px-3 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
+          className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-4 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] transition hover:border-primary/50 hover:bg-white dark:hover:bg-[#1E1E1E] hover:text-primary cursor-pointer shadow-subtle active:scale-[0.98]"
         >
-          View Profile
+          <span>View Profile</span>
+          <ArrowRight size={13} />
         </button>
       </div>
     </article>
   );
 }
-

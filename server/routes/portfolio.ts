@@ -212,19 +212,18 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
       return;
     }
 
-    // Check existing count from memory / db
-    let existingPhotos = memoryPortfolio.get(workerId) || memoryPortfolio.get(phone) || [];
-    if (existingPhotos.length === 0) {
-      try {
-        const { data: dbPhotos } = await supabase
-          .from("worker_portfolio")
-          .select("id,worker_id,image_url,label,status,flag_reasons,uploaded_at")
-          .or(`worker_id.eq.${workerId}${phone ? `,worker_id.eq.${phone}` : ""}`);
-        if (Array.isArray(dbPhotos) && dbPhotos.length > 0) {
-          existingPhotos = dbPhotos;
-        }
-      } catch {}
-    }
+    // 1. Always try to fetch from DB to ensure we have latest data
+    let existingPhotos: WorkerPortfolioItem[] = [];
+    try {
+      const { data: dbPhotos } = await supabase
+        .from("worker_portfolio")
+        .select("id,worker_id,image_url,label,status,flag_reasons,uploaded_at")
+        .or(`worker_id.eq.${workerId}${phone ? `,worker_id.eq.${phone}` : ""}`)
+        .order("uploaded_at", { ascending: false });
+      if (Array.isArray(dbPhotos) && dbPhotos.length > 0) {
+        existingPhotos = dbPhotos;
+      }
+    } catch {}
 
     if (existingPhotos.length + parsed.data.images.length > 10) {
       res.status(400).json({
@@ -244,9 +243,9 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
         data: img.data,
       });
 
-      const isStockOrDuplicate = screening.checks.is_stock_photo || screening.checks.is_duplicate_style;
-      const isInappropriate = screening.checks.contains_inappropriate_content;
-      const isRejected = isStockOrDuplicate || isInappropriate;
+      const isStockOrDuplicate = Boolean(screening.checks?.is_stock_photo);
+      const isInappropriate = Boolean(screening.checks?.contains_inappropriate_content);
+      const isRejected = (screening.verdict === "rejected") && (isStockOrDuplicate || isInappropriate);
 
       const photoItem: WorkerPortfolioItem = {
         id: `port-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
@@ -261,8 +260,8 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
       if (isRejected) {
         await addTrustFlag({
           worker_id: workerId,
-          flag_type: screening.checks.is_stock_photo ? "stock_portfolio_detected" : "duplicate_style_detected",
-          reason: screening.reasons.join("; ") || "Suspicious photo upload flagged during background moderation.",
+          flag_type: isStockOrDuplicate ? "stock_portfolio_detected" : "moderation_review_needed",
+          reason: screening.reasons.join("; ") || "Photo flagged during moderation.",
         });
       }
 

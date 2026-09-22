@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Local Worker Discovery</string>
+    <string name="title_activity_main">Local Worker Discovery</string>
+    <string name="package_name">com.balaadithya123.app1</string>
+    <string name="custom_url_scheme">com.balaadithya123.app1</string>
+</resources>

@@ -166,7 +166,7 @@ export default function AgencyProfile() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">{agency.name}</h1>
                     {agency.verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
                         <BadgeCheck size={13} /> Verified Agency
                       </span>
                     )}
@@ -287,7 +287,7 @@ export default function AgencyProfile() {
 
                       <div className="flex items-center gap-2">
                         {w.available_today && (
-                          <span className="hidden sm:inline-block rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="hidden sm:inline-block rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                             Available
                           </span>
                         )}

@@ -146,3 +146,21 @@ export interface WorkerTrustFlag {
   created_at: string;
   resolved: boolean;
 }
+
+export interface PostNeedRequest {
+  category: string;
+  description: string;
+  location: string;
+  customerPhone?: string;
+}
+
+export interface PostNeedResponse {
+  matchedWorkers: Worker[];
+  totalMatched: number;
+}
+
+export interface RecordLeadResponse {
+  success: boolean;
+  workerId: string;
+  leadsReceived: number;
+}

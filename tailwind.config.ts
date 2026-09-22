@@ -13,9 +13,9 @@ export default {
     extend: {
       colors: {
         ink: "hsl(var(--foreground))",
-        navy: "hsl(var(--primary))",
-        teal: "hsl(var(--primary))",
-        mint: "hsl(var(--accent))",
+        navy: "#1D90F3",
+        teal: "#38A3FF",
+        mint: "#5DB1F8",
         slate: "hsl(var(--muted-foreground))",
         line: "hsl(var(--border))",
         border: "hsl(var(--border))",
@@ -23,7 +23,23 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
+        surface: "var(--color-surface)",
+        whatsapp: {
+          DEFAULT: "#25D366",
+          hover: "#20BA5A",
+        },
+        primary: {
+          100: "var(--color-primary-100)",
+          500: "var(--color-primary-500)",
+          600: "var(--color-primary-600)",
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        neutral: {
+          300: "var(--color-neutral-300)",
+          500: "var(--color-neutral-500)",
+          900: "var(--color-neutral-900)",
+        },
         secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
         destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
         muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
@@ -41,7 +57,18 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
-      borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
+      borderRadius: {
+        card: "16px",
+        modal: "20px",
+        input: "12px",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+      },
+      boxShadow: {
+        soft: "0 2px 8px rgba(0, 0, 0, 0.04)",
+        subtle: "0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)",
+      },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
         "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },

@@ -29,6 +29,9 @@ const persistedWorkerSchema = z.object({
   urgent_today: z.boolean().optional(),
   next_available_date: z.string().nullable().optional(),
   agency_id: z.string().optional().nullable(),
+  leadsReceived: z.number().optional().default(0),
+  leadCredits: z.number().optional().default(100),
+  isPromoted: z.boolean().optional().default(true),
 });
 const toWorker = (row: unknown): Worker => persistedWorkerSchema.parse(row) as Worker;
 const workerSelect = "id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at,available_today,away_from,away_until,urgent_today,agency_id";

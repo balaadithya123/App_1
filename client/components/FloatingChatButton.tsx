@@ -5,8 +5,22 @@ import { Sparkles, MessageSquare } from "lucide-react";
 export default function FloatingChatButton() {
   const location = useLocation();
 
-  // Hide on the dedicated assistant/chat page
-  if (location.pathname === "/assistant" || location.pathname === "/chat") {
+  // Hide on dedicated assistant/chat page and authentication screens
+  const hideOn = [
+    "/assistant",
+    "/chat",
+    "/login",
+    "/join",
+    "/register",
+    "/register-agency",
+    "/voice",
+    "/voice-onboarding",
+  ];
+  if (
+    hideOn.includes(location.pathname) ||
+    location.pathname.startsWith("/register") ||
+    location.pathname.startsWith("/join")
+  ) {
     return null;
   }
 

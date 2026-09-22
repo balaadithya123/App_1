@@ -406,7 +406,7 @@ export default function AgencyDashboard() {
 
   if (loading) {
     return (
-      <PageShell backTo="/" backLabel="Home">
+      <PageShell hideBack hideHome containerWidth="lg">
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
@@ -419,7 +419,7 @@ export default function AgencyDashboard() {
 
   if (notAnAgency) {
     return (
-      <PageShell backTo="/" backLabel="Home">
+      <PageShell hideBack hideHome containerWidth="lg">
         <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 text-center">
           <Building2 size={36} className="mx-auto text-primary" />
           <h1 className="mt-3 text-lg font-bold text-foreground">Agency Portal</h1>
@@ -447,7 +447,7 @@ export default function AgencyDashboard() {
 
   if (error || !dashboard) {
     return (
-      <PageShell backTo="/" backLabel="Back">
+      <PageShell hideBack hideHome containerWidth="lg">
         <div className="mx-auto max-w-md rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center">
           <ShieldAlert size={36} className="mx-auto text-destructive" />
           <h1 className="mt-3 text-base font-bold text-foreground">Error Loading Dashboard</h1>
@@ -471,7 +471,7 @@ export default function AgencyDashboard() {
   const pending = dashboard.callbacks.filter((c) => c.status === "new").length;
 
   return (
-    <PageShell backTo="/" backLabel="Back" containerWidth="lg">
+    <PageShell hideBack hideHome containerWidth="lg">
       <div className="space-y-6">
         {/* Agency Profile Header Card */}
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
@@ -492,7 +492,7 @@ export default function AgencyDashboard() {
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-lg font-bold text-foreground sm:text-xl">{dashboard.agency.name}</h1>
                   {dashboard.agency.verified && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 shadow-subtle">
                       <BadgeCheck size={13} /> Verified Agency
                     </span>
                   )}
@@ -518,14 +518,14 @@ export default function AgencyDashboard() {
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 to={`/agency/${dashboard.agency.id}`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-secondary px-3 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E7ECF1] bg-white px-3.5 text-xs font-semibold text-[#2C2C2C] shadow-subtle transition hover:bg-[#F6F9FC]"
               >
                 <ExternalLink size={13} />
                 <span>Public Page</span>
               </Link>
               <Link
                 to="/agency/edit"
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-foreground px-3.5 text-xs font-semibold text-background transition hover:opacity-90"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle transition hover:bg-[#157ad4]"
               >
                 <span>Edit Profile</span>
               </Link>
@@ -536,17 +536,17 @@ export default function AgencyDashboard() {
         {/* Notification Banner */}
         {bannerMessage && (
           <div
-            className={`flex items-center justify-between rounded-xl border p-4 text-xs font-medium ${
+            className={`flex items-center justify-between rounded-[16px] border p-4 text-xs font-medium shadow-soft ${
               bannerMessage.type === "success"
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                : "border-destructive/30 bg-destructive/10 text-destructive"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                : "border-rose-200 bg-rose-50 text-rose-800"
             }`}
           >
             <div className="flex items-center gap-2">
               {bannerMessage.type === "success" ? (
-                <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
               ) : (
-                <AlertTriangle size={16} className="text-destructive shrink-0" />
+                <AlertTriangle size={16} className="text-rose-600 shrink-0" />
               )}
               <span>{bannerMessage.text}</span>
             </div>
@@ -738,12 +738,12 @@ export default function AgencyDashboard() {
 
                           {/* Availability Badge */}
                           {w.available_today ? (
-                            <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <span className="flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               Available
                             </span>
                           ) : (
-                            <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            <span className="rounded-full bg-[#F6F9FC] border border-[#E7ECF1] px-2 py-0.5 text-[10px] font-medium text-[#67696D]">
                               Off-duty
                             </span>
                           )}
@@ -1026,7 +1026,7 @@ export default function AgencyDashboard() {
                         </span>
                         <h3 className="mt-1 text-sm font-bold text-foreground">{p.title}</h3>
                       </div>
-                      <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 capitalize">
+                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 capitalize">
                         {p.status.replace("_", " ")}
                       </span>
                     </div>
@@ -1246,7 +1246,7 @@ export default function AgencyDashboard() {
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-base font-bold text-foreground">{selectedWorker.name}</h3>
                     {selectedWorker.phone_verified && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                         <BadgeCheck size={11} /> Verified
                       </span>
                     )}

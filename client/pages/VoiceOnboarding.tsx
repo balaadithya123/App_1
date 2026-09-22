@@ -760,7 +760,7 @@ export default function VoiceOnboarding() {
                   <p className="mt-0.5 text-xs text-muted-foreground">{t.formSectionSub}</p>
                 </div>
                 {profile.confidence_flags.length > 0 && (
-                  <div className="flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                  <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-xs font-bold text-amber-700">
                     <AlertTriangle size={13} />
                     <span>
                       {profile.confidence_flags.length} {t.needsVerification}
@@ -770,7 +770,7 @@ export default function VoiceOnboarding() {
               </div>
 
               {profile.confidence_flags.length > 0 && (
-                <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-xs font-medium text-amber-700 dark:text-amber-300">
+                <div className="mt-4 rounded-[12px] border border-amber-500/30 bg-amber-500/5 p-3 text-xs font-medium text-amber-800">
                   {t.confidenceWarning}
                 </div>
               )}
@@ -789,7 +789,7 @@ export default function VoiceOnboarding() {
                       {t.fullName}
                     </label>
                     {isFlagged("full_name") && (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                      <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700">
                         <AlertTriangle size={11} /> {t.needsVerification}
                       </span>
                     )}
@@ -817,14 +817,14 @@ export default function VoiceOnboarding() {
                       {t.services}
                     </label>
                     {isFlagged("service_categories") && (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                      <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700">
                         <AlertTriangle size={11} /> {t.needsVerification}
                       </span>
                     )}
                   </div>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{t.servicesHint}</p>
                   <div
-                    className={`mt-2 flex flex-wrap gap-2 rounded-xl p-2.5 ${
+                    className={`mt-2 flex flex-wrap gap-2 rounded-[16px] p-2.5 ${
                       isFlagged("service_categories")
                         ? "border border-amber-500 bg-amber-500/5"
                         : "border border-border/70 bg-secondary/20"
@@ -837,9 +837,9 @@ export default function VoiceOnboarding() {
                           key={cat}
                           type="button"
                           onClick={() => toggleCategory(cat)}
-                          className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold capitalize transition ${
+                          className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold capitalize transition cursor-pointer shadow-subtle ${
                             selected
-                              ? "bg-primary text-primary-foreground shadow-sm"
+                              ? "bg-primary text-white"
                               : "border border-border bg-card text-foreground hover:bg-secondary"
                           }`}
                         >
@@ -860,7 +860,7 @@ export default function VoiceOnboarding() {
                         {t.experience}
                       </label>
                       {isFlagged("years_experience") && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700">
                           <AlertTriangle size={11} /> {t.needsVerification}
                         </span>
                       )}
@@ -879,7 +879,7 @@ export default function VoiceOnboarding() {
                           })
                         }
                         placeholder={t.experienceNull}
-                        className={`h-12 w-full rounded-xl border bg-secondary/20 pl-10 pr-3 text-sm font-semibold text-foreground outline-none transition focus:border-primary ${
+                        className={`h-12 w-full rounded-[12px] border bg-secondary/20 pl-10 pr-3 text-sm font-semibold text-foreground outline-none transition focus:border-primary ${
                           isFlagged("years_experience")
                             ? "border-amber-500 bg-amber-500/5"
                             : "border-border"
@@ -893,10 +893,10 @@ export default function VoiceOnboarding() {
                           key={yr}
                           type="button"
                           onClick={() => setProfile({ ...profile, years_experience: yr })}
-                          className={`rounded-lg px-2.5 py-1 text-xs font-bold ${
+                          className={`rounded-full px-3 py-1 text-xs font-bold transition cursor-pointer shadow-subtle ${
                             profile.years_experience === yr
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-border bg-secondary/60 text-muted-foreground hover:text-foreground"
+                              ? "bg-primary text-white"
+                              : "border border-border bg-white text-muted-foreground hover:text-foreground"
                           }`}
                         >
                           {yr} yr{yr > 1 ? "s" : ""}
@@ -912,7 +912,7 @@ export default function VoiceOnboarding() {
                         {t.serviceArea}
                       </label>
                       {isFlagged("service_area") && (
-                        <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-amber-700">
                           <AlertTriangle size={11} /> {t.needsVerification}
                         </span>
                       )}

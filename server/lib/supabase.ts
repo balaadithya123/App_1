@@ -41,9 +41,26 @@ class MockQueryBuilder {
   upsert(data: any | any[]) { this.insertData = Array.isArray(data) ? data : [data]; this.isUpsert = true; return this; }
   delete() { this.isDelete = true; return this; }
   eq(field: string, value: any) { this.filters.push((r) => r[field] === value); return this; }
+  neq(field: string, value: any) { this.filters.push((r) => r[field] !== value); return this; }
   in(field: string, values: any[]) { const set = new Set(values); this.filters.push((r) => set.has(r[field])); return this; }
   gte(field: string, value: any) { this.filters.push((r) => r[field] >= value); return this; }
+  lte(field: string, value: any) { this.filters.push((r) => r[field] <= value); return this; }
   is(field: string, value: any) { this.filters.push((r) => r[field] === value); return this; }
+  or(orQuery: string) {
+    // Simple mock evaluator for .or('id.eq.1,phone.eq.2')
+    this.filters.push((r) => {
+      if (!orQuery) return true;
+      const parts = orQuery.split(",");
+      return parts.some((part) => {
+        const [field, op, val] = part.split(".");
+        if (!field || !op) return true;
+        if (op === "eq") return String(r[field]) === String(val);
+        if (op === "neq") return String(r[field]) !== String(val);
+        return true;
+      });
+    });
+    return this;
+  }
   order(field: string, options?: { ascending?: boolean }) { this.sortCol = field; this.sortAsc = options?.ascending !== false; return this; }
   limit(count: number) { this.limitCount = count; return this; }
 

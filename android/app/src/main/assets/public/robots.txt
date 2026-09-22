@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://builderco.vercel.app/sitemap.xml

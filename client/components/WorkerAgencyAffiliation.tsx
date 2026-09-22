@@ -244,49 +244,49 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-5 animate-pulse">
-        <div className="h-5 w-40 bg-secondary rounded mb-2" />
-        <div className="h-4 w-60 bg-secondary rounded" />
+      <div className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 animate-pulse shadow-soft">
+        <div className="h-5 w-40 bg-[#F6F9FC] rounded-full mb-2" />
+        <div className="h-4 w-60 bg-[#F6F9FC] rounded-full" />
       </div>
     );
   }
 
   return (
-    <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-      <div className="flex items-center justify-between gap-4 border-b border-border pb-4 mb-4">
+    <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+      <div className="flex items-center justify-between gap-4 border-b border-[#E7ECF1] pb-4 mb-4">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-secondary text-foreground">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
             <Building2 size={16} />
           </span>
           <div>
-            <h2 className="text-sm font-bold text-foreground">Agency Affiliation</h2>
-            <p className="text-xs text-muted-foreground">
+            <h2 className="text-sm font-bold text-[#2C2C2C]">Agency Affiliation</h2>
+            <p className="text-xs text-[#67696D]">
               Work independently or join a licensed agency team for bulk contracts.
             </p>
           </div>
         </div>
 
         {agency ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600">
             <ShieldCheck size={12} />
             <span>Agency Member</span>
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-2.5 py-0.5 text-[11px] font-semibold text-[#67696D]">
             Independent Pro
           </span>
         )}
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs font-medium text-destructive">
+        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-destructive/30 bg-destructive/10 p-3 text-xs font-medium text-destructive">
           <AlertCircle size={14} className="shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-700">
           <CheckCircle2 size={14} className="shrink-0" />
           <span>{success}</span>
         </div>
@@ -294,11 +294,11 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
       {agency ? (
         <div className="space-y-3">
-          <div className="rounded-lg border border-border bg-secondary/30 p-4">
+          <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-foreground">{agency.name}</h3>
+                  <h3 className="text-sm font-bold text-[#2C2C2C]">{agency.name}</h3>
                   {agency.verified && (
                     <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-primary">
                       <ShieldCheck size={11} />
@@ -306,8 +306,8 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
                     </span>
                   )}
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  <span>Code: <strong className="font-mono text-foreground">{agency.agency_code || "AGN-..."}</strong></span>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#67696D]">
+                  <span>Code: <strong className="font-mono text-[#2C2C2C]">{agency.agency_code || "AGN-..."}</strong></span>
                   {agency.team_size_band && <span>· Team Size: {agency.team_size_band}</span>}
                   {agency.phone && <span>· Helpline: {agency.phone}</span>}
                 </div>
@@ -316,7 +316,7 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
               <div className="flex items-center gap-2">
                 <Link
                   to={`/agency-profile?id=${agency.id}`}
-                  className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-card px-2.5 text-xs font-semibold text-foreground hover:bg-secondary transition"
+                  className="inline-flex h-8 items-center gap-1 rounded-full border border-[#E7ECF1] bg-white px-3 text-xs font-semibold text-[#2C2C2C] hover:bg-[#F6F9FC] shadow-subtle transition"
                 >
                   <span>View Profile</span>
                   <ArrowRight size={12} />
@@ -326,7 +326,7 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
                     type="button"
                     onClick={() => setShowLeaveConfirm(true)}
                     disabled={submitting}
-                    className="inline-flex h-8 items-center gap-1 rounded-md border border-destructive/30 bg-destructive/10 px-2.5 text-xs font-semibold text-destructive hover:bg-destructive/20 transition cursor-pointer"
+                    className="inline-flex h-8 items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 text-xs font-semibold text-destructive hover:bg-destructive/20 transition cursor-pointer"
                     title="Unlink from Agency"
                   >
                     <Unlink size={12} />
@@ -358,9 +358,9 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-secondary/20 p-4">
-            <h3 className="text-xs font-bold text-foreground mb-1">Have an Agency Joining Code?</h3>
-            <p className="text-xs text-muted-foreground mb-3">
+          <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
+            <h3 className="text-xs font-bold text-[#2C2C2C] mb-1">Have an Agency Joining Code?</h3>
+            <p className="text-xs text-[#67696D] mb-3">
               If your contractor or agency gave you a 4–6 character invite code (e.g. <code>AGN-ADMN</code> or <code>AGN-7K2P</code>), enter it below to join their verified roster.
             </p>
 
@@ -371,14 +371,14 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
                   value={agencyCodeInput}
                   onChange={(e) => setAgencyCodeInput(e.target.value.toUpperCase())}
                   placeholder="e.g. AGN-ADMN"
-                  className="h-10 w-full rounded-lg border border-border bg-card px-3 font-mono text-sm uppercase tracking-wider text-foreground placeholder:text-muted-foreground outline-hidden focus:border-primary"
+                  className="h-10 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 font-mono text-sm uppercase tracking-wider text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden focus:border-primary focus:ring-2 focus:ring-primary/20"
                   required
                 />
               </div>
               <button
                 type="submit"
                 disabled={submitting || !agencyCodeInput.trim()}
-                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-primary px-5 text-xs font-semibold text-white hover:bg-[#157ad4] shadow-subtle transition disabled:opacity-50 cursor-pointer active:scale-95"
               >
                 {submitting ? (
                   <>
@@ -395,9 +395,9 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
             </form>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+          <div className="flex items-center justify-between text-xs text-[#67696D] px-1">
             <span>Looking for agencies to collaborate with?</span>
-            <Link to="/search?type=agencies" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
+            <Link to="/search?type=agencies" className="text-primary hover:underline font-semibold inline-flex items-center gap-1">
               <span>Browse registered agencies</span>
               <ArrowRight size={11} />
             </Link>

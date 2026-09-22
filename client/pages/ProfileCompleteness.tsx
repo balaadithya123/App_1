@@ -108,8 +108,8 @@ export default function ProfileCompleteness() {
   if (loading) {
     return (
       <PageShell hideBack hideHome>
-        <section className="rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-xs text-muted-foreground">Loading profile score...</p>
+        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center shadow-soft">
+          <p className="text-xs text-[#67696D]">Loading profile score...</p>
         </section>
       </PageShell>
     );
@@ -210,41 +210,41 @@ export default function ProfileCompleteness() {
 
       <div className="mx-auto max-w-3xl space-y-4">
         {/* Header Card */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <button
             type="button"
             onClick={() => (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0 ? navigate(-1) : navigate("/worker-dashboard"))}
-            className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground cursor-pointer"
+            className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#67696D] transition hover:text-[#2C2C2C] cursor-pointer"
           >
             <ArrowLeft size={14} /> Back
           </button>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3.5">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary text-primary">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
                 <UserRound size={22} />
               </span>
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
                   Profile Optimization
                 </span>
-                <h1 className="mt-0.5 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                <h1 className="mt-0.5 text-xl font-bold tracking-tight text-[#2C2C2C] sm:text-2xl">
                   Profile Completeness
                 </h1>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-[#67696D]">
                   Complete all sections to maximize your search ranking and client callbacks.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-baseline gap-1.5 self-start rounded-xl border border-border bg-secondary/40 px-4 py-2.5 sm:self-auto">
-              <span className="text-2xl font-bold text-foreground">{percent}%</span>
-              <span className="text-xs text-muted-foreground">Score</span>
+            <div className="flex items-baseline gap-1.5 self-start rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-4 py-2 sm:self-auto">
+              <span className="text-2xl font-bold text-[#2C2C2C]">{percent}%</span>
+              <span className="text-xs text-[#67696D]">Score</span>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-secondary">
+          <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-[#E7ECF1]">
             <div
               className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: `${percent}%` }}
@@ -252,7 +252,7 @@ export default function ProfileCompleteness() {
           </div>
 
           {actionNotice && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 p-2.5 text-xs font-semibold text-primary">
+            <div className="mt-4 flex items-center gap-2 rounded-[12px] border border-primary-100/50 bg-primary-100/15 p-2.5 text-xs font-semibold text-primary">
               <Check size={14} />
               <span>{actionNotice}</span>
             </div>
@@ -260,16 +260,16 @@ export default function ProfileCompleteness() {
         </section>
 
         {/* Completeness Checklist with Interactive Working Buttons */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex items-center justify-between border-b border-border/80 pb-3">
+        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+          <div className="flex items-center justify-between border-b border-[#E7ECF1] pb-3">
             <div>
-              <h2 className="text-sm font-bold text-foreground">Completeness Checklist</h2>
-              <p className="text-xs text-muted-foreground">
+              <h2 className="text-sm font-bold text-[#2C2C2C]">Completeness Checklist</h2>
+              <p className="text-xs text-[#67696D]">
                 {completedCount} of {checks.length} items complete
               </p>
             </div>
             {percent === 100 ? (
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-bold text-emerald-500">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600">
                 <Sparkles size={12} /> All Items Completed!
               </span>
             ) : (
@@ -288,10 +288,10 @@ export default function ProfileCompleteness() {
             {checks.map((item) => (
               <div
                 key={item.id}
-                className={`flex flex-col gap-3 rounded-lg border p-3.5 transition-colors sm:flex-row sm:items-center sm:justify-between ${
+                className={`flex flex-col gap-3 rounded-[12px] border p-3.5 transition-colors sm:flex-row sm:items-center sm:justify-between ${
                   item.done
-                    ? "border-border/60 bg-secondary/20"
-                    : "border-border bg-card hover:bg-secondary/30"
+                    ? "border-[#E7ECF1] bg-[#F6F9FC]"
+                    : "border-[#E7ECF1] bg-white hover:border-primary/40 shadow-subtle"
                 }`}
               >
                 <div className="flex items-start gap-3 min-w-0">
@@ -299,20 +299,20 @@ export default function ProfileCompleteness() {
                     {item.done ? (
                       <CheckCircle2 size={18} className="text-emerald-500" />
                     ) : (
-                      <Circle size={18} className="text-muted-foreground" />
+                      <Circle size={18} className="text-[#989EA7]" />
                     )}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-bold text-foreground sm:text-sm">
+                    <p className="truncate text-xs font-bold text-[#2C2C2C] sm:text-sm">
                       {item.label}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">{item.description}</p>
+                    <p className="text-[11px] text-[#67696D]">{item.description}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-auto">
                   {item.done ? (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-bold text-emerald-600">
                       <Check size={12} /> Complete
                     </span>
                   ) : (
@@ -320,7 +320,7 @@ export default function ProfileCompleteness() {
                       type="button"
                       onClick={() => handleAction(item)}
                       disabled={uploadingPhoto && item.id === "photo"}
-                      className="inline-flex h-7 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-semibold text-background transition hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer active:scale-95"
                     >
                       {item.id === "photo" && <Camera size={12} />}
                       <span>{uploadingPhoto && item.id === "photo" ? "Uploading..." : item.actionText}</span>
@@ -332,13 +332,13 @@ export default function ProfileCompleteness() {
           </div>
 
           {/* Phone Security Notice */}
-          <div className="mt-5 flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-4">
-            <ShieldCheck size={20} className={phoneVerified ? "text-primary" : "text-muted-foreground"} />
+          <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
+            <ShieldCheck size={20} className={phoneVerified ? "text-primary" : "text-[#989EA7]"} />
             <div>
-              <p className="text-xs font-bold text-foreground">
+              <p className="text-xs font-bold text-[#2C2C2C]">
                 {phoneVerified ? "Phone Verified Account" : "Phone Verification"}
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[11px] text-[#67696D]">
                 {phoneVerified
                   ? "Your phone number is officially verified, unlocking worker invites and direct leads."
                   : "Verify your phone number in Profile to display the verified badge."}
