@@ -1,9 +1,9 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createServer } from "./index";
 import * as express from "express";
 
 const app = createServer();
-const port = process.env.PORT || 3000;
 
 // In production, serve the built SPA files
 const __dirname = import.meta.dirname;
@@ -22,19 +22,24 @@ app.get("{*all}", (req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
-app.listen(Number(port), "0.0.0.0", () => {
-  console.log(`🚀 Fusion Starter server running on port ${port}`);
-  console.log(`📱 Frontend: http://localhost:${port}`);
-  console.log(`🔧 API: http://localhost:${port}/api`);
-});
+export default app;
 
-// Graceful shutdown
-process.on("SIGTERM", () => {
-  console.log("🛑 Received SIGTERM, shutting down gracefully");
-  process.exit(0);
-});
+// Keep the bundle usable both as the local production server and as the Vercel
+// function handler. Vercel imports this module, so it must not open a listener.
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const port = process.env.PORT || 3000;
 
-process.on("SIGINT", () => {
-  console.log("🛑 Received SIGINT, shutting down gracefully");
-  process.exit(0);
-});
+  app.listen(Number(port), "0.0.0.0", () => {
+    console.log(`🚀 Fusion Starter server running on port ${port}`);
+    console.log(`📱 Frontend: http://localhost:${port}`);
+    console.log(`🔧 API: http://localhost:${port}/api`);
+  });
+
+  const shutdown = (signal: string) => {
+    console.log(`🛑 Received ${signal}, shutting down gracefully`);
+    process.exit(0);
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
+}
