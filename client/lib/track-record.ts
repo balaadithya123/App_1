@@ -36,14 +36,19 @@ function readPendingStorage(): PendingTrackConfirmation[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    
+
     // Prune entries older than 7 days
     const now = Date.now();
     const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
     const valid = parsed.filter(
-      (item) => item && item.id && item.workerId && item.timestamp && now - item.timestamp <= SEVEN_DAYS_MS
+      (item) =>
+        item &&
+        item.id &&
+        item.workerId &&
+        item.timestamp &&
+        now - item.timestamp <= SEVEN_DAYS_MS,
     );
-    
+
     if (valid.length !== parsed.length) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(valid));
     }
@@ -70,7 +75,7 @@ export function recordContactForTrackRecord(
   workerId: string,
   source: string = "call",
   workerName?: string,
-  category?: string
+  category?: string,
 ): void {
   if (!workerId) return;
 
@@ -80,7 +85,7 @@ export function recordContactForTrackRecord(
 
   // Check if we already logged a contact for this worker in the last 24h
   const existing = current.find(
-    (item) => item.workerId === workerId && now - item.timestamp < ONE_DAY_MS
+    (item) => item.workerId === workerId && now - item.timestamp < ONE_DAY_MS,
   );
 
   if (existing) {
@@ -123,7 +128,9 @@ export function getPendingConfirmations(): PendingTrackConfirmation[] {
 /**
  * Find a confirmation item ready to prompt (i.e. > 24 hours old, or forced via test mode)
  */
-export function getPromptableConfirmation(allowImmediate: boolean = false): PendingTrackConfirmation | null {
+export function getPromptableConfirmation(
+  allowImmediate: boolean = false,
+): PendingTrackConfirmation | null {
   const items = readPendingStorage();
   if (!items.length) return null;
 
@@ -142,7 +149,9 @@ export function getPromptableConfirmation(allowImmediate: boolean = false): Pend
   }
 
   // Return first item older than 24 hours
-  return items.find((item) => now - item.timestamp >= TWENTY_FOUR_HOURS_MS) || null;
+  return (
+    items.find((item) => now - item.timestamp >= TWENTY_FOUR_HOURS_MS) || null
+  );
 }
 
 /**
@@ -162,7 +171,7 @@ export async function submitTrackRecordResponse(
   workerId: string,
   showedUp: boolean,
   note?: string,
-  photoUrl?: string
+  photoUrl?: string,
 ): Promise<boolean> {
   try {
     const res = await fetch("/api/track-record", {
@@ -192,11 +201,16 @@ export async function submitTrackRecordResponse(
 /**
  * Fetch track record timeline and summary for a worker profile
  */
-export async function fetchWorkerTrackRecord(workerId: string): Promise<TrackRecordData> {
+export async function fetchWorkerTrackRecord(
+  workerId: string,
+): Promise<TrackRecordData> {
   try {
-    const res = await fetch(`/api/workers/${encodeURIComponent(workerId)}/track-record`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `/api/workers/${encodeURIComponent(workerId)}/track-record`,
+      {
+        cache: "no-store",
+      },
+    );
     if (res.ok) {
       return (await res.json()) as TrackRecordData;
     }

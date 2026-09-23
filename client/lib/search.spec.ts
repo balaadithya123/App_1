@@ -100,7 +100,10 @@ describe("filterWorkers", () => {
   it("keeps service-only search matching worker services", () => {
     const results = filterWorkers(testWorkers, "wiring", "");
 
-    expect(results.map((worker) => worker.id)).toEqual(["ravi-kumar", "suresh"]);
+    expect(results.map((worker) => worker.id)).toEqual([
+      "ravi-kumar",
+      "suresh",
+    ]);
   });
 
   it("filters by service and location when both are provided", () => {
@@ -149,18 +152,32 @@ describe("filterWorkers", () => {
   });
 
   it("includes registered workers in location searches", () => {
-    const results = filterWorkers([...testWorkers, registeredWorker], "", "port");
+    const results = filterWorkers(
+      [...testWorkers, registeredWorker],
+      "",
+      "port",
+    );
 
-    expect(results.map((worker) => worker.id)).toEqual(["registered-solar-electrician"]);
+    expect(results.map((worker) => worker.id)).toEqual([
+      "registered-solar-electrician",
+    ]);
   });
 
   it("includes registered workers in service and location searches", () => {
-    const results = filterWorkers([...testWorkers, registeredWorker], "solar", "Cuddalore");
+    const results = filterWorkers(
+      [...testWorkers, registeredWorker],
+      "solar",
+      "Cuddalore",
+    );
 
-    expect(results.map((worker) => worker.id)).toEqual(["registered-solar-electrician"]);
+    expect(results.map((worker) => worker.id)).toEqual([
+      "registered-solar-electrician",
+    ]);
   });
 
   it("returns all workers when search values are empty", () => {
-    expect(filterWorkers(testWorkers, " ", " ")).toHaveLength(testWorkers.length);
+    expect(filterWorkers(testWorkers, " ", " ")).toHaveLength(
+      testWorkers.length,
+    );
   });
 });

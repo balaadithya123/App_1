@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, XCircle, X, Camera, Send, Clock, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  X,
+  Camera,
+  Send,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 import {
   getPendingConfirmations,
   getPromptableConfirmation,
@@ -9,7 +17,9 @@ import {
 } from "@/lib/track-record";
 
 export default function TrackRecordFollowUpBanner() {
-  const [activeItem, setActiveItem] = useState<PendingTrackConfirmation | null>(null);
+  const [activeItem, setActiveItem] = useState<PendingTrackConfirmation | null>(
+    null,
+  );
   const [allowImmediate, setAllowImmediate] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [selectedOutcome, setSelectedOutcome] = useState<boolean | null>(null);
@@ -28,7 +38,11 @@ export default function TrackRecordFollowUpBanner() {
   useEffect(() => {
     refreshPending();
     window.addEventListener("pending-track-record-changed", refreshPending);
-    return () => window.removeEventListener("pending-track-record-changed", refreshPending);
+    return () =>
+      window.removeEventListener(
+        "pending-track-record-changed",
+        refreshPending,
+      );
   }, [allowImmediate]);
 
   if (!activeItem && pendingCount === 0) {
@@ -56,10 +70,13 @@ export default function TrackRecordFollowUpBanner() {
 
   if (!activeItem) return null;
 
-  const contactDate = new Date(activeItem.timestamp).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
+  const contactDate = new Date(activeItem.timestamp).toLocaleDateString(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+    },
+  );
 
   const handleDismiss = () => {
     dismissPendingConfirmation(activeItem.id);
@@ -100,7 +117,13 @@ export default function TrackRecordFollowUpBanner() {
   const handleSubmit = async () => {
     if (selectedOutcome === null) return;
     setSubmitting(true);
-    await submitTrackRecordResponse(activeItem.id, activeItem.workerId, selectedOutcome, note, photoUrl || undefined);
+    await submitTrackRecordResponse(
+      activeItem.id,
+      activeItem.workerId,
+      selectedOutcome,
+      note,
+      photoUrl || undefined,
+    );
     setSubmitting(false);
     setSubmittedMessage(true);
 
@@ -135,7 +158,8 @@ export default function TrackRecordFollowUpBanner() {
             <div>
               <p className="text-xs font-bold">Thank you for updating!</p>
               <p className="text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
-                Your response helps keep worker timelines transparent and honest.
+                Your response helps keep worker timelines transparent and
+                honest.
               </p>
             </div>
           </div>
@@ -147,9 +171,13 @@ export default function TrackRecordFollowUpBanner() {
                 <Sparkles size={14} />
               </span>
               <div>
-                <span className="text-[10px] font-bold tracking-wider uppercase text-primary">Job Follow-up</span>
+                <span className="text-[10px] font-bold tracking-wider uppercase text-primary">
+                  Job Follow-up
+                </span>
                 <h3 className="text-xs sm:text-sm font-bold text-[#2C2C2C] dark:text-[#F4F4F5] leading-snug">
-                  Did <span className="text-primary">{activeItem.workerName}</span> show up for your {activeItem.category} job on {contactDate}?
+                  Did{" "}
+                  <span className="text-primary">{activeItem.workerName}</span>{" "}
+                  show up for your {activeItem.category} job on {contactDate}?
                 </h3>
               </div>
             </div>
@@ -202,8 +230,14 @@ export default function TrackRecordFollowUpBanner() {
 
             {/* Note input */}
             <div>
-              <label htmlFor="tr-note-input" className="block text-[11px] font-semibold text-[#67696D] dark:text-[#A1A1AA] mb-1">
-                Optional Note <span className="font-normal text-[10px] text-[#989EA7]">(max 100 characters)</span>
+              <label
+                htmlFor="tr-note-input"
+                className="block text-[11px] font-semibold text-[#67696D] dark:text-[#A1A1AA] mb-1"
+              >
+                Optional Note{" "}
+                <span className="font-normal text-[10px] text-[#989EA7]">
+                  (max 100 characters)
+                </span>
               </label>
               <input
                 id="tr-note-input"
@@ -220,7 +254,9 @@ export default function TrackRecordFollowUpBanner() {
             <div className="flex items-center justify-between gap-2 pt-0.5">
               <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA] cursor-pointer hover:text-primary transition">
                 <Camera size={14} className="text-primary" />
-                <span>{photoUrl ? "Photo attached ✓" : "Attach photo (optional)"}</span>
+                <span>
+                  {photoUrl ? "Photo attached ✓" : "Attach photo (optional)"}
+                </span>
                 <input
                   type="file"
                   accept="image/*"
@@ -242,7 +278,11 @@ export default function TrackRecordFollowUpBanner() {
 
             {photoUrl && (
               <div className="relative h-14 w-20 overflow-hidden rounded-lg border border-[#E7ECF1] dark:border-[#222222]">
-                <img src={photoUrl} alt="Attached job photo" className="h-full w-full object-cover" />
+                <img
+                  src={photoUrl}
+                  alt="Attached job photo"
+                  className="h-full w-full object-cover"
+                />
               </div>
             )}
 

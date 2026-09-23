@@ -9,7 +9,7 @@ export interface SamplePortfolioItem {
 }
 
 function createDataUrl(
-  draw: (ctx: CanvasRenderingContext2D, width: number, height: number) => void
+  draw: (ctx: CanvasRenderingContext2D, width: number, height: number) => void,
 ): string {
   if (typeof document === "undefined") return "";
   const canvas = document.createElement("canvas");
@@ -71,14 +71,14 @@ export function getSamplePortfolioImages(): SamplePortfolioItem[] {
       ctx.strokeStyle = wireColors[i % wireColors.length];
       ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.moveTo(120 + (i * 20), 40);
+      ctx.moveTo(120 + i * 20, 40);
       ctx.bezierCurveTo(
         130 + i * 15,
         180,
         150 + i * 10,
         280,
         170 + (i % 8) * 36,
-        300
+        300,
       );
       ctx.stroke();
     }
@@ -268,7 +268,8 @@ export function getSamplePortfolioImages(): SamplePortfolioItem[] {
       id: "sample-1",
       name: "distribution_board_wiring.jpg",
       mimeType: "image/jpeg",
-      description: "Real photo of home electrical distribution board with clean phase cabling",
+      description:
+        "Real photo of home electrical distribution board with clean phase cabling",
       expectedVerdict: "approved",
       expectedReason: "Authentic electrical trade work, clearly documented.",
       dataUrl: realElectrical,
@@ -277,7 +278,8 @@ export function getSamplePortfolioImages(): SamplePortfolioItem[] {
       id: "sample-2",
       name: "sink_ptrap_plumbing_fix.jpg",
       mimeType: "image/jpeg",
-      description: "Real photo of PVC drain P-trap and dual inlet shutoff valves under sink",
+      description:
+        "Real photo of PVC drain P-trap and dual inlet shutoff valves under sink",
       expectedVerdict: "approved",
       expectedReason: "Authentic plumbing job with visible trade tools.",
       dataUrl: realPlumbing,
@@ -286,27 +288,33 @@ export function getSamplePortfolioImages(): SamplePortfolioItem[] {
       id: "sample-3",
       name: "stock_shutterstock_cordless_drill.jpg",
       mimeType: "image/jpeg",
-      description: "Commercial stock catalog photo with visible Shutterstock watermark",
+      description:
+        "Commercial stock catalog photo with visible Shutterstock watermark",
       expectedVerdict: "rejected",
-      expectedReason: "Flagged as stock photo with watermarks, not authentic job proof.",
+      expectedReason:
+        "Flagged as stock photo with watermarks, not authentic job proof.",
       dataUrl: stockPhoto,
     },
     {
       id: "sample-4",
       name: "dark_blurry_basement_snap.jpg",
       mimeType: "image/jpeg",
-      description: "Severely underexposed, blurry flashlight photo with unidentifiable work",
+      description:
+        "Severely underexposed, blurry flashlight photo with unidentifiable work",
       expectedVerdict: "needs_review",
-      expectedReason: "Image quality issue — too dark and blurry to verify workmanship.",
+      expectedReason:
+        "Image quality issue — too dark and blurry to verify workmanship.",
       dataUrl: blurryDark,
     },
     {
       id: "sample-5",
       name: "whatsapp_discount_meme.jpg",
       mimeType: "image/jpeg",
-      description: "Unrelated WhatsApp cartoon meme graphic, not trade documentation",
+      description:
+        "Unrelated WhatsApp cartoon meme graphic, not trade documentation",
       expectedVerdict: "needs_review",
-      expectedReason: "Duplicate style meme / social graphic; does not depict trade work.",
+      expectedReason:
+        "Duplicate style meme / social graphic; does not depict trade work.",
       dataUrl: memeGraphic,
     },
   ];

@@ -6,8 +6,16 @@ import GoogleLocationInput from "@/components/GoogleLocationInput";
 import { supabase } from "@/lib/supabase";
 import { setStandardLocation } from "@/lib/location";
 
-const categoryOptions = ["Electrician", "Plumber", "Carpenter", "Painter", "Cleaner", "Other"];
-const inputClass = "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 text-sm text-[#2C2C2C] placeholder:text-[#989EA7] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition";
+const categoryOptions = [
+  "Electrician",
+  "Plumber",
+  "Carpenter",
+  "Painter",
+  "Cleaner",
+  "Other",
+];
+const inputClass =
+  "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 text-sm text-[#2C2C2C] placeholder:text-[#989EA7] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition";
 const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 export default function AgencyRegister() {
@@ -29,14 +37,23 @@ export default function AgencyRegister() {
 
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") || "").trim();
-    const contactPersonName = String(form.get("contactPersonName") || "").trim();
+    const contactPersonName = String(
+      form.get("contactPersonName") || "",
+    ).trim();
     const phone = normalizePhone(String(form.get("phone") || ""));
     const email = String(form.get("email") || "").trim();
     const password = String(form.get("password") || "");
-    const rawLocations = String(form.get("serviceLocations") || serviceAreaInput || "").trim();
-    const serviceLocations = rawLocations.split(",").map((v) => v.trim()).filter(Boolean);
+    const rawLocations = String(
+      form.get("serviceLocations") || serviceAreaInput || "",
+    ).trim();
+    const serviceLocations = rawLocations
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
     const teamSizeBand = String(form.get("teamSizeBand") || "2-5");
-    const businessRegistrationNumber = String(form.get("businessRegistrationNumber") || "").trim();
+    const businessRegistrationNumber = String(
+      form.get("businessRegistrationNumber") || "",
+    ).trim();
     const logoUrl = String(form.get("logoUrl") || "").trim();
     const description = String(form.get("description") || "").trim();
 
@@ -69,27 +86,33 @@ export default function AgencyRegister() {
     try {
       // 1. Sign up user
       let token = "";
-      const { data: signUpData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role: "agency",
-            name,
-            phone,
-            location: serviceLocations[0],
+      const { data: signUpData, error: authError } = await supabase.auth.signUp(
+        {
+          email,
+          password,
+          options: {
+            data: {
+              role: "agency",
+              name,
+              phone,
+              location: serviceLocations[0],
+            },
           },
         },
-      });
+      );
 
       if (authError) {
         // If user already exists, try signing in
         if (authError.message.toLowerCase().includes("already registered")) {
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (signInError) throw new Error("An account with this email already exists. Please sign in or use a different email.");
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+          if (signInError)
+            throw new Error(
+              "An account with this email already exists. Please sign in or use a different email.",
+            );
           token = signInData.session?.access_token || "";
         } else {
           throw authError;
@@ -100,7 +123,9 @@ export default function AgencyRegister() {
 
       if (!token) {
         // In case email verification is strictly required by Supabase project
-        setSuccess("Agency account created. If email verification is enabled, please confirm your email, then sign in.");
+        setSuccess(
+          "Agency account created. If email verification is enabled, please confirm your email, then sign in.",
+        );
         setBusy(false);
         return;
       }
@@ -127,14 +152,19 @@ export default function AgencyRegister() {
       });
 
       const result = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(result?.message || "Unable to save agency profile.");
+      if (!response.ok)
+        throw new Error(result?.message || "Unable to save agency profile.");
 
       setSuccess("Agency profile registered successfully!");
       setTimeout(() => {
         navigate("/agency/dashboard", { replace: true });
       }, 1000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Registration failed. Please try again.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Registration failed. Please try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -150,30 +180,71 @@ export default function AgencyRegister() {
               Register as an Agency
             </h1>
             <p className="mt-2 text-sm text-[#67696D]">
-              Create an agency profile to get listed in the directory and manage local service bookings.
+              Create an agency profile to get listed in the directory and manage
+              local service bookings.
             </p>
           </div>
         </div>
       </section>
 
-      <form onSubmit={submit} className="mt-6 space-y-5 rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft sm:p-7">
+      <form
+        onSubmit={submit}
+        className="mt-6 space-y-5 rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft sm:p-7"
+      >
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field name="name" label="Agency Name" required placeholder="Your agency name" />
-          <Field name="contactPersonName" label="Contact Person Name" required placeholder="Person responsible for the agency" />
-          <Field name="email" label="Email Address" required type="email" placeholder="agency@example.com" />
-          <Field name="password" label="Password" required type="password" placeholder="At least 6 characters" />
-          <Field name="phone" label="Phone Number" required placeholder="10-digit mobile number" numeric />
+          <Field
+            name="name"
+            label="Agency Name"
+            required
+            placeholder="Your agency name"
+          />
+          <Field
+            name="contactPersonName"
+            label="Contact Person Name"
+            required
+            placeholder="Person responsible for the agency"
+          />
+          <Field
+            name="email"
+            label="Email Address"
+            required
+            type="email"
+            placeholder="agency@example.com"
+          />
+          <Field
+            name="password"
+            label="Password"
+            required
+            type="password"
+            placeholder="At least 6 characters"
+          />
+          <Field
+            name="phone"
+            label="Phone Number"
+            required
+            placeholder="10-digit mobile number"
+            numeric
+          />
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">Service Categories</label>
+          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+            Service Categories
+          </label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {categoryOptions.map((c) => (
-              <label key={c} className="flex cursor-pointer items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-2.5 text-sm text-[#2C2C2C] hover:border-primary/50 transition">
+              <label
+                key={c}
+                className="flex cursor-pointer items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-2.5 text-sm text-[#2C2C2C] hover:border-primary/50 transition"
+              >
                 <input
                   type="checkbox"
                   checked={categories.includes(c)}
-                  onChange={() => setCategories((v) => (v.includes(c) ? v.filter((x) => x !== c) : [...v, c]))}
+                  onChange={() =>
+                    setCategories((v) =>
+                      v.includes(c) ? v.filter((x) => x !== c) : [...v, c],
+                    )
+                  }
                   className="rounded text-primary focus:ring-primary"
                 />
                 <span>{c}</span>
@@ -197,7 +268,9 @@ export default function AgencyRegister() {
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">Team Size</label>
+          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+            Team Size
+          </label>
           <select name="teamSizeBand" defaultValue="2-5" className={inputClass}>
             <option value="2-5">2–5 workers</option>
             <option value="6-15">6–15 workers</option>
@@ -206,12 +279,22 @@ export default function AgencyRegister() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field name="businessRegistrationNumber" label="Business Registration / GST (optional)" placeholder="Optional" />
-          <Field name="logoUrl" label="Logo URL (optional)" placeholder="Optional image URL" />
+          <Field
+            name="businessRegistrationNumber"
+            label="Business Registration / GST (optional)"
+            placeholder="Optional"
+          />
+          <Field
+            name="logoUrl"
+            label="Logo URL (optional)"
+            placeholder="Optional image URL"
+          />
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">About the Agency</label>
+          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+            About the Agency
+          </label>
           <textarea
             name="description"
             rows={4}
@@ -220,9 +303,19 @@ export default function AgencyRegister() {
           />
         </div>
 
-        {error && <p role="alert" className="text-center text-xs font-semibold text-rose-600">{error}</p>}
+        {error && (
+          <p
+            role="alert"
+            className="text-center text-xs font-semibold text-rose-600"
+          >
+            {error}
+          </p>
+        )}
         {success && (
-          <div role="status" className="flex items-center justify-center gap-2 rounded-[12px] bg-emerald-50 border border-emerald-500/20 px-3 py-2.5 text-center text-xs font-semibold text-emerald-700">
+          <div
+            role="status"
+            className="flex items-center justify-center gap-2 rounded-[12px] bg-emerald-50 border border-emerald-500/20 px-3 py-2.5 text-center text-xs font-semibold text-emerald-700"
+          >
             <CheckCircle2 size={16} />
             <span>{success}</span>
           </div>
@@ -234,7 +327,8 @@ export default function AgencyRegister() {
         >
           {busy ? (
             <>
-              <Loader2 size={17} className="animate-spin" /> Registering Agency...
+              <Loader2 size={17} className="animate-spin" /> Registering
+              Agency...
             </>
           ) : (
             "Create Agency Profile"
@@ -243,7 +337,10 @@ export default function AgencyRegister() {
 
         <p className="text-center text-sm text-[#67696D]">
           Already registered?{" "}
-          <Link to="/login" className="font-semibold text-primary hover:underline">
+          <Link
+            to="/login"
+            className="font-semibold text-primary hover:underline"
+          >
             Sign in
           </Link>
         </p>
@@ -271,7 +368,9 @@ function Field({
     <div>
       <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
         {label}
-        {!required && <span className="ml-1 font-normal text-[#67696D]">(optional)</span>}
+        {!required && (
+          <span className="ml-1 font-normal text-[#67696D]">(optional)</span>
+        )}
       </label>
       <input
         name={name}
@@ -283,7 +382,9 @@ function Field({
         onInput={
           numeric
             ? (e) => {
-                e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 10);
+                e.currentTarget.value = e.currentTarget.value
+                  .replace(/\D/g, "")
+                  .slice(0, 10);
               }
             : undefined
         }
@@ -293,4 +394,3 @@ function Field({
     </div>
   );
 }
-

@@ -4,8 +4,16 @@ import type { Worker } from "../../shared/workers";
 import { supabase } from "./supabase";
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-const publicSupabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey, { auth: { autoRefreshToken: false, persistSession: false } }) : null;
+const supabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const publicSupabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      })
+    : null;
 
 const persistedWorkerSchema = z.object({
   id: z.string().trim().min(1),
@@ -16,10 +24,17 @@ const persistedWorkerSchema = z.object({
   initials: z.string().trim().min(1).default("W"),
   tone: z.string().trim().min(1).default("bg-[#f5f6f4]"),
   about: z.string().trim().min(1).default("Local professional"),
-  services: z.union([
-    z.array(z.string().trim()),
-    z.string().transform((s) => s.split(",").map((x) => x.trim()).filter(Boolean)),
-  ]).default([]),
+  services: z
+    .union([
+      z.array(z.string().trim()),
+      z.string().transform((s) =>
+        s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+      ),
+    ])
+    .default([]),
   phone: z.string().trim().min(6),
   photo_url: z.string().optional().nullable(),
   created_at: z.string().optional(),
@@ -33,11 +48,15 @@ const persistedWorkerSchema = z.object({
   leadCredits: z.number().optional().default(100),
   isPromoted: z.boolean().optional().default(true),
 });
-const toWorker = (row: unknown): Worker => persistedWorkerSchema.parse(row) as Worker;
-const workerSelect = "id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at,available_today,away_from,away_until,urgent_today,agency_id";
+const toWorker = (row: unknown): Worker =>
+  persistedWorkerSchema.parse(row) as Worker;
+const workerSelect =
+  "id,name,phone,category,locality,experience,initials,tone,about,services,photo_url,created_at,available_today,away_from,away_until,urgent_today,agency_id";
 
 const isDummyProfile = (name: string, phone?: string) => {
-  const n = String(name || "").toLowerCase().trim();
+  const n = String(name || "")
+    .toLowerCase()
+    .trim();
   const p = String(phone || "").trim();
   return (
     n === "anika rao" ||
@@ -54,11 +73,17 @@ const isDummyProfile = (name: string, phone?: string) => {
 export const readRegisteredWorkers = async (): Promise<Worker[]> => {
   const primaryWorkers: Worker[] = [];
   try {
-    const primary = await supabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
+    const primary = await supabase
+      .from("workers")
+      .select(workerSelect)
+      .order("created_at", { ascending: false });
     if (!primary.error && Array.isArray(primary.data)) {
       for (const row of primary.data) {
         const parsed = persistedWorkerSchema.safeParse(row);
-        if (parsed.success && !isDummyProfile(parsed.data.name, parsed.data.phone)) {
+        if (
+          parsed.success &&
+          !isDummyProfile(parsed.data.name, parsed.data.phone)
+        ) {
           primaryWorkers.push(parsed.data as Worker);
         }
       }
@@ -70,11 +95,17 @@ export const readRegisteredWorkers = async (): Promise<Worker[]> => {
   // If public client is configured and primary query returned no rows, fall back to public client
   if (publicSupabase && primaryWorkers.length === 0) {
     try {
-      const fallback = await publicSupabase.from("workers").select(workerSelect).order("created_at", { ascending: false });
+      const fallback = await publicSupabase
+        .from("workers")
+        .select(workerSelect)
+        .order("created_at", { ascending: false });
       if (!fallback.error && Array.isArray(fallback.data)) {
         for (const row of fallback.data) {
           const parsed = persistedWorkerSchema.safeParse(row);
-          if (parsed.success && !isDummyProfile(parsed.data.name, parsed.data.phone)) {
+          if (
+            parsed.success &&
+            !isDummyProfile(parsed.data.name, parsed.data.phone)
+          ) {
             primaryWorkers.push(parsed.data as Worker);
           }
         }
@@ -90,24 +121,123 @@ export const readRegisteredWorkers = async (): Promise<Worker[]> => {
       supabase
         .from("workers")
         .delete()
-        .or("name.ilike.%anika rao%,name.ilike.%demo worker%,phone.eq.9876543210")
+        .or(
+          "name.ilike.%anika rao%,name.ilike.%demo worker%,phone.eq.9876543210",
+        ),
     );
   } catch {}
 
   return primaryWorkers;
 };
 
-const workerRow = (worker: Worker) => ({ id: worker.id, name: worker.name, phone: worker.phone, category: worker.category, locality: worker.locality, experience: worker.experience, initials: worker.initials, tone: worker.tone, about: worker.about, services: worker.services, photo_url: worker.photo_url || null, available_today: worker.available_today ?? false, away_from: worker.away_from ?? null, away_until: worker.away_until ?? null, urgent_today: worker.urgent_today ?? false, agency_id: worker.agency_id ?? null });
+const workerRow = (worker: Worker) => ({
+  id: worker.id,
+  name: worker.name,
+  phone: worker.phone,
+  category: worker.category,
+  locality: worker.locality,
+  experience: worker.experience,
+  initials: worker.initials,
+  tone: worker.tone,
+  about: worker.about,
+  services: worker.services,
+  photo_url: worker.photo_url || null,
+  available_today: worker.available_today ?? false,
+  away_from: worker.away_from ?? null,
+  away_until: worker.away_until ?? null,
+  urgent_today: worker.urgent_today ?? false,
+  agency_id: worker.agency_id ?? null,
+});
 
 export const saveRegisteredWorker = async (worker: Worker) => {
   const row = workerRow(worker);
-  if (publicSupabase) { const result = await publicSupabase.from("workers").insert(row); if (!result.error) return toWorker({ ...row, created_at: new Date().toISOString() }); }
+  if (publicSupabase) {
+    const result = await publicSupabase.from("workers").insert(row);
+    if (!result.error)
+      return toWorker({ ...row, created_at: new Date().toISOString() });
+  }
   const serverResult = await supabase.from("workers").insert(row);
-  if (!serverResult.error) return toWorker({ ...row, created_at: new Date().toISOString() });
-  const message = publicSupabase ? "Worker registration was rejected by the database policy." : serverResult.error.message;
+  if (!serverResult.error)
+    return toWorker({ ...row, created_at: new Date().toISOString() });
+  const message = publicSupabase
+    ? "Worker registration was rejected by the database policy."
+    : serverResult.error.message;
   throw new Error(`Unable to save worker to Supabase: ${message}`);
 };
 
-export const updateWorkerAvailabilityByPhone = async (phone: string, changes: { available_today: boolean; away_from?: string | null; away_until?: string | null; urgent_today: boolean }) => { const { data, error } = await supabase.from("workers").update(changes).eq("phone", phone).select(workerSelect).maybeSingle(); if (error) throw new Error(`Unable to save worker availability: ${error.message}`); if (!data) throw new Error("Worker profile was not found for this account."); return toWorker(data); };
-export const updateWorkerPhotoByPhone = async (phone: string, photoUrl: string) => { const { data, error } = await supabase.from("workers").update({ photo_url: photoUrl }).eq("phone", phone).select(workerSelect).maybeSingle(); if (error) throw new Error(`Unable to save worker photo: ${error.message}`); if (!data) throw new Error("Worker profile was not found for this account."); return toWorker(data); };
-export const updateWorkerProfileByPhone = async (phone: string, profile: { name: string; category: string; location?: string; locality?: string; experience: string; services: string[]; about: string; photo_url?: string | null }) => { const initials = profile.name.trim().split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase()).join("") || "W"; const locality = (profile.locality ?? profile.location ?? "").trim(); const { data, error } = await supabase.from("workers").update({ name: profile.name.trim(), category: profile.category.trim(), locality, experience: profile.experience.trim(), services: profile.services.map(s => s.trim()).filter(Boolean), about: profile.about.trim(), initials, ...(profile.photo_url !== undefined ? { photo_url: profile.photo_url } : {}) }).eq("phone", phone).select(workerSelect).maybeSingle(); if (error) throw new Error(`Unable to save worker profile: ${error.message}`); if (!data) throw new Error("Worker profile was not found for this account."); return toWorker(data); };
+export const updateWorkerAvailabilityByPhone = async (
+  phone: string,
+  changes: {
+    available_today: boolean;
+    away_from?: string | null;
+    away_until?: string | null;
+    urgent_today: boolean;
+  },
+) => {
+  const { data, error } = await supabase
+    .from("workers")
+    .update(changes)
+    .eq("phone", phone)
+    .select(workerSelect)
+    .maybeSingle();
+  if (error)
+    throw new Error(`Unable to save worker availability: ${error.message}`);
+  if (!data) throw new Error("Worker profile was not found for this account.");
+  return toWorker(data);
+};
+export const updateWorkerPhotoByPhone = async (
+  phone: string,
+  photoUrl: string,
+) => {
+  const { data, error } = await supabase
+    .from("workers")
+    .update({ photo_url: photoUrl })
+    .eq("phone", phone)
+    .select(workerSelect)
+    .maybeSingle();
+  if (error) throw new Error(`Unable to save worker photo: ${error.message}`);
+  if (!data) throw new Error("Worker profile was not found for this account.");
+  return toWorker(data);
+};
+export const updateWorkerProfileByPhone = async (
+  phone: string,
+  profile: {
+    name: string;
+    category: string;
+    location?: string;
+    locality?: string;
+    experience: string;
+    services: string[];
+    about: string;
+    photo_url?: string | null;
+  },
+) => {
+  const initials =
+    profile.name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "W";
+  const locality = (profile.locality ?? profile.location ?? "").trim();
+  const { data, error } = await supabase
+    .from("workers")
+    .update({
+      name: profile.name.trim(),
+      category: profile.category.trim(),
+      locality,
+      experience: profile.experience.trim(),
+      services: profile.services.map((s) => s.trim()).filter(Boolean),
+      about: profile.about.trim(),
+      initials,
+      ...(profile.photo_url !== undefined
+        ? { photo_url: profile.photo_url }
+        : {}),
+    })
+    .eq("phone", phone)
+    .select(workerSelect)
+    .maybeSingle();
+  if (error) throw new Error(`Unable to save worker profile: ${error.message}`);
+  if (!data) throw new Error("Worker profile was not found for this account.");
+  return toWorker(data);
+};

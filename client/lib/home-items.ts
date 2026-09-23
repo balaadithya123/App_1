@@ -92,16 +92,27 @@ export function formatDateIso(d: Date): string {
  * Plain date arithmetic: computes exact due date from last_serviced_date + interval_months.
  * Handles month lengths & leap years by clamping day to target month's maximum days.
  */
-export function computeDueDate(lastServicedDateStr: string, intervalMonths: number): Date {
+export function computeDueDate(
+  lastServicedDateStr: string,
+  intervalMonths: number,
+): Date {
   const cleanStr = (lastServicedDateStr || "").trim();
   const [yearStr, monthStr, dayStr] = cleanStr.split("-");
   const parsedYear = Number(yearStr);
   const parsedMonth = Number(monthStr);
   const parsedDay = Number(dayStr);
 
-  const baseYear = Number.isFinite(parsedYear) ? parsedYear : new Date().getFullYear();
-  const baseMonth = Number.isFinite(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 ? parsedMonth - 1 : 0;
-  const baseDay = Number.isFinite(parsedDay) && parsedDay >= 1 && parsedDay <= 31 ? parsedDay : 1;
+  const baseYear = Number.isFinite(parsedYear)
+    ? parsedYear
+    : new Date().getFullYear();
+  const baseMonth =
+    Number.isFinite(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12
+      ? parsedMonth - 1
+      : 0;
+  const baseDay =
+    Number.isFinite(parsedDay) && parsedDay >= 1 && parsedDay <= 31
+      ? parsedDay
+      : 1;
 
   const totalMonths = baseMonth + Math.max(1, Math.round(intervalMonths));
   const targetYear = baseYear + Math.floor(totalMonths / 12);
@@ -120,10 +131,18 @@ export function computeDueDate(lastServicedDateStr: string, intervalMonths: numb
  */
 export function getReminderStatus(
   item: Pick<HomeItem, "last_serviced_date" | "interval_months">,
-  referenceDate?: Date
+  referenceDate?: Date,
 ): ReminderStatus {
   const ref = referenceDate ? new Date(referenceDate) : new Date();
-  const today = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate(), 0, 0, 0, 0);
+  const today = new Date(
+    ref.getFullYear(),
+    ref.getMonth(),
+    ref.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
   const dueDate = computeDueDate(item.last_serviced_date, item.interval_months);
   const dueDateStr = formatDateIso(dueDate);
 
@@ -142,7 +161,10 @@ export function getReminderStatus(
       const months = Math.floor(diffDays / 30);
       const remainingDays = diffDays % 30;
       if (months === 1) {
-        statusText = remainingDays > 3 ? `Overdue by ~1 mo (${diffDays}d)` : "Overdue by 1 month";
+        statusText =
+          remainingDays > 3
+            ? `Overdue by ~1 mo (${diffDays}d)`
+            : "Overdue by 1 month";
       } else {
         statusText = `Overdue by ${months} months (${diffDays}d)`;
       }
@@ -176,7 +198,7 @@ export function getReminderStatus(
  */
 export function getPresetLastServicedDate(
   preset: "today" | "1_3_months_ago" | "6_plus_months_ago",
-  referenceDate?: Date
+  referenceDate?: Date,
 ): string {
   const ref = referenceDate ? new Date(referenceDate) : new Date();
   const y = ref.getFullYear();
@@ -202,7 +224,7 @@ export function getPresetLastServicedDate(
  */
 export function getDueAndUpcomingHomeItems(
   items: HomeItem[],
-  referenceDate?: Date
+  referenceDate?: Date,
 ): {
   dueOrOverdue: HomeItemWithStatus[];
   upcoming: HomeItemWithStatus[];
@@ -270,7 +292,9 @@ function writeLocalStorage(items: HomeItem[]): void {
 /**
  * Fetches the maintenance catalog, falling back to DEFAULT_MAINTENANCE_CATALOG
  */
-export async function fetchMaintenanceCatalog(): Promise<MaintenanceCatalogItem[]> {
+export async function fetchMaintenanceCatalog(): Promise<
+  MaintenanceCatalogItem[]
+> {
   try {
     if (supabase) {
       const { data, error } = await supabase
@@ -324,11 +348,14 @@ export async function fetchUserHomeItems(userId?: string): Promise<HomeItem[]> {
  * Creates a single home item
  */
 export async function createUserHomeItem(
-  item: Omit<HomeItem, "id" | "created_at" | "updated_at">
+  item: Omit<HomeItem, "id" | "created_at" | "updated_at">,
 ): Promise<HomeItem> {
   const newItem: HomeItem = {
     ...item,
-    id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -349,7 +376,9 @@ export async function createUserHomeItem(
         .single();
 
       if (!error && data) {
-        const local = readLocalStorage(item.user_id).filter((i) => i.id !== (data as HomeItem).id);
+        const local = readLocalStorage(item.user_id).filter(
+          (i) => i.id !== (data as HomeItem).id,
+        );
         writeLocalStorage([data as HomeItem, ...local]);
         return data as HomeItem;
       }
@@ -367,7 +396,7 @@ export async function createUserHomeItem(
  * Batch-creates home items (e.g. from first-run catalog onboarding)
  */
 export async function createBatchUserHomeItems(
-  items: Array<Omit<HomeItem, "id" | "created_at" | "updated_at">>
+  items: Array<Omit<HomeItem, "id" | "created_at" | "updated_at">>,
 ): Promise<HomeItem[]> {
   if (items.length === 0) return [];
   const userId = items[0]?.user_id;
@@ -391,7 +420,7 @@ export async function createBatchUserHomeItems(
       if (!error && data) {
         const created = data as HomeItem[];
         const local = readLocalStorage(userId).filter(
-          (old) => !created.some((c) => c.id === old.id)
+          (old) => !created.some((c) => c.id === old.id),
         );
         writeLocalStorage([...created, ...local]);
         return created;
@@ -403,7 +432,10 @@ export async function createBatchUserHomeItems(
 
   const newItems: HomeItem[] = items.map((item) => ({
     ...item,
-    id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }));
@@ -418,7 +450,12 @@ export async function createBatchUserHomeItems(
  */
 export async function updateUserHomeItem(
   id: string,
-  updates: Partial<Pick<HomeItem, "label" | "last_serviced_date" | "interval_months" | "category_slug">>
+  updates: Partial<
+    Pick<
+      HomeItem,
+      "label" | "last_serviced_date" | "interval_months" | "category_slug"
+    >
+  >,
 ): Promise<HomeItem | null> {
   const payload = {
     ...updates,
@@ -436,7 +473,9 @@ export async function updateUserHomeItem(
 
       if (!error && data) {
         const current = readLocalStorage();
-        const updated = current.map((i) => (i.id === id ? (data as HomeItem) : i));
+        const updated = current.map((i) =>
+          i.id === id ? (data as HomeItem) : i,
+        );
         writeLocalStorage(updated);
         return data as HomeItem;
       }
@@ -461,7 +500,9 @@ export async function updateUserHomeItem(
 /**
  * Resets last_serviced_date to today for an item ("Mark as done today")
  */
-export async function markHomeItemDoneToday(id: string): Promise<HomeItem | null> {
+export async function markHomeItemDoneToday(
+  id: string,
+): Promise<HomeItem | null> {
   const todayIso = formatDateIso(new Date());
   return updateUserHomeItem(id, {
     last_serviced_date: todayIso,
@@ -493,17 +534,29 @@ export async function deleteUserHomeItem(id: string): Promise<boolean> {
 /**
  * Synchronous badge calculation from locally stored/cached items
  */
-export function getStoredDueBadgeCount(userId?: string, referenceDate?: Date): number {
+export function getStoredDueBadgeCount(
+  userId?: string,
+  referenceDate?: Date,
+): number {
   const items = readLocalStorage(userId);
-  const { dueOrOverdueCount } = getDueAndUpcomingHomeItems(items, referenceDate);
+  const { dueOrOverdueCount } = getDueAndUpcomingHomeItems(
+    items,
+    referenceDate,
+  );
   return dueOrOverdueCount;
 }
 
 /**
  * Asynchronous badge calculation from live items
  */
-export async function getLiveDueBadgeCount(userId?: string, referenceDate?: Date): Promise<number> {
+export async function getLiveDueBadgeCount(
+  userId?: string,
+  referenceDate?: Date,
+): Promise<number> {
   const items = await fetchUserHomeItems(userId);
-  const { dueOrOverdueCount } = getDueAndUpcomingHomeItems(items, referenceDate);
+  const { dueOrOverdueCount } = getDueAndUpcomingHomeItems(
+    items,
+    referenceDate,
+  );
   return dueOrOverdueCount;
 }

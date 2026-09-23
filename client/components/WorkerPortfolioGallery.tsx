@@ -7,10 +7,15 @@ interface Props {
   workerName: string;
 }
 
-export default function WorkerPortfolioGallery({ workerId, workerName }: Props) {
+export default function WorkerPortfolioGallery({
+  workerId,
+  workerName,
+}: Props) {
   const [photos, setPhotos] = useState<WorkerPortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activePhoto, setActivePhoto] = useState<WorkerPortfolioItem | null>(null);
+  const [activePhoto, setActivePhoto] = useState<WorkerPortfolioItem | null>(
+    null,
+  );
 
   useEffect(() => {
     let mounted = true;

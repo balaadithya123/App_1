@@ -34,7 +34,10 @@ export function tokenizeText(text: string): string[] {
 /**
  * Extracts word shingles (n-grams) from a sequence of word tokens.
  */
-export function extractShingles(tokens: string[], shingleSize: number = 3): Set<string> {
+export function extractShingles(
+  tokens: string[],
+  shingleSize: number = 3,
+): Set<string> {
   const shingles = new Set<string>();
   if (tokens.length < shingleSize) {
     if (tokens.length > 0) {
@@ -51,7 +54,10 @@ export function extractShingles(tokens: string[], shingleSize: number = 3): Set<
 /**
  * Calculates Jaccard similarity between two sets of shingles.
  */
-export function calculateJaccardSimilarity(setA: Set<string>, setB: Set<string>): number {
+export function calculateJaccardSimilarity(
+  setA: Set<string>,
+  setB: Set<string>,
+): number {
   if (setA.size === 0 && setB.size === 0) return 1.0;
   if (setA.size === 0 || setB.size === 0) return 0.0;
 
@@ -72,7 +78,7 @@ export function calculateJaccardSimilarity(setA: Set<string>, setB: Set<string>)
 export function checkProfileTextSimilarity(
   newProfileText: string,
   existingProfiles: Array<{ id: string; name: string; text: string }>,
-  options: TextSimilarityOptions = {}
+  options: TextSimilarityOptions = {},
 ): TextMatchResult {
   const shingleSize = options.shingleSize ?? 3;
   const threshold = options.threshold ?? 0.6;
@@ -138,7 +144,8 @@ function fallbackPhotoCheck(photoUrlOrData: string): ProfilePhotoCheckResult {
     lower.includes("whatsapp");
 
   const reasons: string[] = [];
-  if (isStock) reasons.push("Detected stock image markers in profile photo URL/metadata.");
+  if (isStock)
+    reasons.push("Detected stock image markers in profile photo URL/metadata.");
   if (isDup) reasons.push("Detected screenshot or messaging graphic style.");
   if (!isStock && !isDup) reasons.push("Passes heuristic photo verification.");
 
@@ -155,7 +162,7 @@ function fallbackPhotoCheck(photoUrlOrData: string): ProfilePhotoCheckResult {
  * Ensures strict JSON-only response without markdown fences.
  */
 export async function checkProfilePhotoDuplicates(
-  photoUrlOrData: string
+  photoUrlOrData: string,
 ): Promise<ProfilePhotoCheckResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -175,27 +182,36 @@ export async function checkProfilePhotoDuplicates(
     let inlineData: { data: string; mimeType: string } | null = null;
 
     if (photoUrlOrData.startsWith("data:")) {
-      const match = photoUrlOrData.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+      const match = photoUrlOrData.match(
+        /^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/,
+      );
       if (match) {
         inlineData = {
           mimeType: match[1],
           data: match[2],
         };
       }
-    } else if (photoUrlOrData.startsWith("http://") || photoUrlOrData.startsWith("https://")) {
+    } else if (
+      photoUrlOrData.startsWith("http://") ||
+      photoUrlOrData.startsWith("https://")
+    ) {
       try {
         const response = await fetch(photoUrlOrData);
         if (response.ok) {
           const buffer = await response.arrayBuffer();
           const base64 = Buffer.from(buffer).toString("base64");
-          const contentType = response.headers.get("content-type") || "image/jpeg";
+          const contentType =
+            response.headers.get("content-type") || "image/jpeg";
           inlineData = {
             mimeType: contentType.split(";")[0],
             data: base64,
           };
         }
       } catch (fetchErr) {
-        console.warn("[duplicate-detection] Failed to fetch photo URL for Gemini analysis:", fetchErr);
+        console.warn(
+          "[duplicate-detection] Failed to fetch photo URL for Gemini analysis:",
+          fetchErr,
+        );
       }
     }
 
@@ -232,26 +248,41 @@ export async function checkProfilePhotoDuplicates(
                 items: { type: Type.STRING },
               },
             },
-            required: ["is_stock_photo", "is_duplicate_or_copied", "confidence", "reasons"],
+            required: [
+              "is_stock_photo",
+              "is_duplicate_or_copied",
+              "confidence",
+              "reasons",
+            ],
           },
         },
       });
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Gemini photo duplicate check timeout")), 8000)
+        setTimeout(
+          () => reject(new Error("Gemini photo duplicate check timeout")),
+          8000,
+        ),
       );
 
       const response: any = await Promise.race([promise, timeoutPromise]);
       let rawText = response.text?.trim() || "";
 
       // Ensure strict clean JSON without markdown code block fences
-      rawText = rawText.replace(/^```json/i, "").replace(/^```/i, "").replace(/```$/i, "").trim();
+      rawText = rawText
+        .replace(/^```json/i, "")
+        .replace(/^```/i, "")
+        .replace(/```$/i, "")
+        .trim();
 
       if (rawText) {
         parsed = JSON.parse(rawText);
       }
     } catch (modelErr) {
-      console.warn("[duplicate-detection] Gemini gemini-2.5-flash error:", modelErr);
+      console.warn(
+        "[duplicate-detection] Gemini gemini-2.5-flash error:",
+        modelErr,
+      );
     }
 
     if (!parsed) {
@@ -262,7 +293,9 @@ export async function checkProfilePhotoDuplicates(
       is_stock_photo: Boolean(parsed.is_stock_photo),
       is_duplicate_or_copied: Boolean(parsed.is_duplicate_or_copied),
       confidence:
-        typeof parsed.confidence === "number" ? Math.min(1, Math.max(0, parsed.confidence)) : 0.8,
+        typeof parsed.confidence === "number"
+          ? Math.min(1, Math.max(0, parsed.confidence))
+          : 0.8,
       reasons: Array.isArray(parsed.reasons) ? parsed.reasons : [],
     };
   } catch (err) {

@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
-import { ShieldCheck, CheckCircle2, XCircle, Clock, Sparkles, Image as ImageIcon, X } from "lucide-react";
-import { fetchWorkerTrackRecord, type TrackRecordData, type TrackRecordEntry } from "@/lib/track-record";
+import {
+  ShieldCheck,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Sparkles,
+  Image as ImageIcon,
+  X,
+} from "lucide-react";
+import {
+  fetchWorkerTrackRecord,
+  type TrackRecordData,
+  type TrackRecordEntry,
+} from "@/lib/track-record";
 
 interface WorkerTrackRecordSectionProps {
   workerId: string;
@@ -21,13 +33,19 @@ function formatRelativeTime(dateString: string): string {
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
 
-    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   } catch {
     return "Recently";
   }
 }
 
-export default function WorkerTrackRecordSection({ workerId, workerName }: WorkerTrackRecordSectionProps) {
+export default function WorkerTrackRecordSection({
+  workerId,
+  workerName,
+}: WorkerTrackRecordSectionProps) {
   const [data, setData] = useState<TrackRecordData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activePhotoModal, setActivePhotoModal] = useState<string | null>(null);
@@ -63,7 +81,11 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
   }
 
   const entries = data?.entries || [];
-  const summary = data?.summary || { total: 0, showed_up_count: 0, showed_up_percentage: 0 };
+  const summary = data?.summary || {
+    total: 0,
+    showed_up_count: 0,
+    showed_up_percentage: 0,
+  };
 
   return (
     <section className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 sm:p-6 shadow-soft space-y-4">
@@ -73,7 +95,10 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
           onClick={() => setActivePhotoModal(null)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in cursor-pointer"
         >
-          <div className="relative max-w-lg max-h-[85vh] overflow-hidden rounded-20 border border-white/20 bg-black p-1 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="relative max-w-lg max-h-[85vh] overflow-hidden rounded-20 border border-white/20 bg-black p-1 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={() => setActivePhotoModal(null)}
@@ -81,7 +106,11 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
             >
               <X size={16} />
             </button>
-            <img src={activePhotoModal} alt="Job proof thumbnail" className="max-h-[80vh] w-auto max-w-full rounded-16 object-contain" />
+            <img
+              src={activePhotoModal}
+              alt="Job proof thumbnail"
+              className="max-h-[80vh] w-auto max-w-full rounded-16 object-contain"
+            />
           </div>
         </div>
       )}
@@ -102,7 +131,8 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
               </span>
             </div>
             <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">
-              Unmoderated, chronological confirmation timeline logged directly by customers.
+              Unmoderated, chronological confirmation timeline logged directly
+              by customers.
             </p>
           </div>
         </div>
@@ -111,7 +141,10 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
         {summary.total > 0 ? (
           <div className="rounded-[16px] border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/30 p-2.5 px-3.5 text-right shrink-0">
             <div className="flex items-center justify-end gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-              <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400" />
+              <CheckCircle2
+                size={15}
+                className="text-emerald-600 dark:text-emerald-400"
+              />
               <span>
                 Showed up {summary.showed_up_count} of {summary.total} times
               </span>
@@ -132,7 +165,9 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
         <div className="space-y-1.5">
           <div className="flex justify-between text-[11px] font-semibold text-[#67696D] dark:text-[#A1A1AA]">
             <span>Attendance Score</span>
-            <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">{summary.showed_up_percentage}%</span>
+            <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              {summary.showed_up_percentage}%
+            </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-[#E7ECF1] dark:bg-[#1F1F1F]">
             <div
@@ -165,8 +200,12 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-xs font-bold ${entry.showed_up ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
-                    {entry.showed_up ? "Confirmed Showed Up" : "Marked Did Not Show Up"}
+                  <span
+                    className={`text-xs font-bold ${entry.showed_up ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}
+                  >
+                    {entry.showed_up
+                      ? "Confirmed Showed Up"
+                      : "Marked Did Not Show Up"}
                   </span>
                   <span className="text-[11px] font-medium text-[#989EA7] dark:text-[#71717A] flex items-center gap-1">
                     <Clock size={11} />
@@ -186,7 +225,9 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
                   <div className="mt-2 flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setActivePhotoModal(entry.photo_url || null)}
+                      onClick={() =>
+                        setActivePhotoModal(entry.photo_url || null)
+                      }
                       className="group flex items-center gap-1.5 rounded-xl border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#181818] p-1 pr-2.5 text-[11px] font-semibold text-[#67696D] dark:text-[#A1A1AA] hover:border-primary hover:text-primary transition cursor-pointer"
                     >
                       <img
@@ -206,12 +247,17 @@ export default function WorkerTrackRecordSection({ workerId, workerName }: Worke
           ))
         ) : (
           <div className="rounded-[16px] border border-dashed border-[#E7ECF1] dark:border-[#222222] p-6 text-center">
-            <Sparkles size={24} className="mx-auto text-primary mb-2 opacity-60" />
+            <Sparkles
+              size={24}
+              className="mx-auto text-primary mb-2 opacity-60"
+            />
             <p className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5]">
-              No confirmed track records yet for {workerName || "this specialist"}
+              No confirmed track records yet for{" "}
+              {workerName || "this specialist"}
             </p>
             <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
-              Contact this worker via Call or WhatsApp. You'll receive a quick follow-up prompt to verify attendance!
+              Contact this worker via Call or WhatsApp. You'll receive a quick
+              follow-up prompt to verify attendance!
             </p>
           </div>
         )}

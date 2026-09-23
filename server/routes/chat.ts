@@ -22,7 +22,9 @@ export const handleServiceChat: RequestHandler = async (req, res) => {
     const { messages, clientLocation } = req.body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ message: "A non-empty messages array is required." });
+      return res
+        .status(400)
+        .json({ message: "A non-empty messages array is required." });
     }
 
     // 1. Gather all live workers and agencies from the system for context
@@ -31,7 +33,9 @@ export const handleServiceChat: RequestHandler = async (req, res) => {
     try {
       const { data: agencyRows } = await supabase
         .from("agencies")
-        .select("id,name,phone,categories,service_locations,team_size_band,description,verified")
+        .select(
+          "id,name,phone,categories,service_locations,team_size_band,description,verified",
+        )
         .limit(50);
       agencies = agencyRows || [];
     } catch {
@@ -64,21 +68,44 @@ export const handleServiceChat: RequestHandler = async (req, res) => {
     }));
 
     const latestUserMessage =
-      [...messages].reverse().find((m: any) => m.role === "user")?.content || "";
+      [...messages].reverse().find((m: any) => m.role === "user")?.content ||
+      "";
 
     // 2. Perform trade & location keyword matching to find candidates
     const lowerLatest = latestUserMessage.toLowerCase();
-    const tradeKeywords = ["electrician", "plumber", "carpenter", "painter", "cleaner", "mason", "ac", "appliance", "wiring", "pipe", "leak", "paint", "drill", "furniture"];
-    
-    const matchedCategory = tradeKeywords.find((t) => lowerLatest.includes(t)) || "";
+    const tradeKeywords = [
+      "electrician",
+      "plumber",
+      "carpenter",
+      "painter",
+      "cleaner",
+      "mason",
+      "ac",
+      "appliance",
+      "wiring",
+      "pipe",
+      "leak",
+      "paint",
+      "drill",
+      "furniture",
+    ];
+
+    const matchedCategory =
+      tradeKeywords.find((t) => lowerLatest.includes(t)) || "";
 
     const matchedWorkers = allWorkers.filter((w) => {
       const matchCat =
         !matchedCategory ||
         w.category.toLowerCase().includes(matchedCategory) ||
-        (w.services || []).some((s) => s.toLowerCase().includes(matchedCategory)) ||
-        (matchedCategory === "pipe" || matchedCategory === "leak" ? w.category.toLowerCase() === "plumber" : false) ||
-        (matchedCategory === "wiring" || matchedCategory === "ac" ? w.category.toLowerCase() === "electrician" : false);
+        (w.services || []).some((s) =>
+          s.toLowerCase().includes(matchedCategory),
+        ) ||
+        (matchedCategory === "pipe" || matchedCategory === "leak"
+          ? w.category.toLowerCase() === "plumber"
+          : false) ||
+        (matchedCategory === "wiring" || matchedCategory === "ac"
+          ? w.category.toLowerCase() === "electrician"
+          : false);
 
       const matchLoc =
         !clientLocation ||
@@ -91,7 +118,9 @@ export const handleServiceChat: RequestHandler = async (req, res) => {
     const matchedAgencies = agencies.filter((a) => {
       const matchCat =
         !matchedCategory ||
-        (a.categories || []).some((c: string) => c.toLowerCase().includes(matchedCategory));
+        (a.categories || []).some((c: string) =>
+          c.toLowerCase().includes(matchedCategory),
+        );
       return matchCat;
     });
 
@@ -126,7 +155,11 @@ ${JSON.stringify(agenciesSummary, null, 2)}`;
           parts: [{ text: m.content }],
         }));
 
-        const candidateModels = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+        const candidateModels = [
+          "gemini-3.8-flash",
+          "gemini-3.1-flash-lite",
+          "gemini-flash-latest",
+        ];
         for (const modelName of candidateModels) {
           try {
             const geminiPromise = ai.models.generateContent({
@@ -138,14 +171,18 @@ ${JSON.stringify(agenciesSummary, null, 2)}`;
             });
 
             const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Gemini timeout")), 3500)
+              setTimeout(() => reject(new Error("Gemini timeout")), 3500),
             );
 
-            const response: any = await Promise.race([geminiPromise, timeoutPromise]);
+            const response: any = await Promise.race([
+              geminiPromise,
+              timeoutPromise,
+            ]);
             const txt = response?.text || "";
             if (txt) {
               replyText = txt;
-              const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+              const chunks =
+                response.candidates?.[0]?.groundingMetadata?.groundingChunks;
               if (Array.isArray(chunks)) {
                 groundingChunks = chunks;
               }
@@ -156,7 +193,10 @@ ${JSON.stringify(agenciesSummary, null, 2)}`;
           }
         }
       } catch (geminiError: any) {
-        console.info("[chat] Gemini fallback active:", geminiError?.message || "fallback");
+        console.info(
+          "[chat] Gemini fallback active:",
+          geminiError?.message || "fallback",
+        );
       }
     }
 
@@ -165,7 +205,8 @@ ${JSON.stringify(agenciesSummary, null, 2)}`;
       const topWorkers = matchedWorkers.slice(0, 3);
       const topAgencies = matchedAgencies.slice(0, 2);
 
-      let intro = "I understand you need assistance with your service requirements.";
+      let intro =
+        "I understand you need assistance with your service requirements.";
       if (matchedCategory) {
         intro = `I found specialists ready for **${matchedCategory.toUpperCase()}** work.`;
       }
@@ -177,9 +218,9 @@ ${JSON.stringify(agenciesSummary, null, 2)}`;
 
 Here are verified local professionals and agencies matching your requirement below. You can call them directly, message them on WhatsApp, or request an instant callback:
 
-${topWorkers.length > 0 ? `### Recommended Verified Workers:\n` + topWorkers.map(w => `• **${w.name}** (${w.category}) — ${w.locality} • ${w.experience} yrs exp • Verified: ${w.phone_verified ? "Yes" : "Standard"}`).join("\n") : "We have individual technicians on call."}
+${topWorkers.length > 0 ? `### Recommended Verified Workers:\n` + topWorkers.map((w) => `• **${w.name}** (${w.category}) — ${w.locality} • ${w.experience} yrs exp • Verified: ${w.phone_verified ? "Yes" : "Standard"}`).join("\n") : "We have individual technicians on call."}
 
-${topAgencies.length > 0 ? `\n### Recommended Service Agencies:\n` + topAgencies.map(a => `• **${a.name}** — Services: ${(a.categories || []).join(", ")} • Coverage: ${(a.service_locations || []).join(", ")}`).join("\n") : ""}
+${topAgencies.length > 0 ? `\n### Recommended Service Agencies:\n` + topAgencies.map((a) => `• **${a.name}** — Services: ${(a.categories || []).join(", ")} • Coverage: ${(a.service_locations || []).join(", ")}`).join("\n") : ""}
 
 💡 **Tip:** Be sure to clarify the exact issue, ask for an estimated quote, and specify if you need any replacement materials ready.`;
     }
@@ -194,7 +235,10 @@ ${topAgencies.length > 0 ? `\n### Recommended Service Agencies:\n` + topAgencies
   } catch (error) {
     console.error("[chat] handler error:", error);
     return res.status(500).json({
-      message: error instanceof Error ? error.message : "Unable to process chat requirement right now.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to process chat requirement right now.",
     });
   }
 };

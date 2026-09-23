@@ -6,31 +6,31 @@
 @layer base {
   :root {
     /* Explicit Color Tokens */
-    --color-primary-100: #5DB1F8;   /* light blue — subtle highlights, hover backgrounds */
-    --color-primary-500: #38A3FF;   /* mid blue — secondary actions, links, active icons */
-    --color-primary-600: #1D90F3;   /* core blue — primary buttons, active nav state, focus rings */
+    --color-primary-100: #5db1f8; /* light blue — subtle highlights, hover backgrounds */
+    --color-primary-500: #38a3ff; /* mid blue — secondary actions, links, active icons */
+    --color-primary-600: #1d90f3; /* core blue — primary buttons, active nav state, focus rings */
 
-    --color-neutral-300: #989EA7;   /* placeholder text, disabled states, dividers */
-    --color-neutral-500: #67696D;   /* secondary/body text */
-    --color-neutral-900: #2C2C2C;   /* headings, primary text */
+    --color-neutral-300: #989ea7; /* placeholder text, disabled states, dividers */
+    --color-neutral-500: #67696d; /* secondary/body text */
+    --color-neutral-900: #2c2c2c; /* headings, primary text */
 
-    --color-surface: #FFFFFF;        /* cards, sheets, modals */
-    --color-background: #F6F9FC;     /* page background — light blue-gray */
-    --color-border: #E7ECF1;         /* hairline borders, card outlines */
+    --color-surface: #ffffff; /* cards, sheets, modals */
+    --color-background: #f6f9fc; /* page background — light blue-gray */
+    --color-border: #e7ecf1; /* hairline borders, card outlines */
 
     /* WhatsApp Green standard token */
-    --color-whatsapp: #25D366;
-    --color-whatsapp-hover: #20BA5A;
+    --color-whatsapp: #25d366;
+    --color-whatsapp-hover: #20ba5a;
 
     /* Theme mappings (HSL) for Tailwind compatibility */
-    --background: 210 43% 98%;       /* #F6F9FC */
-    --foreground: 0 0% 17%;          /* #2C2C2C */
+    --background: 210 43% 98%; /* #F6F9FC */
+    --foreground: 0 0% 17%; /* #2C2C2C */
 
-    --card: 0 0% 100%;               /* #FFFFFF */
-    --card-foreground: 0 0% 17%;     /* #2C2C2C */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 17%; /* #2C2C2C */
 
-    --popover: 0 0% 100%;            /* #FFFFFF */
-    --popover-foreground: 0 0% 17%;  /* #2C2C2C */
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 0 0% 17%; /* #2C2C2C */
 
     /* Primary: #1D90F3 (Core Blue) */
     --primary: 208 90% 53%;
@@ -50,47 +50,47 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 25% 93%;           /* #E7ECF1 */
-    --input: 210 25% 93%;            /* #E7ECF1 */
-    --ring: 208 90% 53%;             /* #1D90F3 */
-    --radius: 1rem;                  /* 16px base card radius */
+    --border: 210 25% 93%; /* #E7ECF1 */
+    --input: 210 25% 93%; /* #E7ECF1 */
+    --ring: 208 90% 53%; /* #1D90F3 */
+    --radius: 1rem; /* 16px base card radius */
   }
 
   .dark {
-    --color-primary-100: #1A365D;   /* dark blue highlight container */
-    --color-primary-500: #38A3FF;   /* mid blue */
-    --color-primary-600: #1D90F3;   /* core blue */
+    --color-primary-100: #1a365d; /* dark blue highlight container */
+    --color-primary-500: #38a3ff; /* mid blue */
+    --color-primary-600: #1d90f3; /* core blue */
 
-    --color-neutral-300: #71717A;   /* placeholders & subtle dividers */
-    --color-neutral-500: #A1A1AA;   /* secondary text */
-    --color-neutral-900: #F4F4F5;   /* primary text */
+    --color-neutral-300: #71717a; /* placeholders & subtle dividers */
+    --color-neutral-500: #a1a1aa; /* secondary text */
+    --color-neutral-900: #f4f4f5; /* primary text */
 
-    --color-surface: #0A0A0A;        /* card surface: deep pitch dark */
-    --color-background: #000000;     /* page background: pure black */
-    --color-border: #1F1F1F;         /* hairline border */
+    --color-surface: #0a0a0a; /* card surface: deep pitch dark */
+    --color-background: #000000; /* page background: pure black */
+    --color-border: #1f1f1f; /* hairline border */
 
     /* WhatsApp Green standard token */
-    --color-whatsapp: #25D366;
-    --color-whatsapp-hover: #20BA5A;
+    --color-whatsapp: #25d366;
+    --color-whatsapp-hover: #20ba5a;
 
     /* Theme mappings (HSL) for pure black OLED dark mode */
-    --background: 0 0% 0%;           /* #000000 Pure Black */
-    --foreground: 0 0% 96%;          /* #F4F4F5 */
+    --background: 0 0% 0%; /* #000000 Pure Black */
+    --foreground: 0 0% 96%; /* #F4F4F5 */
 
-    --card: 0 0% 4%;                 /* #0A0A0A */
-    --card-foreground: 0 0% 96%;     /* #F4F4F5 */
+    --card: 0 0% 4%; /* #0A0A0A */
+    --card-foreground: 0 0% 96%; /* #F4F4F5 */
 
-    --popover: 0 0% 4%;              /* #0A0A0A */
-    --popover-foreground: 0 0% 96%;  /* #F4F4F5 */
+    --popover: 0 0% 4%; /* #0A0A0A */
+    --popover-foreground: 0 0% 96%; /* #F4F4F5 */
 
-    --primary: 208 90% 53%;          /* #1D90F3 */
+    --primary: 208 90% 53%; /* #1D90F3 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 9%;            /* #171717 */
+    --secondary: 0 0% 9%; /* #171717 */
     --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 9%;                /* #171717 */
-    --muted-foreground: 240 5% 65%;  /* #A1A1AA */
+    --muted: 0 0% 9%; /* #171717 */
+    --muted-foreground: 240 5% 65%; /* #A1A1AA */
 
     --accent: 208 90% 53%;
     --accent-foreground: 0 0% 100%;
@@ -98,8 +98,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14%;              /* #242424 */
-    --input: 0 0% 14%;               /* #242424 */
+    --border: 0 0% 14%; /* #242424 */
+    --input: 0 0% 14%; /* #242424 */
     --ring: 208 90% 53%;
 
     --sidebar-background: 0 0% 4%;
@@ -116,13 +116,21 @@
     @apply border-border;
   }
 
-  html, body, #root {
+  html,
+  body,
+  #root {
     min-height: 100%;
   }
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family:
+      "Manrope",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: hsl(var(--background));
@@ -142,14 +150,15 @@
     word-break: break-word;
   }
 
-  pre, code {
+  pre,
+  code {
     overflow-x: auto;
     white-space: pre;
   }
 
   /* Smooth focus ring outline standard */
   :focus-visible {
-    outline: 2px solid #1D90F3;
+    outline: 2px solid #1d90f3;
     outline-offset: 2px;
   }
 }
@@ -160,7 +169,7 @@
   line-height: 50px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #2C2C2C;
+  color: #2c2c2c;
 }
 
 .font-heading-1 {
@@ -168,35 +177,35 @@
   line-height: 36px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #2C2C2C;
+  color: #2c2c2c;
 }
 
 .font-heading-2 {
   font-size: 21px;
   line-height: 30px;
   font-weight: 700;
-  color: #2C2C2C;
+  color: #2c2c2c;
 }
 
 .font-body-1 {
   font-size: 15px;
   line-height: 24px;
   font-weight: 500;
-  color: #2C2C2C;
+  color: #2c2c2c;
 }
 
 .font-body-2 {
   font-size: 14px;
   line-height: 21px;
   font-weight: 400;
-  color: #67696D;
+  color: #67696d;
 }
 
 .font-body-meta {
   font-size: 12px;
   line-height: 16px;
   font-weight: 400;
-  color: #67696D;
+  color: #67696d;
 }
 
 /* Dark mode typography */
@@ -204,12 +213,12 @@ html.dark .font-title-1,
 html.dark .font-heading-1,
 html.dark .font-heading-2,
 html.dark .font-body-1 {
-  color: #F4F4F5;
+  color: #f4f4f5;
 }
 
 html.dark .font-body-2,
 html.dark .font-body-meta {
-  color: #A1A1AA;
+  color: #a1a1aa;
 }
 
 /* Soft shadows */
@@ -222,19 +231,21 @@ html.dark .font-body-meta {
 }
 
 .shadow-subtle {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 /* Pure Black Dark Mode Overrides for hardcoded utility classes */
 html.dark {
   color-scheme: dark;
   background-color: #000000;
-  color: #F4F4F5;
+  color: #f4f4f5;
 }
 
 html.dark body {
   background-color: #000000;
-  color: #F4F4F5;
+  color: #f4f4f5;
 }
 
 html.dark header,
@@ -243,7 +254,7 @@ html.dark .bg-white\/95,
 html.dark .bg-white\/90,
 html.dark .bg-white\/80 {
   background-color: rgba(0, 0, 0, 0.95) !important;
-  border-color: #1F1F1F !important;
+  border-color: #1f1f1f !important;
 }
 
 html.dark .bg-\[\#F6F9FC\] {
@@ -255,25 +266,25 @@ html.dark .bg-white {
 }
 
 html.dark .border-\[\#E7ECF1\] {
-  border-color: #1F1F1F !important;
+  border-color: #1f1f1f !important;
 }
 
 html.dark .text-\[\#2C2C2C\] {
-  color: #F4F4F5 !important;
+  color: #f4f4f5 !important;
 }
 
 html.dark .text-\[\#67696D\] {
-  color: #A1A1AA !important;
+  color: #a1a1aa !important;
 }
 
 html.dark .text-\[\#989EA7\] {
-  color: #71717A !important;
+  color: #71717a !important;
 }
 
 html.dark .shadow-card,
 html.dark .shadow-soft,
 html.dark .shadow-subtle {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
-
-

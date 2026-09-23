@@ -87,7 +87,11 @@ export const handleCreateTrackRecord: RequestHandler = async (req, res) => {
     return res.json({ success: true, entry: newEntry });
   } catch (err) {
     console.error("[track-record] create error:", err);
-    return res.status(400).json({ message: err instanceof Error ? err.message : "Invalid input data" });
+    return res
+      .status(400)
+      .json({
+        message: err instanceof Error ? err.message : "Invalid input data",
+      });
   }
 };
 
@@ -118,18 +122,22 @@ export const handleGetWorkerTrackRecord: RequestHandler = async (req, res) => {
     }
 
     // Merge memory store for fallback
-    const memEntries = memoryTrackRecords.filter((e) => e.worker_id === workerId);
+    const memEntries = memoryTrackRecords.filter(
+      (e) => e.worker_id === workerId,
+    );
     const combinedMap = new Map<string, TrackRecordEntry>();
     for (const e of [...entries, ...memEntries]) {
       combinedMap.set(e.id, e);
     }
     const finalEntries = Array.from(combinedMap.values()).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 
     const total = finalEntries.length;
     const showedUpCount = finalEntries.filter((e) => e.showed_up).length;
-    const percentage = total > 0 ? Math.round((showedUpCount / total) * 100) : 0;
+    const percentage =
+      total > 0 ? Math.round((showedUpCount / total) * 100) : 0;
 
     return res.json({
       summary: {

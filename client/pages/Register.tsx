@@ -1,25 +1,53 @@
-import { useState, useRef, useEffect, type FormEvent, type ReactNode } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Building2, HardHat, Loader2, Users, Mic, Square, CheckCircle2, AlertCircle, Navigation } from "lucide-react";
+import {
+  Building2,
+  HardHat,
+  Loader2,
+  Users,
+  Mic,
+  Square,
+  CheckCircle2,
+  AlertCircle,
+  Navigation,
+} from "lucide-react";
 import PageShell from "@/components/PageShell";
 import GoogleLocationInput from "@/components/GoogleLocationInput";
 import { supabase } from "@/lib/supabase";
 import { setStandardLocation, detectGpsLocation } from "@/lib/location";
 
 type Role = "worker" | "employer";
-const categories = ["Electrician", "Plumber", "Carpenter", "Painter", "Cleaner", "Other"];
+const categories = [
+  "Electrician",
+  "Plumber",
+  "Carpenter",
+  "Painter",
+  "Cleaner",
+  "Other",
+];
 const experienceBands = ["<1", "1–3", "3–5", "5+"];
-const inputClass = "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3.5 text-sm text-[#2C2C2C] focus:border-primary focus:bg-white focus:outline-none transition placeholder:text-[#989EA7]";
+const inputClass =
+  "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3.5 text-sm text-[#2C2C2C] focus:border-primary focus:bg-white focus:outline-none transition placeholder:text-[#989EA7]";
 const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 export default function Register() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const refCode = (searchParams.get("ref") || searchParams.get("code") || "").trim().toUpperCase();
+  const refCode = (searchParams.get("ref") || searchParams.get("code") || "")
+    .trim()
+    .toUpperCase();
 
   const [role, setRole] = useState<Role | null>(refCode ? "worker" : null);
   const [otpSent, setOtpSent] = useState(false);
-  const [affiliation, setAffiliation] = useState(refCode ? "agency" : "independent");
+  const [affiliation, setAffiliation] = useState(
+    refCode ? "agency" : "independent",
+  );
   const [enteredAgencyCode, setEnteredAgencyCode] = useState(refCode);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -58,8 +86,8 @@ export default function Register() {
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
         : MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : "audio/mp4";
+          ? "audio/webm"
+          : "audio/mp4";
 
       const recorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = recorder;
@@ -80,13 +108,18 @@ export default function Register() {
       setIsVoiceRecording(true);
     } catch (err: any) {
       console.error("Microphone error:", err);
-      setVoiceError("Could not access microphone. Please check browser permissions.");
+      setVoiceError(
+        "Could not access microphone. Please check browser permissions.",
+      );
       setIsVoiceRecording(false);
     }
   };
 
   const stopVoiceFill = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
     }
     setIsVoiceRecording(false);
@@ -108,7 +141,8 @@ export default function Register() {
             }),
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data.error || "Could not extract voice details.");
+          if (!res.ok)
+            throw new Error(data.error || "Could not extract voice details.");
 
           const p = data.profile;
           if (p) {
@@ -116,9 +150,14 @@ export default function Register() {
             if (p.service_area) setWorkerLocation(p.service_area);
 
             // Match service category
-            if (Array.isArray(p.service_categories) && p.service_categories.length > 0) {
+            if (
+              Array.isArray(p.service_categories) &&
+              p.service_categories.length > 0
+            ) {
               const matched = categories.find((c) =>
-                p.service_categories.some((sc: string) => sc.toLowerCase().includes(c.toLowerCase()))
+                p.service_categories.some((sc: string) =>
+                  sc.toLowerCase().includes(c.toLowerCase()),
+                ),
               );
               if (matched) {
                 setWorkerCategory(matched);
@@ -136,7 +175,9 @@ export default function Register() {
               else setWorkerExperience("5+");
             }
 
-            setVoiceSuccess("Details filled from your voice recording. You can adjust any field before submitting.");
+            setVoiceSuccess(
+              "Details filled from your voice recording. You can adjust any field before submitting.",
+            );
           }
         } catch (err: any) {
           setVoiceError(err.message || "Failed to process audio.");
@@ -158,10 +199,14 @@ export default function Register() {
 
   const beginPhoneVerification = async (phone: string) => {
     if (!supabase) throw new Error("Registration is not configured yet.");
-    const { error: e } = await supabase.auth.updateUser({ phone: `+91${phone}` });
+    const { error: e } = await supabase.auth.updateUser({
+      phone: `+91${phone}`,
+    });
     if (e) throw e;
     setOtpSent(true);
-    setSuccess("Your email account is ready. We sent a separate phone OTP for contact verification.");
+    setSuccess(
+      "Your email account is ready. We sent a separate phone OTP for contact verification.",
+    );
   };
 
   const finishPhoneVerification = async (phone: string, otp: string) => {
@@ -173,14 +218,23 @@ export default function Register() {
       type: "phone_change",
     });
     if (e) throw e;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("Phone verified, but the email session could not be restored.");
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session)
+      throw new Error(
+        "Phone verified, but the email session could not be restored.",
+      );
     const response = await fetch("/api/phone-verification/complete", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
     });
     const data = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(data?.message || "Unable to save phone verification.");
+    if (!response.ok)
+      throw new Error(data?.message || "Unable to save phone verification.");
     return session.access_token;
   };
 
@@ -192,11 +246,17 @@ export default function Register() {
     const otp = String(form.get("otp") || "").trim();
     const email = String(form.get("email") || "").trim();
     const password = String(form.get("password") || "");
-    const fullName = String(form.get("fullName") || workerFullName || "").trim();
+    const fullName = String(
+      form.get("fullName") || workerFullName || "",
+    ).trim();
     const category = String(form.get("category") || workerCategory || "");
-    const location = String(form.get("location") || workerLocation || "").trim();
+    const location = String(
+      form.get("location") || workerLocation || "",
+    ).trim();
     const experience = String(form.get("experience") || workerExperience || "");
-    const agencyCode = String(form.get("agencyCode") || "").trim().toUpperCase();
+    const agencyCode = String(form.get("agencyCode") || "")
+      .trim()
+      .toUpperCase();
 
     if (!/^\d{10}$/.test(phone)) {
       setError("Phone number must be exactly 10 digits.");
@@ -234,7 +294,9 @@ export default function Register() {
         });
         if (e) throw e;
         if (!data.session) {
-          setSuccess("Account created. Confirm your email, then sign in to verify your phone.");
+          setSuccess(
+            "Account created. Confirm your email, then sign in to verify your phone.",
+          );
           return;
         }
         await beginPhoneVerification(phone);
@@ -258,7 +320,8 @@ export default function Register() {
         }),
       });
       const data = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(data?.message || "Worker registration failed.");
+      if (!response.ok)
+        throw new Error(data?.message || "Worker registration failed.");
       if (affiliation === "agency") {
         const join = await fetch("/api/agencies/join", {
           method: "POST",
@@ -266,11 +329,19 @@ export default function Register() {
           body: JSON.stringify({ workerId: data.worker.id, agencyCode }),
         });
         const joinData = await join.json().catch(() => null);
-        if (!join.ok) throw new Error(joinData?.message || "Worker was created but could not be linked to that agency.");
+        if (!join.ok)
+          throw new Error(
+            joinData?.message ||
+              "Worker was created but could not be linked to that agency.",
+          );
       }
       navigate("/worker-dashboard", { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Registration failed. Please try again.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Registration failed. Please try again.",
+      );
     } finally {
       setBusy(false);
     }
@@ -285,7 +356,9 @@ export default function Register() {
     const email = String(form.get("email") || "").trim();
     const password = String(form.get("password") || "");
     const name = String(form.get("name") || "").trim();
-    const location = String(form.get("location") || employerLocation || "").trim();
+    const location = String(
+      form.get("location") || employerLocation || "",
+    ).trim();
 
     if (!/^\d{10}$/.test(phone)) {
       setError("Phone number must be exactly 10 digits.");
@@ -319,7 +392,9 @@ export default function Register() {
         });
         if (e) throw e;
         if (!data.session) {
-          setSuccess("Account created. Confirm your email, then sign in to verify your phone.");
+          setSuccess(
+            "Account created. Confirm your email, then sign in to verify your phone.",
+          );
           return;
         }
         await beginPhoneVerification(phone);
@@ -328,7 +403,11 @@ export default function Register() {
       await finishPhoneVerification(phone, otp);
       navigate("/", { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Registration failed. Please try again");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Registration failed. Please try again",
+      );
     } finally {
       setBusy(false);
     }
@@ -338,7 +417,9 @@ export default function Register() {
     return (
       <PageShell backTo="/" backLabel="Back">
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white px-5 py-8 text-center shadow-soft sm:px-8 sm:py-10">
-          <h1 className="text-3xl font-bold text-[#2C2C2C] sm:text-4xl">Register</h1>
+          <h1 className="text-3xl font-bold text-[#2C2C2C] sm:text-4xl">
+            Register
+          </h1>
           <p className="mx-auto mt-2 max-w-xl text-sm text-[#67696D]">
             Choose how you want to use Local Worker Discovery.
           </p>
@@ -372,7 +453,10 @@ export default function Register() {
           </div>
           <p className="mt-8 text-sm text-[#67696D]">
             Already have an account?{" "}
-            <Link to="/login" className="font-bold text-primary hover:underline">
+            <Link
+              to="/login"
+              className="font-bold text-primary hover:underline"
+            >
               Login
             </Link>
           </p>
@@ -404,11 +488,19 @@ export default function Register() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C]">
-                <Mic size={16} className={isVoiceRecording ? "animate-pulse text-rose-500" : "text-primary"} />
+                <Mic
+                  size={16}
+                  className={
+                    isVoiceRecording
+                      ? "animate-pulse text-rose-500"
+                      : "text-primary"
+                  }
+                />
                 <span>Quick voice fill</span>
               </div>
               <p className="mt-0.5 text-xs text-[#67696D]">
-                Speak your name, trade, location, and years of experience to automatically fill the fields below.
+                Speak your name, trade, location, and years of experience to
+                automatically fill the fields below.
               </p>
             </div>
 
@@ -448,7 +540,9 @@ export default function Register() {
           {isVoiceRecording && (
             <div className="mt-3 flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-3.5 py-1.5 text-xs font-medium text-rose-700">
               <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
-              <span>Listening... Speak naturally in English, Tamil, or Hindi.</span>
+              <span>
+                Listening... Speak naturally in English, Tamil, or Hindi.
+              </span>
             </div>
           )}
 
@@ -471,12 +565,32 @@ export default function Register() {
           onSubmit={handleWorker}
           className="mt-6 space-y-4 rounded-[16px] border border-[#E7ECF1] bg-white p-6 shadow-soft sm:p-8"
         >
-          <Field name="email" label="Email Address" required placeholder="you@example.com" type="email" />
-          <Field name="password" label="Password" required placeholder="At least 6 characters" type="password" />
-          <Field name="phone" label="Phone Number" required placeholder="10-digit mobile number" numeric />
+          <Field
+            name="email"
+            label="Email Address"
+            required
+            placeholder="you@example.com"
+            type="email"
+          />
+          <Field
+            name="password"
+            label="Password"
+            required
+            placeholder="At least 6 characters"
+            type="password"
+          />
+          <Field
+            name="phone"
+            label="Phone Number"
+            required
+            placeholder="10-digit mobile number"
+            numeric
+          />
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">Name</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+              Name
+            </label>
             <input
               name="fullName"
               required
@@ -488,7 +602,9 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">Primary Service Category</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+              Primary Service Category
+            </label>
             <select
               name="category"
               required
@@ -518,7 +634,9 @@ export default function Register() {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">Years of Experience</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+              Years of Experience
+            </label>
             <select
               name="experience"
               required
@@ -536,7 +654,9 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">Agency Affiliation</label>
+            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+              Agency Affiliation
+            </label>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="flex items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-4 py-3 text-sm font-semibold text-[#2C2C2C] cursor-pointer">
                 <input
@@ -566,17 +686,30 @@ export default function Register() {
                 name="agencyCode"
                 required
                 value={enteredAgencyCode}
-                onChange={(e) => setEnteredAgencyCode(e.target.value.toUpperCase())}
+                onChange={(e) =>
+                  setEnteredAgencyCode(e.target.value.toUpperCase())
+                }
                 placeholder="AGN-7K2P"
                 className={`${inputClass} mt-2 font-mono tracking-wider`}
               />
             )}
           </div>
 
-          {otpSent && <Field name="otp" label="Phone OTP" required placeholder="Enter 6-digit OTP" numeric />}
+          {otpSent && (
+            <Field
+              name="otp"
+              label="Phone OTP"
+              required
+              placeholder="Enter 6-digit OTP"
+              numeric
+            />
+          )}
 
           {error && (
-            <p role="alert" className="text-center text-xs font-semibold text-rose-600">
+            <p
+              role="alert"
+              className="text-center text-xs font-semibold text-rose-600"
+            >
               {error}
             </p>
           )}
@@ -610,11 +743,7 @@ export default function Register() {
   }
 
   return (
-    <PageShell
-      backTo="/register"
-      backLabel="Back"
-      onBack={() => setRole(null)}
-    >
+    <PageShell backTo="/register" backLabel="Back" onBack={() => setRole(null)}>
       <Header
         title="Register as a Client"
         text="Email is your login. Phone verification is separate and required for contact purposes."
@@ -623,9 +752,27 @@ export default function Register() {
         onSubmit={handleEmployer}
         className="mt-6 space-y-4 rounded-[16px] border border-[#E7ECF1] bg-white p-6 shadow-soft sm:p-8"
       >
-        <Field name="email" label="Email Address" required placeholder="you@example.com" type="email" />
-        <Field name="password" label="Password" required placeholder="At least 6 characters" type="password" />
-        <Field name="phone" label="Phone Number" required placeholder="10-digit mobile number" numeric />
+        <Field
+          name="email"
+          label="Email Address"
+          required
+          placeholder="you@example.com"
+          type="email"
+        />
+        <Field
+          name="password"
+          label="Password"
+          required
+          placeholder="At least 6 characters"
+          type="password"
+        />
+        <Field
+          name="phone"
+          label="Phone Number"
+          required
+          placeholder="10-digit mobile number"
+          numeric
+        />
         <Field name="name" label="Name" required placeholder="Your name" />
         <GoogleLocationInput
           name="location"
@@ -637,14 +784,28 @@ export default function Register() {
           placeholder="Auto-detecting via GPS or search..."
           helperText="Auto-detected via GPS. Used as your standard search location."
         />
-        {otpSent && <Field name="otp" label="Phone OTP" required placeholder="Enter 6-digit OTP" numeric />}
+        {otpSent && (
+          <Field
+            name="otp"
+            label="Phone OTP"
+            required
+            placeholder="Enter 6-digit OTP"
+            numeric
+          />
+        )}
         {error && (
-          <p role="alert" className="text-center text-xs font-semibold text-rose-600">
+          <p
+            role="alert"
+            className="text-center text-xs font-semibold text-rose-600"
+          >
             {error}
           </p>
         )}
         {success && (
-          <p role="status" className="rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-center text-xs font-semibold text-emerald-700">
+          <p
+            role="status"
+            className="rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-center text-xs font-semibold text-emerald-700"
+          >
             {success}
           </p>
         )}
@@ -731,7 +892,9 @@ function Field({
     <div>
       <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
         {label}
-        {!required && <span className="ml-1 font-normal text-[#989EA7]">(optional)</span>}
+        {!required && (
+          <span className="ml-1 font-normal text-[#989EA7]">(optional)</span>
+        )}
       </label>
       <input
         name={name}
@@ -743,7 +906,9 @@ function Field({
         onInput={
           numeric
             ? (e) => {
-                e.currentTarget.value = e.currentTarget.value.replace(/\D/g, "").slice(0, 10);
+                e.currentTarget.value = e.currentTarget.value
+                  .replace(/\D/g, "")
+                  .slice(0, 10);
               }
             : undefined
         }

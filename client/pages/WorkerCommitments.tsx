@@ -4,11 +4,21 @@ import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
 
-type Commitment={id:string;job_type:string;location:string|null;description:string|null;start_time:string;end_time:string;status:string;cancellation_reason:string|null;worker_notes:string|null};
-const tabs=["upcoming","past","cancelled"] as const;
+type Commitment = {
+  id: string;
+  job_type: string;
+  location: string | null;
+  description: string | null;
+  start_time: string;
+  end_time: string;
+  status: string;
+  cancellation_reason: string | null;
+  worker_notes: string | null;
+};
+const tabs = ["upcoming", "past", "cancelled"] as const;
 export default function WorkerCommitments() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<typeof tabs[number]>("upcoming");
+  const [tab, setTab] = useState<(typeof tabs)[number]>("upcoming");
   const [items, setItems] = useState<Commitment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +36,9 @@ export default function WorkerCommitments() {
       }
       const { data, error } = await supabase
         .from("commitments")
-        .select("id,job_type,location,description,start_time,end_time,status,cancellation_reason,worker_notes")
+        .select(
+          "id,job_type,location,description,start_time,end_time,status,cancellation_reason,worker_notes",
+        )
         .eq("worker_id", user.id)
         .order("start_time", { ascending: true });
       if (!error) setItems((data ?? []) as Commitment[]);
@@ -38,16 +50,22 @@ export default function WorkerCommitments() {
     tab === "upcoming"
       ? x.status === "pending" || x.status === "confirmed"
       : tab === "past"
-      ? x.status === "completed"
-      : x.status === "cancelled" || x.status === "no_show"
+        ? x.status === "completed"
+        : x.status === "cancelled" || x.status === "no_show",
   );
 
   return (
     <PageShell backTo="/worker-dashboard" backLabel="Back">
       <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-7 shadow-soft">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Worker Portal</p>
-        <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-[#2C2C2C]">My Commitments</h1>
-        <p className="mt-1 text-sm text-[#67696D]">Your upcoming, completed and cancelled jobs.</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+          Worker Portal
+        </p>
+        <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-[#2C2C2C]">
+          My Commitments
+        </h1>
+        <p className="mt-1 text-sm text-[#67696D]">
+          Your upcoming, completed and cancelled jobs.
+        </p>
         <div className="mt-6 flex flex-wrap gap-2">
           {tabs.map((t) => (
             <button
@@ -76,11 +94,18 @@ export default function WorkerCommitments() {
           </p>
         ) : (
           filtered.map((job) => (
-            <article key={job.id} className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft">
+            <article
+              key={job.id}
+              className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-bold text-[#2C2C2C] text-base">{job.job_type}</h2>
-                  <p className="mt-1 text-xs text-[#67696D]">{job.location || "Location not set"}</p>
+                  <h2 className="font-bold text-[#2C2C2C] text-base">
+                    {job.job_type}
+                  </h2>
+                  <p className="mt-1 text-xs text-[#67696D]">
+                    {job.location || "Location not set"}
+                  </p>
                 </div>
                 <span className="rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-1 text-[11px] font-bold capitalize text-[#2C2C2C]">
                   {job.status.replace("_", " ")}
@@ -108,7 +133,9 @@ export default function WorkerCommitments() {
                   })}
                 </span>
               </div>
-              {job.description && <p className="mt-3 text-sm text-[#67696D]">{job.description}</p>}
+              {job.description && (
+                <p className="mt-3 text-sm text-[#67696D]">{job.description}</p>
+              )}
               {job.cancellation_reason && (
                 <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-rose-600">
                   <XCircle size={14} />

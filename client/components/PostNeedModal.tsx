@@ -52,7 +52,9 @@ export default function PostNeedModal({
 }: PostNeedModalProps) {
   const [category, setCategory] = useState(initialCategory);
   const [description, setDescription] = useState("");
-  const [location, setLocation] = useState(initialLocation || getStandardLocation() || "Coimbatore");
+  const [location, setLocation] = useState(
+    initialLocation || getStandardLocation() || "Coimbatore",
+  );
   const [customerPhone, setCustomerPhone] = useState("");
 
   const [step, setStep] = useState<"form" | "results">("form");
@@ -60,12 +62,18 @@ export default function PostNeedModal({
   const [error, setError] = useState<string | null>(null);
 
   const [matchedWorkers, setMatchedWorkers] = useState<Worker[]>([]);
-  const [notifiedWorkerIds, setNotifiedWorkerIds] = useState<Record<string, boolean>>({});
+  const [notifiedWorkerIds, setNotifiedWorkerIds] = useState<
+    Record<string, boolean>
+  >({});
 
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      setCategory(initialCategory && SERVICE_CATEGORIES.includes(initialCategory) ? initialCategory : "Electrician");
+      setCategory(
+        initialCategory && SERVICE_CATEGORIES.includes(initialCategory)
+          ? initialCategory
+          : "Electrician",
+      );
       setLocation(initialLocation || getStandardLocation() || "Coimbatore");
       setDescription("");
       setStep("form");
@@ -74,6 +82,23 @@ export default function PostNeedModal({
       setNotifiedWorkerIds({});
     }
   }, [isOpen, initialCategory, initialLocation]);
+
+  // Keyboard Escape listener and background scroll lock
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !loading) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, loading, onClose]);
 
   if (!isOpen) return null;
 
@@ -103,10 +128,15 @@ export default function PostNeedModal({
         }),
       });
 
-      const data = (await response.json()) as PostNeedResponse | { message?: string };
+      const data = (await response.json()) as
+        PostNeedResponse | { message?: string };
 
       if (!response.ok) {
-        throw new Error("message" in data && data.message ? data.message : "Unable to find matches");
+        throw new Error(
+          "message" in data && data.message
+            ? data.message
+            : "Unable to find matches",
+        );
       }
 
       const results = "matchedWorkers" in data ? data.matchedWorkers : [];
@@ -119,7 +149,11 @@ export default function PostNeedModal({
       });
     } catch (err) {
       console.error("[PostNeedModal] Error:", err);
-      setError(err instanceof Error ? err.message : "Unable to post your need right now. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to post your need right now. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -140,10 +174,13 @@ export default function PostNeedModal({
 
     // Format WhatsApp deep link
     const cleanPhone = worker.phone.replace(/\D/g, "");
-    const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const formattedPhone =
+      cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
 
     const textMessage = `Hi ${worker.name}, I need a ${category}: "${description.trim()}". Location: ${location.trim()}.${
-      customerPhone.trim() ? ` Please contact me at ${customerPhone.trim()}.` : ""
+      customerPhone.trim()
+        ? ` Please contact me at ${customerPhone.trim()}.`
+        : ""
     } (Found via LocalWorker)`;
 
     const waUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(textMessage)}`;
@@ -156,7 +193,18 @@ export default function PostNeedModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="post-need-modal-title"
+      aria-describedby="post-need-modal-desc"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !loading) {
+          onClose();
+        }
+      }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 animate-in fade-in duration-200"
+    >
       <div
         className="relative w-full max-w-lg rounded-t-[24px] sm:rounded-[24px] border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#0A0A0A] p-5 sm:p-6 shadow-soft max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-6 sm:zoom-in-95 duration-200 text-[#2C2C2C] dark:text-[#F4F4F5]"
         onClick={(e) => e.stopPropagation()}
@@ -179,10 +227,16 @@ export default function PostNeedModal({
               </div>
             )}
             <div>
-              <h2 className="text-base font-bold tracking-tight">
+              <h2
+                id="post-need-modal-title"
+                className="text-base font-bold tracking-tight"
+              >
                 {step === "form" ? "Post a Need" : "Matched Professionals"}
               </h2>
-              <p className="text-[11px] font-medium text-[#67696D] dark:text-[#A1A1AA]">
+              <p
+                id="post-need-modal-desc"
+                className="text-[11px] font-medium text-[#67696D] dark:text-[#A1A1AA]"
+              >
                 {step === "form"
                   ? "Describe what you need & reach nearby pros"
                   : `${matchedWorkers.length} top pros matched for ${category}`}
@@ -259,7 +313,10 @@ export default function PostNeedModal({
                   Area / Locality
                 </label>
                 <div className="relative flex items-center">
-                  <MapPin size={14} className="absolute left-3 text-primary pointer-events-none shrink-0" />
+                  <MapPin
+                    size={14}
+                    className="absolute left-3 text-primary pointer-events-none shrink-0"
+                  />
                   <input
                     type="text"
                     value={location}
@@ -273,10 +330,14 @@ export default function PostNeedModal({
               {/* Optional Customer Phone Number */}
               <div>
                 <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
-                  Your Phone Number <span className="font-normal text-[#989EA7]">(Optional)</span>
+                  Your Phone Number{" "}
+                  <span className="font-normal text-[#989EA7]">(Optional)</span>
                 </label>
                 <div className="relative flex items-center">
-                  <Phone size={14} className="absolute left-3 text-[#989EA7] pointer-events-none shrink-0" />
+                  <Phone
+                    size={14}
+                    className="absolute left-3 text-[#989EA7] pointer-events-none shrink-0"
+                  />
                   <input
                     type="tel"
                     value={customerPhone}
@@ -314,7 +375,9 @@ export default function PostNeedModal({
               {/* Request Summary Badge */}
               <div className="flex items-center justify-between rounded-[14px] border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] p-3 text-xs">
                 <div>
-                  <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Need: </span>
+                  <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                    Need:{" "}
+                  </span>
                   <span className="font-medium text-primary">{category}</span>
                   <p className="text-[11px] text-[#67696D] dark:text-[#A1A1AA] truncate max-w-[260px] sm:max-w-[320px] mt-0.5">
                     "{description}" • {location}
@@ -333,7 +396,8 @@ export default function PostNeedModal({
               {matchedWorkers.length === 0 ? (
                 <div className="rounded-[16px] border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#0A0A0A] p-6 text-center">
                   <p className="text-xs font-medium text-[#67696D]">
-                    No workers matched your criteria in this area. Try selecting another area or category.
+                    No workers matched your criteria in this area. Try selecting
+                    another area or category.
                   </p>
                   <button
                     type="button"
@@ -346,7 +410,9 @@ export default function PostNeedModal({
               ) : (
                 <div className="space-y-3">
                   {matchedWorkers.map((worker) => {
-                    const rating = Number(worker.avg_rating || worker.rating || 4.8);
+                    const rating = Number(
+                      worker.avg_rating || worker.rating || 4.8,
+                    );
                     const reviewsCount = Number(worker.reviews_count || 18);
                     const isVerified = Boolean(worker.phone_verified);
                     const isNotified = Boolean(notifiedWorkerIds[worker.id]);
@@ -376,7 +442,10 @@ export default function PostNeedModal({
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <span>{worker.initials || worker.name.slice(0, 2).toUpperCase()}</span>
+                                <span>
+                                  {worker.initials ||
+                                    worker.name.slice(0, 2).toUpperCase()}
+                                </span>
                               )}
                             </div>
 
@@ -388,26 +457,42 @@ export default function PostNeedModal({
                                 </h3>
                                 {isVerified && (
                                   <span className="inline-flex items-center gap-0.5 rounded-full bg-primary-100/15 border border-primary-100/30 px-1.5 py-0.5 text-[9px] font-bold text-primary">
-                                    <BadgeCheck size={10} className="text-primary" />
+                                    <BadgeCheck
+                                      size={10}
+                                      className="text-primary"
+                                    />
                                     <span>Verified</span>
                                   </span>
                                 )}
                               </div>
 
                               <p className="text-[11px] font-semibold text-primary truncate mt-0.5">
-                                {worker.category} • {worker.experience ? `${worker.experience} exp` : "Local pro"}
+                                {worker.category} •{" "}
+                                {worker.experience
+                                  ? `${worker.experience} exp`
+                                  : "Local pro"}
                               </p>
 
                               <div className="mt-1 flex items-center gap-2 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
                                 <div className="inline-flex items-center gap-0.5 font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
-                                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                                  <Star
+                                    size={11}
+                                    className="fill-amber-400 text-amber-400"
+                                  />
                                   <span>{rating.toFixed(1)}</span>
-                                  <span className="font-normal text-[10px] text-[#67696D]">({reviewsCount})</span>
+                                  <span className="font-normal text-[10px] text-[#67696D]">
+                                    ({reviewsCount})
+                                  </span>
                                 </div>
                                 {worker.locality && (
                                   <div className="inline-flex items-center gap-0.5 truncate max-w-[120px]">
-                                    <MapPin size={10} className="shrink-0 text-primary" />
-                                    <span className="truncate">{worker.locality}</span>
+                                    <MapPin
+                                      size={10}
+                                      className="shrink-0 text-primary"
+                                    />
+                                    <span className="truncate">
+                                      {worker.locality}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -418,13 +503,25 @@ export default function PostNeedModal({
                           <button
                             type="button"
                             onClick={handleToggleSave}
-                            aria-label={isSaved ? `Remove ${worker.name} from My Circle` : `Save ${worker.name} to My Circle`}
-                            title={isSaved ? "Saved to My Circle" : "Save to My Circle"}
+                            aria-label={
+                              isSaved
+                                ? `Remove ${worker.name} from My Circle`
+                                : `Save ${worker.name} to My Circle`
+                            }
+                            title={
+                              isSaved
+                                ? "Saved to My Circle"
+                                : "Save to My Circle"
+                            }
                             className="flex h-7 w-7 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] text-[#67696D] dark:text-[#A1A1AA] hover:border-primary hover:text-primary transition shadow-subtle active:scale-95 cursor-pointer shrink-0"
                           >
                             <Heart
                               size={13}
-                              className={isSaved ? "text-primary fill-primary" : "text-[#989EA7]"}
+                              className={
+                                isSaved
+                                  ? "text-primary fill-primary"
+                                  : "text-[#989EA7]"
+                              }
                             />
                           </button>
                         </div>

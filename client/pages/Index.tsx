@@ -20,7 +20,11 @@ import { logAnalyticsEvent } from "@/lib/analytics";
 import TrustStripWorkerCard from "@/components/TrustStripWorkerCard";
 import NavBar from "@/components/NavBar";
 import PostNeedModal from "@/components/PostNeedModal";
-import { getStandardLocation, setStandardLocation, detectGpsLocation } from "@/lib/location";
+import {
+  getStandardLocation,
+  setStandardLocation,
+  detectGpsLocation,
+} from "@/lib/location";
 import { supabase } from "@/lib/supabase";
 
 // Existing service categories supported by the app
@@ -83,17 +87,21 @@ export default function Index() {
       }
     };
     window.addEventListener("user-location-changed", handleLocationChange);
-    return () => window.removeEventListener("user-location-changed", handleLocationChange);
+    return () =>
+      window.removeEventListener("user-location-changed", handleLocationChange);
   }, []);
 
   // If no location saved yet in storage, attempt initial GPS detection
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("user_selected_location") || localStorage.getItem("user_registered_location");
+      const saved =
+        localStorage.getItem("user_selected_location") ||
+        localStorage.getItem("user_registered_location");
       if (!saved && navigator.geolocation) {
         void detectGpsLocation(true).then((details) => {
           if (details) {
-            const locName = details.locality || details.city || details.formatted;
+            const locName =
+              details.locality || details.city || details.formatted;
             if (locName) setLocation(locName);
           }
         });
@@ -106,7 +114,9 @@ export default function Index() {
     let mounted = true;
     const fetchWorkers = async () => {
       try {
-        const res = await fetch(`/api/workers?_=${Date.now()}`, { cache: "no-store" });
+        const res = await fetch(`/api/workers?_=${Date.now()}`, {
+          cache: "no-store",
+        });
         if (res.ok) {
           const data = (await res.json()) as WorkersResponse;
           if (mounted && Array.isArray(data.workers)) {
@@ -130,7 +140,10 @@ export default function Index() {
   useEffect(() => {
     if (!showLocationPicker) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (locationPickerRef.current && !locationPickerRef.current.contains(e.target as Node)) {
+      if (
+        locationPickerRef.current &&
+        !locationPickerRef.current.contains(e.target as Node)
+      ) {
         setShowLocationPicker(false);
       }
     };
@@ -209,7 +222,10 @@ export default function Index() {
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    void logAnalyticsEvent("search_performed", null, { query: searchQuery, location });
+    void logAnalyticsEvent("search_performed", null, {
+      query: searchQuery,
+      location,
+    });
     const params = new URLSearchParams();
     if (searchQuery.trim()) {
       params.set("q", searchQuery.trim());
@@ -226,7 +242,10 @@ export default function Index() {
   };
 
   const handleCategoryClick = (categoryName: string) => {
-    void logAnalyticsEvent("category_tile_clicked", null, { category: categoryName, location });
+    void logAnalyticsEvent("category_tile_clicked", null, {
+      category: categoryName,
+      location,
+    });
     const params = new URLSearchParams();
     if (categoryName !== "All Services") {
       params.set("service", categoryName);
@@ -267,7 +286,9 @@ export default function Index() {
             {showLocationPicker && (
               <div className="absolute left-0 top-11 z-50 w-72 rounded-[16px] border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#0A0A0A] p-3.5 shadow-soft animate-in fade-in zoom-in-95 duration-150">
                 <div className="flex items-center justify-between pb-2 border-b border-[#E7ECF1] dark:border-[#1F1F1F] mb-2.5">
-                  <span className="text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Choose Area</span>
+                  <span className="text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                    Choose Area
+                  </span>
                   <button
                     type="button"
                     onClick={() => setShowLocationPicker(false)}
@@ -284,8 +305,17 @@ export default function Index() {
                   disabled={gpsLoading}
                   className="flex w-full items-center justify-center gap-2 rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] py-2 text-xs font-semibold text-primary transition hover:border-primary/40 hover:bg-primary-100/10 cursor-pointer disabled:opacity-60 mb-2.5"
                 >
-                  <Navigation size={13} className={gpsLoading ? "animate-spin text-primary" : "text-primary"} />
-                  <span>{gpsLoading ? "Detecting location..." : "Use Current Location (GPS)"}</span>
+                  <Navigation
+                    size={13}
+                    className={
+                      gpsLoading ? "animate-spin text-primary" : "text-primary"
+                    }
+                  />
+                  <span>
+                    {gpsLoading
+                      ? "Detecting location..."
+                      : "Use Current Location (GPS)"}
+                  </span>
                 </button>
 
                 {/* Custom Location Input */}
@@ -297,7 +327,10 @@ export default function Index() {
                   className="space-y-2"
                 >
                   <div className="flex items-center rounded-[12px] border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] px-3 py-1.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#0A0A0A] focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-                    <MapPin size={14} className="text-[#989EA7] dark:text-[#71717A] mr-2 shrink-0" />
+                    <MapPin
+                      size={14}
+                      className="text-[#989EA7] dark:text-[#71717A] mr-2 shrink-0"
+                    />
                     <input
                       type="text"
                       value={customLocationInput}
@@ -331,12 +364,12 @@ export default function Index() {
           </div>
 
           {/* Right: Inline Search Input with rounded Clarity input styling */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex-1 min-w-0"
-          >
+          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-0">
             <div className="relative flex items-center w-full">
-              <Search size={14} className="absolute left-3 text-[#989EA7] dark:text-[#71717A] pointer-events-none shrink-0" />
+              <Search
+                size={14}
+                className="absolute left-3 text-[#989EA7] dark:text-[#71717A] pointer-events-none shrink-0"
+              />
               <input
                 type="text"
                 value={searchQuery}
@@ -370,7 +403,8 @@ export default function Index() {
               Have a specific repair or job?
             </h2>
             <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">
-              Post what you need and get matched directly with nearby verified pros.
+              Post what you need and get matched directly with nearby verified
+              pros.
             </p>
           </div>
           <button

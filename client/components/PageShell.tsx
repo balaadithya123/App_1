@@ -1,4 +1,16 @@
-import { ArrowLeft, Search, Heart, Building2, Sparkles, UserRound, Briefcase, Bell, LayoutDashboard, MessageSquare, Clock } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  Heart,
+  Building2,
+  Sparkles,
+  UserRound,
+  Briefcase,
+  Bell,
+  LayoutDashboard,
+  MessageSquare,
+  Clock,
+} from "lucide-react";
 import MobileMenu from "@/components/MobileMenu";
 import ThemeToggle from "@/components/ThemeToggle";
 import TrackRecordFollowUpBanner from "@/components/TrackRecordFollowUpBanner";
@@ -63,7 +75,11 @@ export default function PageShell({
       onBack();
       return;
     }
-    if (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0) {
+    if (
+      window.history.state &&
+      typeof window.history.state.idx === "number" &&
+      window.history.state.idx > 0
+    ) {
       navigate(-1);
     } else if (backTo) {
       navigate(backTo);
@@ -77,8 +93,8 @@ export default function PageShell({
     void supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, s) => setSession(s)
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) =>
+      setSession(s),
     );
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -97,11 +113,7 @@ export default function PageShell({
     : isAgency
       ? "Agency Dashboard"
       : "Profile Settings";
-  const homePath = isWorker
-    ? "/worker-dashboard"
-    : isAgency
-      ? "/agency"
-      : "/";
+  const homePath = isWorker ? "/worker-dashboard" : isAgency ? "/agency" : "/";
 
   const brand = (
     <div className="flex items-center gap-2 group">
@@ -116,13 +128,18 @@ export default function PageShell({
 
   const noHome = hideHome || disableBrandNavigation;
   const maxWidthClass = maxWidthMap[containerWidth] || maxWidthMap.md;
-  const paddingClass = contentPadding !== undefined ? contentPadding : "px-4 py-6 sm:px-6 sm:py-8 lg:px-8";
+  const paddingClass =
+    contentPadding !== undefined
+      ? contentPadding
+      : "px-4 py-6 sm:px-6 sm:py-8 lg:px-8";
 
   return (
     <div className="min-h-screen bg-[#F6F9FC] dark:bg-black text-[#2C2C2C] dark:text-[#F4F4F5] flex flex-col selection:bg-primary-100/25 selection:text-primary">
       {/* Sticky Top Header */}
       <header className="sticky top-0 z-40 w-full border-b border-[#E7ECF1] dark:border-[#1F1F1F] bg-white/95 dark:bg-black/95 backdrop-blur-md">
-        <div className={`mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8 ${maxWidthClass}`}>
+        <div
+          className={`mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8 ${maxWidthClass}`}
+        >
           {/* Brand Logo */}
           <div className="flex items-center gap-6">
             {noHome ? (
@@ -257,7 +274,10 @@ export default function PageShell({
                   onClick={handleBack}
                   className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] px-3.5 py-1.5 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle transition-all hover:border-primary hover:text-primary hover:bg-primary-100/10 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer active:scale-95"
                 >
-                  <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
+                  <ArrowLeft
+                    size={14}
+                    className="transition-transform group-hover:-translate-x-0.5"
+                  />
                   <span>{backLabel}</span>
                 </button>
                 {headerTitle && (
@@ -279,4 +299,3 @@ export default function PageShell({
     </div>
   );
 }
-

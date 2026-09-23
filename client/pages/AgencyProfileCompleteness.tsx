@@ -46,13 +46,17 @@ export default function AgencyProfileCompleteness() {
         }
         const { data: a, error: e } = await supabase
           .from("agencies")
-          .select("id,name,contact_person_name,phone,email,categories,service_locations,team_size_band,business_registration_number,logo_url,description,location,verified")
+          .select(
+            "id,name,contact_person_name,phone,email,categories,service_locations,team_size_band,business_registration_number,logo_url,description,location,verified",
+          )
           .eq("user_id", data.session.user.id)
           .maybeSingle();
         if (e) throw e;
         setAgency(a);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Unable to load agency profile");
+        setError(
+          err instanceof Error ? err.message : "Unable to load agency profile",
+        );
       } finally {
         setLoading(false);
       }
@@ -73,7 +77,9 @@ export default function AgencyProfileCompleteness() {
     return (
       <PageShell hideBack hideHome>
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center shadow-soft">
-          <p className="text-sm font-bold text-[#2C2C2C]">Agency profile not found</p>
+          <p className="text-sm font-bold text-[#2C2C2C]">
+            Agency profile not found
+          </p>
           <button
             type="button"
             onClick={() => navigate("/register-agency")}
@@ -86,14 +92,17 @@ export default function AgencyProfileCompleteness() {
     );
   }
 
-  const isSet = (v: unknown) => Boolean(String(v ?? "").trim() && String(v).trim() !== "Not added yet");
-  const hasArray = (arr: unknown) => Array.isArray(arr) && arr.filter(Boolean).length > 0;
+  const isSet = (v: unknown) =>
+    Boolean(String(v ?? "").trim() && String(v).trim() !== "Not added yet");
+  const hasArray = (arr: unknown) =>
+    Array.isArray(arr) && arr.filter(Boolean).length > 0;
 
   const checks: AgencyCheck[] = [
     {
       id: "name",
       label: "Agency / Business Name",
-      description: "Official trading or brand name displayed across the directory.",
+      description:
+        "Official trading or brand name displayed across the directory.",
       done: isSet(agency.name),
       actionText: "Add Name",
     },
@@ -107,14 +116,16 @@ export default function AgencyProfileCompleteness() {
     {
       id: "phone",
       label: "Official Phone Number",
-      description: "Direct contact line for receiving direct employer and client calls.",
+      description:
+        "Direct contact line for receiving direct employer and client calls.",
       done: isSet(agency.phone),
       actionText: "Add Phone",
     },
     {
       id: "email",
       label: "Business Email",
-      description: "Official email address for communication and dispatch notifications.",
+      description:
+        "Official email address for communication and dispatch notifications.",
       done: isSet(agency.email),
       actionText: "Add Email",
     },
@@ -142,7 +153,8 @@ export default function AgencyProfileCompleteness() {
     {
       id: "description",
       label: "Business Description & Overview",
-      description: "Describe your agency's experience, coverage, and quality standards.",
+      description:
+        "Describe your agency's experience, coverage, and quality standards.",
       done: isSet(agency.description),
       actionText: "Add Description",
     },
@@ -156,7 +168,8 @@ export default function AgencyProfileCompleteness() {
     {
       id: "reg_number",
       label: "Business Registration / GST",
-      description: "Optional verification credential to boost enterprise trust.",
+      description:
+        "Optional verification credential to boost enterprise trust.",
       done: isSet(agency.business_registration_number),
       actionText: "Add Reg No",
     },
@@ -178,7 +191,13 @@ export default function AgencyProfileCompleteness() {
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <button
             type="button"
-            onClick={() => (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0 ? navigate(-1) : navigate("/agency/dashboard"))}
+            onClick={() =>
+              window.history.state &&
+              typeof window.history.state.idx === "number" &&
+              window.history.state.idx > 0
+                ? navigate(-1)
+                : navigate("/agency/dashboard")
+            }
             className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#67696D] transition hover:text-[#2C2C2C] cursor-pointer"
           >
             <ArrowLeft size={14} /> Back
@@ -197,13 +216,16 @@ export default function AgencyProfileCompleteness() {
                   Agency Profile Completeness
                 </h1>
                 <p className="mt-1 text-xs text-[#67696D]">
-                  Complete all business details to rank higher in searches and receive more client callbacks.
+                  Complete all business details to rank higher in searches and
+                  receive more client callbacks.
                 </p>
               </div>
             </div>
 
             <div className="flex items-baseline gap-1.5 self-start rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-4 py-2 sm:self-auto shadow-subtle">
-              <span className="text-2xl font-bold text-[#2C2C2C]">{percent}%</span>
+              <span className="text-2xl font-bold text-[#2C2C2C]">
+                {percent}%
+              </span>
               <span className="text-xs text-[#67696D]">Complete</span>
             </div>
           </div>
@@ -221,7 +243,9 @@ export default function AgencyProfileCompleteness() {
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <div className="flex items-center justify-between border-b border-[#E7ECF1] pb-3">
             <div>
-              <h2 className="text-sm font-bold text-[#2C2C2C]">Agency Checklist</h2>
+              <h2 className="text-sm font-bold text-[#2C2C2C]">
+                Agency Checklist
+              </h2>
               <p className="text-xs text-[#67696D]">
                 {completedCount} of {checks.length} items complete
               </p>
@@ -263,7 +287,9 @@ export default function AgencyProfileCompleteness() {
                     <p className="truncate text-xs font-bold text-[#2C2C2C] sm:text-sm">
                       {item.label}
                     </p>
-                    <p className="text-[11px] text-[#67696D]">{item.description}</p>
+                    <p className="text-[11px] text-[#67696D]">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
 
@@ -294,7 +320,9 @@ export default function AgencyProfileCompleteness() {
             />
             <div>
               <p className="text-xs font-bold text-[#2C2C2C]">
-                {agency.verified ? "Verified Business Agency" : "Business Verification"}
+                {agency.verified
+                  ? "Verified Business Agency"
+                  : "Business Verification"}
               </p>
               <p className="text-[11px] text-[#67696D]">
                 {agency.verified

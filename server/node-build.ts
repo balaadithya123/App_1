@@ -26,7 +26,10 @@ export default app;
 
 // Keep the bundle usable both as the local production server and as the Vercel
 // function handler. Vercel imports this module, so it must not open a listener.
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
   const port = process.env.PORT || 3000;
 
   app.listen(Number(port), "0.0.0.0", () => {

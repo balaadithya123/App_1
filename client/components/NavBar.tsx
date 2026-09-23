@@ -37,8 +37,12 @@ export default function NavBar() {
 
   useEffect(() => {
     if (!supabase) return;
-    void supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => setSession(data.session));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) =>
+      setSession(s),
+    );
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -61,7 +65,9 @@ export default function NavBar() {
         name: "Dashboard",
         path: "/worker-dashboard",
         icon: LayoutDashboard,
-        isActive: location.pathname === "/worker-dashboard" || location.pathname === "/",
+        isActive:
+          location.pathname === "/worker-dashboard" ||
+          location.pathname === "/",
       },
       {
         name: "Commitments",
@@ -89,7 +95,10 @@ export default function NavBar() {
         name: "Agency Dashboard",
         path: "/agency",
         icon: Building2,
-        isActive: location.pathname === "/agency" || location.pathname === "/agency/dashboard" || location.pathname === "/",
+        isActive:
+          location.pathname === "/agency" ||
+          location.pathname === "/agency/dashboard" ||
+          location.pathname === "/",
       },
       {
         name: "Inbox",
@@ -101,7 +110,9 @@ export default function NavBar() {
         name: "Agency Profile",
         path: "/agency/profile/edit",
         icon: UserRound,
-        isActive: location.pathname === "/agency/profile/edit" || location.pathname === "/profile",
+        isActive:
+          location.pathname === "/agency/profile/edit" ||
+          location.pathname === "/profile",
       },
     ];
   } else {
@@ -123,13 +134,15 @@ export default function NavBar() {
         name: "My Circle",
         path: "/saved",
         icon: Heart,
-        isActive: location.pathname === "/saved" || location.pathname === "/my-circle",
+        isActive:
+          location.pathname === "/saved" || location.pathname === "/my-circle",
       },
       {
         name: "Profile",
         path: loggedIn ? "/profile" : "/login",
         icon: UserRound,
-        isActive: location.pathname === "/profile" || location.pathname === "/login",
+        isActive:
+          location.pathname === "/profile" || location.pathname === "/login",
       },
     ];
   }

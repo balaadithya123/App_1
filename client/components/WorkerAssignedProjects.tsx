@@ -45,7 +45,9 @@ export default function WorkerAssignedProjects({
   const [projects, setProjects] = useState<AssignedProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState<"all" | "active" | "in_progress" | "completed">("all");
+  const [filter, setFilter] = useState<
+    "all" | "active" | "in_progress" | "completed"
+  >("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -54,49 +56,64 @@ export default function WorkerAssignedProjects({
     setTimeout(() => setNotice(null), 3000);
   };
 
-  const loadProjects = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    try {
-      const cleanPhone = String(workerPhone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
-      const { data: sessionData } = await supabase.auth.getSession();
-      const headers: Record<string, string> = {};
-      if (sessionData?.session?.access_token) {
-        headers["Authorization"] = `Bearer ${sessionData.session.access_token}`;
-      }
+  const loadProjects = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      try {
+        const cleanPhone = String(workerPhone || "")
+          .replace(/^\+91/, "")
+          .replace(/\D/g, "")
+          .slice(-10);
+        const { data: sessionData } = await supabase.auth.getSession();
+        const headers: Record<string, string> = {};
+        if (sessionData?.session?.access_token) {
+          headers["Authorization"] =
+            `Bearer ${sessionData.session.access_token}`;
+        }
 
-      const res = await fetch(
-        `/api/workers/projects?workerId=${encodeURIComponent(workerId || "")}&phone=${encodeURIComponent(cleanPhone)}`,
-        { headers, cache: "no-store" }
-      );
+        const res = await fetch(
+          `/api/workers/projects?workerId=${encodeURIComponent(workerId || "")}&phone=${encodeURIComponent(cleanPhone)}`,
+          { headers, cache: "no-store" },
+        );
 
-      if (res.ok) {
-        const data = await res.json();
-        setProjects(data.projects || []);
+        if (res.ok) {
+          const data = await res.json();
+          setProjects(data.projects || []);
+        }
+      } catch (e) {
+        console.warn("[WorkerAssignedProjects] Error loading projects:", e);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-    } catch (e) {
-      console.warn("[WorkerAssignedProjects] Error loading projects:", e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [workerId, workerPhone]);
+    },
+    [workerId, workerPhone],
+  );
 
   useEffect(() => {
     void loadProjects();
   }, [loadProjects]);
 
-  const updateStatus = async (projectId: string, nextStatus: AssignedProject["status"]) => {
+  const updateStatus = async (
+    projectId: string,
+    nextStatus: AssignedProject["status"],
+  ) => {
     setUpdatingId(projectId);
     try {
-      const res = await fetch(`/api/workers/projects/${encodeURIComponent(projectId)}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
-      });
+      const res = await fetch(
+        `/api/workers/projects/${encodeURIComponent(projectId)}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: nextStatus }),
+        },
+      );
 
       if (res.ok) {
         setProjects((prev) =>
-          prev.map((p) => (p.id === projectId ? { ...p, status: nextStatus } : p))
+          prev.map((p) =>
+            p.id === projectId ? { ...p, status: nextStatus } : p,
+          ),
         );
         showToast(`Project status updated to ${nextStatus.replace("_", " ")}.`);
       } else {
@@ -114,7 +131,9 @@ export default function WorkerAssignedProjects({
     return p.status === filter;
   });
 
-  const activeCount = projects.filter((p) => p.status === "active" || p.status === "in_progress").length;
+  const activeCount = projects.filter(
+    (p) => p.status === "active" || p.status === "in_progress",
+  ).length;
 
   return (
     <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
@@ -126,13 +145,16 @@ export default function WorkerAssignedProjects({
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[#2C2C2C]">Agency Assigned Projects</h2>
+              <h2 className="text-sm font-bold text-[#2C2C2C]">
+                Agency Assigned Projects
+              </h2>
               <span className="rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-2.5 py-0.5 text-[10px] font-semibold text-[#67696D]">
                 {activeCount} active job{activeCount === 1 ? "" : "s"}
               </span>
             </div>
             <p className="text-xs text-[#67696D]">
-              Client contracts and field job assignments dispatched to you by your affiliated agency.
+              Client contracts and field job assignments dispatched to you by
+              your affiliated agency.
             </p>
           </div>
         </div>
@@ -144,7 +166,10 @@ export default function WorkerAssignedProjects({
           className="inline-flex h-8 items-center gap-1.5 self-start rounded-full border border-[#E7ECF1] bg-white px-3 text-xs font-semibold text-[#2C2C2C] transition hover:bg-[#F6F9FC] disabled:opacity-50 cursor-pointer shadow-subtle sm:self-auto"
           title="Refresh assigned jobs"
         >
-          <RotateCcw size={12} className={refreshing ? "animate-spin text-primary" : ""} />
+          <RotateCcw
+            size={12}
+            className={refreshing ? "animate-spin text-primary" : ""}
+          />
           <span>Refresh</span>
         </button>
       </div>
@@ -185,9 +210,14 @@ export default function WorkerAssignedProjects({
       ) : filtered.length === 0 ? (
         <div className="rounded-[16px] border border-dashed border-[#E7ECF1] bg-[#F6F9FC] p-6 text-center text-xs text-[#67696D]">
           <FolderKanban size={24} className="mx-auto mb-2 text-[#989EA7]" />
-          <p className="font-bold text-[#2C2C2C]">No assigned projects {filter !== "all" ? `with status "${filter}"` : "yet"}</p>
+          <p className="font-bold text-[#2C2C2C]">
+            No assigned projects{" "}
+            {filter !== "all" ? `with status "${filter}"` : "yet"}
+          </p>
           <p className="mt-1 text-[11px] text-[#67696D]">
-            When your affiliated agency assigns you to a client project or repair contract, the job details and client contacts will appear here in real-time.
+            When your affiliated agency assigns you to a client project or
+            repair contract, the job details and client contacts will appear
+            here in real-time.
           </p>
         </div>
       ) : (
@@ -220,16 +250,24 @@ export default function WorkerAssignedProjects({
                     </span>
                   </div>
 
-                  <h3 className="mt-2 text-sm font-bold text-[#2C2C2C]">{proj.title}</h3>
+                  <h3 className="mt-2 text-sm font-bold text-[#2C2C2C]">
+                    {proj.title}
+                  </h3>
 
                   {/* Details Grid */}
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                     {/* Client Name & Phone */}
                     <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-2.5">
-                      <span className="text-[10px] uppercase font-bold text-[#67696D]">Client Name</span>
-                      <p className="mt-0.5 font-semibold text-[#2C2C2C] truncate">{proj.client_name}</p>
+                      <span className="text-[10px] uppercase font-bold text-[#67696D]">
+                        Client Name
+                      </span>
+                      <p className="mt-0.5 font-semibold text-[#2C2C2C] truncate">
+                        {proj.client_name}
+                      </p>
                       {proj.client_phone && (
-                        <p className="mt-0.5 text-[11px] font-mono text-[#67696D]">+91 {proj.client_phone}</p>
+                        <p className="mt-0.5 text-[11px] font-mono text-[#67696D]">
+                          +91 {proj.client_phone}
+                        </p>
                       )}
                     </div>
 
@@ -238,7 +276,9 @@ export default function WorkerAssignedProjects({
                       <span className="text-[10px] uppercase font-bold text-[#67696D] flex items-center gap-1">
                         <MapPin size={10} /> Location
                       </span>
-                      <p className="mt-0.5 font-semibold text-[#2C2C2C] truncate">{proj.location || "Site location"}</p>
+                      <p className="mt-0.5 font-semibold text-[#2C2C2C] truncate">
+                        {proj.location || "Site location"}
+                      </p>
                     </div>
 
                     {/* Target Deadline */}
@@ -247,7 +287,9 @@ export default function WorkerAssignedProjects({
                         <span className="text-[10px] uppercase font-bold text-[#67696D] flex items-center gap-1">
                           <Calendar size={10} /> Target Completion
                         </span>
-                        <p className="mt-0.5 font-semibold text-[#2C2C2C]">{proj.deadline}</p>
+                        <p className="mt-0.5 font-semibold text-[#2C2C2C]">
+                          {proj.deadline}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -268,7 +310,7 @@ export default function WorkerAssignedProjects({
                         </a>
                         <a
                           href={`https://wa.me/91${phoneDigits}?text=${encodeURIComponent(
-                            `Hello ${proj.client_name}, I am your assigned technician for "${proj.title}" on LocalWorker.`
+                            `Hello ${proj.client_name}, I am your assigned technician for "${proj.title}" on LocalWorker.`,
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"

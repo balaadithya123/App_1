@@ -34,7 +34,11 @@ import type { WorkersResponse } from "@shared/api";
 import { getSavedWorkerIds, toggleSavedWorker } from "@/lib/favorites";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
-import { getStandardLocation, setStandardLocation, detectGpsLocation } from "@/lib/location";
+import {
+  getStandardLocation,
+  setStandardLocation,
+  detectGpsLocation,
+} from "@/lib/location";
 
 const categoryList = [
   { name: "All", label: "All Services", icon: LayoutGrid },
@@ -57,24 +61,57 @@ const stemWord = (word: string) => {
 };
 
 const matchStandardCategory = (val: string) => {
-  if (!val || val.toLowerCase() === "all" || val.toLowerCase() === "all services") return "All";
+  if (
+    !val ||
+    val.toLowerCase() === "all" ||
+    val.toLowerCase() === "all services"
+  )
+    return "All";
   const v = val.trim().toLowerCase().replace(/-/g, " ");
   if (v.includes("ac") || v.includes("air conditioner")) return "AC Repair";
-  if (v.includes("plumb") || v.includes("geyser") || v.includes("water purifier") || v.includes("ro") || v.includes("water pump") || v.includes("tank") || v.includes("sump")) return "Plumber";
-  if (v.includes("electric") || v.includes("inverter") || v.includes("battery") || v.includes("washing machine")) return "Electrician";
-  if (v.includes("clean") || v.includes("pest") || v.includes("chimney") || v.includes("exhaust")) return "Cleaner";
+  if (
+    v.includes("plumb") ||
+    v.includes("geyser") ||
+    v.includes("water purifier") ||
+    v.includes("ro") ||
+    v.includes("water pump") ||
+    v.includes("tank") ||
+    v.includes("sump")
+  )
+    return "Plumber";
+  if (
+    v.includes("electric") ||
+    v.includes("inverter") ||
+    v.includes("battery") ||
+    v.includes("washing machine")
+  )
+    return "Electrician";
+  if (
+    v.includes("clean") ||
+    v.includes("pest") ||
+    v.includes("chimney") ||
+    v.includes("exhaust")
+  )
+    return "Cleaner";
   if (v.includes("paint")) return "Painter";
   if (v.includes("carpent")) return "Carpenter";
   const found = categoryList.find((c) => {
     const cl = c.name.toLowerCase();
-    return cl === v || v.startsWith(cl.slice(0, 4)) || cl.startsWith(v.slice(0, 4)) || stemWord(cl) === stemWord(v);
+    return (
+      cl === v ||
+      v.startsWith(cl.slice(0, 4)) ||
+      cl.startsWith(v.slice(0, 4)) ||
+      stemWord(cl) === stemWord(v)
+    );
   });
   return found ? found.name : val;
 };
 
 const getCategoryHeaderTitle = (cat: string) => {
   if (!cat || cat === "All") return "All Services";
-  const match = categoryList.find((c) => c.name.toLowerCase() === cat.toLowerCase());
+  const match = categoryList.find(
+    (c) => c.name.toLowerCase() === cat.toLowerCase(),
+  );
   if (match) return match.label;
   return `${cat}s`;
 };
@@ -100,35 +137,58 @@ export default function SearchResults() {
   const navigate = useNavigate();
 
   const rawType = searchParams.get("type")?.toLowerCase();
-  const initialType: SearchType = rawType === "agencies" ? "agencies" : rawType === "workers" ? "workers" : "all";
+  const initialType: SearchType =
+    rawType === "agencies"
+      ? "agencies"
+      : rawType === "workers"
+        ? "workers"
+        : "all";
 
-  const requestedService = searchParams.get("service") || searchParams.get("category") || "";
+  const requestedService =
+    searchParams.get("service") || searchParams.get("category") || "";
   const requestedLocation = searchParams.get("location")?.trim() || "";
 
   const [searchType, setSearchType] = useState<SearchType>(initialType);
-  const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
+  const [availableWorkers, setAvailableWorkers] =
+    useState<Worker[]>(staticWorkers);
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [savedIds, setSavedIds] = useState<string[]>(getSavedWorkerIds);
-  const [category, setCategory] = useState(() => matchStandardCategory(requestedService));
+  const [category, setCategory] = useState(() =>
+    matchStandardCategory(requestedService),
+  );
   const [locality, setLocality] = useState(requestedLocation);
 
   // Search filter inputs
-  const [freeTextNeed, setFreeTextNeed] = useState(searchParams.get("need") || searchParams.get("q") || "");
+  const [freeTextNeed, setFreeTextNeed] = useState(
+    searchParams.get("need") || searchParams.get("q") || "",
+  );
   const [onlyAvailableToday, setOnlyAvailableToday] = useState(false);
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [minRating4Plus, setMinRating4Plus] = useState(false);
 
   // Reasoning Ranker State
-  const [rankingMap, setRankingMap] = useState<Record<string, { rank: number; score: number; reason: string }>>({});
-  const [excludedWorkers, setExcludedWorkers] = useState<Array<{ worker_id: string; reason: string }>>([]);
+  const [rankingMap, setRankingMap] = useState<
+    Record<string, { rank: number; score: number; reason: string }>
+  >({});
+  const [excludedWorkers, setExcludedWorkers] = useState<
+    Array<{ worker_id: string; reason: string }>
+  >([]);
   const [showExcluded, setShowExcluded] = useState(false);
 
   // Sync state when URL params change
   useEffect(() => {
     const t = searchParams.get("type")?.toLowerCase();
-    if (t === "agencies" && searchType !== "agencies") setSearchType("agencies");
-    else if (t === "workers" && searchType !== "workers") setSearchType("workers");
-    else if (!t && searchType !== "all" && rawType !== "agencies" && rawType !== "workers") setSearchType("all");
+    if (t === "agencies" && searchType !== "agencies")
+      setSearchType("agencies");
+    else if (t === "workers" && searchType !== "workers")
+      setSearchType("workers");
+    else if (
+      !t &&
+      searchType !== "all" &&
+      rawType !== "agencies" &&
+      rawType !== "workers"
+    )
+      setSearchType("all");
 
     const s = searchParams.get("service") || searchParams.get("category") || "";
     setCategory(matchStandardCategory(s));
@@ -142,7 +202,9 @@ export default function SearchResults() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch(`/api/workers?availability_refresh=${Date.now()}`, { cache: "no-store" });
+      const r = await fetch(`/api/workers?availability_refresh=${Date.now()}`, {
+        cache: "no-store",
+      });
       if (r.ok) {
         const d = (await r.json()) as WorkersResponse;
         setAvailableWorkers(d.workers);
@@ -159,14 +221,25 @@ export default function SearchResults() {
         try {
           clientRes = await supabase
             .from("agencies")
-            .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,created_at");
+            .select(
+              "id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,created_at",
+            );
         } catch {}
       }
 
-      const serverRes = await fetch(`/api/agencies?_=${Date.now()}`, { headers, cache: "no-store" }).catch(() => null);
+      const serverRes = await fetch(`/api/agencies?_=${Date.now()}`, {
+        headers,
+        cache: "no-store",
+      }).catch(() => null);
 
-      const serverAgencies = serverRes && serverRes.ok ? ((await serverRes.json())?.agencies as Agency[]) : [];
-      const clientAgencies = clientRes && !clientRes.error && Array.isArray(clientRes.data) ? (clientRes.data as Agency[]) : [];
+      const serverAgencies =
+        serverRes && serverRes.ok
+          ? ((await serverRes.json())?.agencies as Agency[])
+          : [];
+      const clientAgencies =
+        clientRes && !clientRes.error && Array.isArray(clientRes.data)
+          ? (clientRes.data as Agency[])
+          : [];
 
       const mergedMap = new Map<string, Agency>();
       for (const a of serverAgencies || []) {
@@ -176,8 +249,12 @@ export default function SearchResults() {
         if (a?.id && !mergedMap.has(a.id)) {
           mergedMap.set(a.id, {
             ...a,
-            categories: Array.isArray(a.categories) ? a.categories : [String(a.categories || "")],
-            service_locations: Array.isArray(a.service_locations) ? a.service_locations : [String(a.service_locations || a.location || "")],
+            categories: Array.isArray(a.categories)
+              ? a.categories
+              : [String(a.categories || "")],
+            service_locations: Array.isArray(a.service_locations)
+              ? a.service_locations
+              : [String(a.service_locations || a.location || "")],
           });
         }
       }
@@ -260,8 +337,8 @@ export default function SearchResults() {
           handleLocalityChange(detected);
         }
       }
-    } catch {}
-    finally {
+    } catch {
+    } finally {
       setGpsDetecting(false);
     }
   };
@@ -280,7 +357,12 @@ export default function SearchResults() {
 
   // Trigger Reasoning-Based Ranking
   const runRankingEvaluation = useCallback(
-    async (workersToRank: Worker[], userNeed: string, cat: string, loc: string) => {
+    async (
+      workersToRank: Worker[],
+      userNeed: string,
+      cat: string,
+      loc: string,
+    ) => {
       if (!workersToRank.length) {
         setRankingMap({});
         setExcludedWorkers([]);
@@ -289,7 +371,9 @@ export default function SearchResults() {
 
       try {
         const candidates = workersToRank.map((w) => {
-          const isLocMatch = loc ? w.locality.toLowerCase().includes(loc.toLowerCase()) : true;
+          const isLocMatch = loc
+            ? w.locality.toLowerCase().includes(loc.toLowerCase())
+            : true;
           return {
             worker_id: w.id,
             name: w.name,
@@ -297,12 +381,18 @@ export default function SearchResults() {
             years_experience: parseInt(w.experience || "3") || 3,
             locality: w.locality,
             distance_km: isLocMatch ? 1.2 : 4.8,
-            avg_rating: Number((w as any).avg_rating || (w as any).rating || 4.8),
-            num_ratings: Number((w as any).num_ratings || (w as any).reviews_count || 18),
+            avg_rating: Number(
+              (w as any).avg_rating || (w as any).rating || 4.8,
+            ),
+            num_ratings: Number(
+              (w as any).num_ratings || (w as any).reviews_count || 18,
+            ),
             last_active_days_ago: (w as any).available_today ? 0 : 2,
             responds_on_whatsapp: Boolean(w.phone_verified || true),
             profile_completeness_pct: (w as any).work_photos?.length ? 92 : 78,
-            trust_flags: Array.isArray((w as any).trust_flags) ? (w as any).trust_flags : [],
+            trust_flags: Array.isArray((w as any).trust_flags)
+              ? (w as any).trust_flags
+              : [],
           };
         });
 
@@ -321,7 +411,10 @@ export default function SearchResults() {
 
         const data = await res.json();
         if (data.ranked && Array.isArray(data.ranked)) {
-          const map: Record<string, { rank: number; score: number; reason: string }> = {};
+          const map: Record<
+            string,
+            { rank: number; score: number; reason: string }
+          > = {};
           for (const item of data.ranked) {
             map[item.worker_id] = {
               rank: item.rank,
@@ -360,7 +453,8 @@ export default function SearchResults() {
 
       const availMatched = !onlyAvailableToday || Boolean(w.available_today);
       const verifiedMatched = !onlyVerified || Boolean(w.phone_verified);
-      const ratingMatched = !minRating4Plus || Number(w.avg_rating || w.rating || 4.8) >= 4.5;
+      const ratingMatched =
+        !minRating4Plus || Number(w.avg_rating || w.rating || 4.8) >= 4.5;
 
       const qMatched =
         !qLower ||
@@ -369,22 +463,48 @@ export default function SearchResults() {
         (w.locality || "").toLowerCase().includes(qLower) ||
         (w.services || []).some((s) => s.toLowerCase().includes(qLower));
 
-      return catMatched && locMatched && qMatched && availMatched && verifiedMatched && ratingMatched;
+      return (
+        catMatched &&
+        locMatched &&
+        qMatched &&
+        availMatched &&
+        verifiedMatched &&
+        ratingMatched
+      );
     });
-  }, [availableWorkers, targetCategory, targetLocality, freeTextNeed, onlyAvailableToday, onlyVerified, minRating4Plus]);
+  }, [
+    availableWorkers,
+    targetCategory,
+    targetLocality,
+    freeTextNeed,
+    onlyAvailableToday,
+    onlyVerified,
+    minRating4Plus,
+  ]);
 
   // Auto-run ranking when matching workers or search filters change
   useEffect(() => {
     if (matchingWorkers.length > 0 && freeTextNeed.trim()) {
       const timer = setTimeout(() => {
-        void runRankingEvaluation(matchingWorkers, freeTextNeed, targetCategory, targetLocality);
+        void runRankingEvaluation(
+          matchingWorkers,
+          freeTextNeed,
+          targetCategory,
+          targetLocality,
+        );
       }, 350);
       return () => clearTimeout(timer);
     } else {
       setRankingMap({});
       setExcludedWorkers([]);
     }
-  }, [matchingWorkers, freeTextNeed, targetCategory, targetLocality, runRankingEvaluation]);
+  }, [
+    matchingWorkers,
+    freeTextNeed,
+    targetCategory,
+    targetLocality,
+    runRankingEvaluation,
+  ]);
 
   const sortedWorkers = useMemo(() => {
     return [...matchingWorkers].sort((a, b) => {
@@ -397,8 +517,16 @@ export default function SearchResults() {
 
       // 2. Locality match priority
       if (targetLocality) {
-        const aLoc = (a.locality || "").toLowerCase().includes(targetLocality.toLowerCase()) ? 1 : 0;
-        const bLoc = (b.locality || "").toLowerCase().includes(targetLocality.toLowerCase()) ? 1 : 0;
+        const aLoc = (a.locality || "")
+          .toLowerCase()
+          .includes(targetLocality.toLowerCase())
+          ? 1
+          : 0;
+        const bLoc = (b.locality || "")
+          .toLowerCase()
+          .includes(targetLocality.toLowerCase())
+          ? 1
+          : 0;
         if (bLoc !== aLoc) return bLoc - aLoc;
       }
 
@@ -426,19 +554,32 @@ export default function SearchResults() {
     const catMatched =
       !targetCategory ||
       targetCategory === "All" ||
-      (a.categories || []).some((c) => String(c).toLowerCase().includes(targetCategory.toLowerCase())) ||
-      (a.categories || []).some((c) => stemWord(String(c)) === stemWord(targetCategory));
+      (a.categories || []).some((c) =>
+        String(c).toLowerCase().includes(targetCategory.toLowerCase()),
+      ) ||
+      (a.categories || []).some(
+        (c) => stemWord(String(c)) === stemWord(targetCategory),
+      );
 
     const locMatched =
       !targetLocality ||
-      (a.service_locations || []).some((l) => String(l).toLowerCase().includes(targetLocality.toLowerCase())) ||
-      Boolean(a.location && String(a.location).toLowerCase().includes(targetLocality.toLowerCase()));
+      (a.service_locations || []).some((l) =>
+        String(l).toLowerCase().includes(targetLocality.toLowerCase()),
+      ) ||
+      Boolean(
+        a.location &&
+        String(a.location).toLowerCase().includes(targetLocality.toLowerCase()),
+      );
 
     const qMatched =
       !qLower ||
       a.name.toLowerCase().includes(qLower) ||
-      (a.categories || []).some((c) => String(c).toLowerCase().includes(qLower)) ||
-      (a.service_locations || []).some((l) => String(l).toLowerCase().includes(qLower));
+      (a.categories || []).some((c) =>
+        String(c).toLowerCase().includes(qLower),
+      ) ||
+      (a.service_locations || []).some((l) =>
+        String(l).toLowerCase().includes(qLower),
+      );
 
     const verifiedMatched = !onlyVerified || Boolean(a.verified);
 
@@ -446,7 +587,9 @@ export default function SearchResults() {
   });
 
   // Combine or filter strictly according to selected searchType
-  const combined: Array<{ type: "agency"; data: Agency } | { type: "worker"; data: Worker }> = [];
+  const combined: Array<
+    { type: "agency"; data: Agency } | { type: "worker"; data: Worker }
+  > = [];
 
   if (searchType === "agencies") {
     matchingAgencies.forEach((a) => combined.push({ type: "agency", data: a }));
@@ -456,7 +599,8 @@ export default function SearchResults() {
     let wi = 0,
       ai = 0;
     while (wi < sortedWorkers.length || ai < matchingAgencies.length) {
-      if (ai < matchingAgencies.length) combined.push({ type: "agency", data: matchingAgencies[ai++] });
+      if (ai < matchingAgencies.length)
+        combined.push({ type: "agency", data: matchingAgencies[ai++] });
       for (let n = 0; n < 2 && wi < sortedWorkers.length; n++) {
         combined.push({ type: "worker", data: sortedWorkers[wi++] });
       }
@@ -483,7 +627,12 @@ export default function SearchResults() {
           aria-label="Saved listings"
           className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] px-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle hover:border-primary/40 active:scale-95"
         >
-          <Heart size={13} className={savedIds.length ? "text-primary fill-primary" : "text-[#989EA7]"} />
+          <Heart
+            size={13}
+            className={
+              savedIds.length ? "text-primary fill-primary" : "text-[#989EA7]"
+            }
+          />
           <span>{savedIds.length}</span>
         </Link>
       }
@@ -495,7 +644,9 @@ export default function SearchResults() {
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
           {categoryList.map((cat) => {
             const Icon = cat.icon;
-            const isSelected = (category === "All" && cat.name === "All") || category.toLowerCase() === cat.name.toLowerCase();
+            const isSelected =
+              (category === "All" && cat.name === "All") ||
+              category.toLowerCase() === cat.name.toLowerCase();
 
             return (
               <button
@@ -508,7 +659,10 @@ export default function SearchResults() {
                     : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/50 hover:bg-[#F6F9FC] dark:hover:bg-[#141414]"
                 }`}
               >
-                <Icon size={13} className={isSelected ? "text-white" : "text-primary"} />
+                <Icon
+                  size={13}
+                  className={isSelected ? "text-white" : "text-primary"}
+                />
                 <span>{cat.label}</span>
               </button>
             );
@@ -532,8 +686,17 @@ export default function SearchResults() {
             }`}
             title="Current search location (Click to refresh via GPS)"
           >
-            <MapPin size={12} className={locality ? "text-primary" : "text-[#989EA7]"} />
-            <span>{gpsDetecting ? "Detecting GPS..." : locality ? locality : "All Locations (Tap GPS)"}</span>
+            <MapPin
+              size={12}
+              className={locality ? "text-primary" : "text-[#989EA7]"}
+            />
+            <span>
+              {gpsDetecting
+                ? "Detecting GPS..."
+                : locality
+                  ? locality
+                  : "All Locations (Tap GPS)"}
+            </span>
           </button>
 
           {/* Quick Filter Pill Buttons */}
@@ -546,7 +709,9 @@ export default function SearchResults() {
                 : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-emerald-400"
             }`}
           >
-            <span className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-emerald-500 animate-pulse"}`} />
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-emerald-500 animate-pulse"}`}
+            />
             <span>Available Today</span>
           </button>
 
@@ -559,7 +724,10 @@ export default function SearchResults() {
                 : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/40"
             }`}
           >
-            <BadgeCheck size={12} className={onlyVerified ? "text-white" : "text-primary"} />
+            <BadgeCheck
+              size={12}
+              className={onlyVerified ? "text-white" : "text-primary"}
+            />
             <span>Verified</span>
           </button>
 
@@ -572,7 +740,14 @@ export default function SearchResults() {
                 : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-amber-400"
             }`}
           >
-            <Star size={11} className={minRating4Plus ? "fill-white text-white" : "fill-amber-400 text-amber-400"} />
+            <Star
+              size={11}
+              className={
+                minRating4Plus
+                  ? "fill-white text-white"
+                  : "fill-amber-400 text-amber-400"
+              }
+            />
             <span>4.5+ Rating</span>
           </button>
 
@@ -635,7 +810,10 @@ export default function SearchResults() {
           <div className="space-y-3.5">
             {combined.map((item, index) =>
               item.type === "agency" ? (
-                <AgencyCard key={`a-${item.data.id}-${index}`} agency={item.data} />
+                <AgencyCard
+                  key={`a-${item.data.id}-${index}`}
+                  agency={item.data}
+                />
               ) : (
                 <WorkerCard
                   key={`w-${item.data.id}`}
@@ -654,9 +832,13 @@ export default function SearchResults() {
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100/15 text-primary mb-3.5">
               <SearchIcon size={24} />
             </div>
-            <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">No Specialists Found</h3>
+            <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              No Specialists Found
+            </h3>
             <p className="mt-1 text-xs text-[#67696D] dark:text-[#A1A1AA] max-w-sm mx-auto">
-              We couldn't find any {category !== "All" ? category.toLowerCase() : ""} professionals matching your current filters
+              We couldn't find any{" "}
+              {category !== "All" ? category.toLowerCase() : ""} professionals
+              matching your current filters
               {targetLocality ? ` near ${targetLocality}` : ""}.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2.5">
@@ -690,19 +872,34 @@ export default function SearchResults() {
             >
               <span className="flex items-center gap-1.5">
                 <AlertTriangle size={13} className="text-amber-500" />
-                <span>Excluded from Top Recommendations ({excludedWorkers.length})</span>
+                <span>
+                  Excluded from Top Recommendations ({excludedWorkers.length})
+                </span>
               </span>
-              {showExcluded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              {showExcluded ? (
+                <ChevronUp size={13} />
+              ) : (
+                <ChevronDown size={13} />
+              )}
             </button>
             {showExcluded && (
               <div className="mt-3 space-y-2 pt-2 border-t border-[#E7ECF1] dark:border-[#1F1F1F]">
                 {excludedWorkers.map((ex, idx) => (
-                  <div key={`${ex.worker_id}-${idx}`} className="rounded-[12px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] p-2.5 text-xs">
+                  <div
+                    key={`${ex.worker_id}-${idx}`}
+                    className="rounded-[12px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] p-2.5 text-xs"
+                  >
                     <div className="flex items-center justify-between text-[#67696D] dark:text-[#A1A1AA]">
-                      <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Candidate ID: {ex.worker_id}</span>
-                      <span className="text-[10px] text-red-600 font-bold">Filtered</span>
+                      <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                        Candidate ID: {ex.worker_id}
+                      </span>
+                      <span className="text-[10px] text-red-600 font-bold">
+                        Filtered
+                      </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">{ex.reason}</p>
+                    <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
+                      {ex.reason}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -719,7 +916,9 @@ export default function SearchResults() {
 
 function AgencyCard({ agency }: { agency: Agency }) {
   const phone = String(agency.phone || "").replace(/\D/g, "");
-  const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
+  const whatsappUrl = phone
+    ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}`
+    : "";
 
   return (
     <article className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 transition-all hover:border-primary/40 hover:shadow-soft shadow-subtle">
@@ -727,7 +926,13 @@ function AgencyCard({ agency }: { agency: Agency }) {
         <div className="flex items-start gap-3.5 min-w-0">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle">
             {agency.logo_url ? (
-              <img src={agency.logo_url} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+              <img
+                src={agency.logo_url}
+                alt=""
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="h-full w-full object-cover"
+              />
             ) : (
               <Building2 size={22} className="text-primary" />
             )}
@@ -735,7 +940,9 @@ function AgencyCard({ agency }: { agency: Agency }) {
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
-              <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">{agency.name}</h3>
+              <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">
+                {agency.name}
+              </h3>
               {agency.verified && (
                 <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/40 bg-primary-100/15 px-2 py-0.5 text-[10px] font-bold text-primary">
                   <BadgeCheck size={11} className="text-primary" />
@@ -744,12 +951,16 @@ function AgencyCard({ agency }: { agency: Agency }) {
               )}
             </div>
 
-            <p className="mt-0.5 text-xs font-semibold text-primary">{agency.categories.join(" · ")}</p>
+            <p className="mt-0.5 text-xs font-semibold text-primary">
+              {agency.categories.join(" · ")}
+            </p>
 
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#67696D] dark:text-[#A1A1AA]">
               <span className="inline-flex items-center gap-1 truncate max-w-[200px]">
                 <MapPin size={12} className="text-[#989EA7] shrink-0" />
-                <span className="truncate">{agency.service_locations.join(", ")}</span>
+                <span className="truncate">
+                  {agency.service_locations.join(", ")}
+                </span>
               </span>
               <span className="text-[#989EA7]">·</span>
               <span className="inline-flex items-center gap-1">
@@ -798,12 +1009,18 @@ function WorkerCard({
   isSaved: boolean;
   onToggleSaved: (e: React.MouseEvent) => void;
 }) {
-  const photos = Array.isArray((worker as Worker & { work_photos?: string[] }).work_photos)
-    ? (worker as Worker & { work_photos?: string[] }).work_photos!.filter(Boolean)
+  const photos = Array.isArray(
+    (worker as Worker & { work_photos?: string[] }).work_photos,
+  )
+    ? (worker as Worker & { work_photos?: string[] }).work_photos!.filter(
+        Boolean,
+      )
     : [];
 
   const phone = String(worker.phone || "").replace(/\D/g, "");
-  const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
+  const whatsappUrl = phone
+    ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}`
+    : "";
   const phoneHref = `tel:${worker.phone}`;
 
   const isAvailableToday = (worker as any).available_today !== false;
@@ -811,19 +1028,31 @@ function WorkerCard({
   const rating = Number(worker.avg_rating || worker.rating || 4.8);
   const reviewsCount = Number(worker.reviews_count || 18);
 
-  const services = Array.isArray(worker.services) ? worker.services.filter(Boolean) : [];
+  const services = Array.isArray(worker.services)
+    ? worker.services.filter(Boolean)
+    : [];
 
   const handleQuickCall = (e: React.MouseEvent) => {
     e.stopPropagation();
-    void logContactEvent(worker.id, "call", { name: worker.name, category: worker.category });
-    void logAnalyticsEvent("call_click", worker.id, { source: "list_card_quick_action" });
+    void logContactEvent(worker.id, "call", {
+      name: worker.name,
+      category: worker.category,
+    });
+    void logAnalyticsEvent("call_click", worker.id, {
+      source: "list_card_quick_action",
+    });
     window.location.href = phoneHref;
   };
 
   const handleQuickWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
-    void logContactEvent(worker.id, "whatsapp", { name: worker.name, category: worker.category });
-    void logAnalyticsEvent("whatsapp_click", worker.id, { source: "list_card_quick_action" });
+    void logContactEvent(worker.id, "whatsapp", {
+      name: worker.name,
+      category: worker.category,
+    });
+    void logAnalyticsEvent("whatsapp_click", worker.id, {
+      source: "list_card_quick_action",
+    });
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -832,7 +1061,9 @@ function WorkerCard({
       {/* Top Header Section */}
       <div className="flex items-start justify-between gap-3">
         <div
-          onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+          onClick={() =>
+            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)
+          }
           className="flex flex-1 items-start gap-3.5 min-w-0 cursor-pointer"
         >
           {/* Avatar with Status Indicator */}
@@ -846,7 +1077,9 @@ function WorkerCard({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="text-base">{worker.initials || worker.name.slice(0, 2).toUpperCase()}</span>
+              <span className="text-base">
+                {worker.initials || worker.name.slice(0, 2).toUpperCase()}
+              </span>
             )}
             {isAvailableToday && (
               <span
@@ -885,14 +1118,18 @@ function WorkerCard({
               {worker.experience && (
                 <>
                   <span className="text-[#989EA7]">·</span>
-                  <span className="text-[#67696D] dark:text-[#A1A1AA]">{worker.experience} exp</span>
+                  <span className="text-[#67696D] dark:text-[#A1A1AA]">
+                    {worker.experience} exp
+                  </span>
                 </>
               )}
               <span className="text-[#989EA7]">·</span>
               <div className="inline-flex items-center gap-1 font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
                 <Star size={12} className="fill-amber-400 text-amber-400" />
                 <span>{rating.toFixed(1)}</span>
-                <span className="text-[10px] font-normal text-[#67696D] dark:text-[#A1A1AA]">({reviewsCount})</span>
+                <span className="text-[10px] font-normal text-[#67696D] dark:text-[#A1A1AA]">
+                  ({reviewsCount})
+                </span>
               </div>
             </div>
 
@@ -957,12 +1194,18 @@ function WorkerCard({
           <button
             type="button"
             onClick={onToggleSaved}
-            aria-label={isSaved ? `Remove ${worker.name} from saved` : `Save ${worker.name}`}
+            aria-label={
+              isSaved
+                ? `Remove ${worker.name} from saved`
+                : `Save ${worker.name}`
+            }
             className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] text-[#67696D] dark:text-[#A1A1AA] transition hover:border-primary hover:text-primary cursor-pointer shadow-subtle active:scale-95"
           >
             <Heart
               size={14}
-              className={isSaved ? "text-primary fill-primary" : "text-[#989EA7]"}
+              className={
+                isSaved ? "text-primary fill-primary" : "text-[#989EA7]"
+              }
             />
           </button>
         </div>
@@ -994,10 +1237,16 @@ function WorkerCard({
             <BrainCircuit size={14} className="text-primary shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1 space-y-0.5">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-primary">Why this recommendation (#{rankInfo.rank}):</span>
-                <span className="text-[10px] text-[#67696D] dark:text-[#A1A1AA] font-bold">Fit Score: {rankInfo.score}/100</span>
+                <span className="font-bold text-primary">
+                  Why this recommendation (#{rankInfo.rank}):
+                </span>
+                <span className="text-[10px] text-[#67696D] dark:text-[#A1A1AA] font-bold">
+                  Fit Score: {rankInfo.score}/100
+                </span>
               </div>
-              <p className="text-[11px] text-[#67696D] dark:text-[#D4D4D8] leading-relaxed">{rankInfo.reason}</p>
+              <p className="text-[11px] text-[#67696D] dark:text-[#D4D4D8] leading-relaxed">
+                {rankInfo.reason}
+              </p>
             </div>
           </div>
         </div>
@@ -1006,7 +1255,9 @@ function WorkerCard({
       {/* Optional Work Photos Showcase */}
       {photos.length > 0 && (
         <div
-          onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+          onClick={() =>
+            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)
+          }
           className="mt-3 grid grid-cols-3 gap-2 cursor-pointer"
         >
           {photos.slice(0, 3).map((photo, index) => (
@@ -1040,7 +1291,9 @@ function WorkerCard({
             rel="noreferrer"
             onClick={(e) => {
               void logContactEvent(worker.id, "whatsapp");
-              void logAnalyticsEvent("whatsapp_click", worker.id, { source: "card_bottom_action" });
+              void logAnalyticsEvent("whatsapp_click", worker.id, {
+                source: "card_bottom_action",
+              });
             }}
             className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white transition hover:bg-[#20ba5a] cursor-pointer shadow-subtle active:scale-[0.98]"
           >
@@ -1050,7 +1303,9 @@ function WorkerCard({
         )}
         <button
           type="button"
-          onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+          onClick={() =>
+            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)
+          }
           className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-4 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] transition hover:border-primary/50 hover:bg-white dark:hover:bg-[#1E1E1E] hover:text-primary cursor-pointer shadow-subtle active:scale-[0.98]"
         >
           <span>View Profile</span>

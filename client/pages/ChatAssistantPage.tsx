@@ -43,7 +43,10 @@ export default function ChatAssistantPage() {
       role: "assistant",
       content:
         "Describe the work or repairs you need, along with your locality. I will recommend suitable specialists and verified agencies near you.",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     },
   ]);
   const [input, setInput] = useState("");
@@ -69,10 +72,13 @@ export default function ChatAssistantPage() {
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-          const res = await fetch(`/api/maps/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          const res = await fetch(
+            `/api/maps/reverse-geocode?lat=${latitude}&lng=${longitude}`,
+          );
           const data = await res.json();
           if (data.status === "OK") {
-            const loc = data.place_name || data.city || data.locality || "Local Area";
+            const loc =
+              data.place_name || data.city || data.locality || "Local Area";
             setClientLocation(loc);
           }
         } catch {
@@ -82,7 +88,7 @@ export default function ChatAssistantPage() {
         }
       },
       () => setIsLocating(false),
-      { timeout: 8000 }
+      { timeout: 8000 },
     );
   };
 
@@ -93,7 +99,10 @@ export default function ChatAssistantPage() {
         role: "assistant",
         content:
           "Describe the work or repairs you need, along with your locality. I will recommend suitable specialists and verified agencies near you.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       },
     ]);
   };
@@ -106,7 +115,10 @@ export default function ChatAssistantPage() {
       id: `msg-${Date.now()}`,
       role: "user",
       content: messageContent,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
     const newHistory = [...messages, userMessage];
@@ -138,11 +150,15 @@ export default function ChatAssistantPage() {
       const botMessage: Message = {
         id: `bot-${Date.now()}`,
         role: "assistant",
-        content: data.text || "Here are matching recommendations for your request.",
+        content:
+          data.text || "Here are matching recommendations for your request.",
         matchedWorkers: data.matchedWorkers || [],
         matchedAgencies: data.matchedAgencies || [],
         groundingChunks: data.groundingChunks || [],
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -151,8 +167,12 @@ export default function ChatAssistantPage() {
       const errorMessage: Message = {
         id: `err-${Date.now()}`,
         role: "assistant",
-        content: "Unable to process your request at the moment. Please check your network connection and try again.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        content:
+          "Unable to process your request at the moment. Please check your network connection and try again.",
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -203,7 +223,11 @@ export default function ChatAssistantPage() {
                 disabled={isLocating}
                 className="ml-0.5 text-muted-foreground hover:text-primary transition disabled:opacity-50"
               >
-                {isLocating ? <Loader2 size={12} className="animate-spin text-primary" /> : <Navigation size={12} />}
+                {isLocating ? (
+                  <Loader2 size={12} className="animate-spin text-primary" />
+                ) : (
+                  <Navigation size={12} />
+                )}
               </button>
             </div>
 
@@ -253,7 +277,10 @@ export default function ChatAssistantPage() {
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {msg.groundingChunks.map((chunk, idx) => {
-                        const title = chunk.web?.title || chunk.maps?.title || "Area Location";
+                        const title =
+                          chunk.web?.title ||
+                          chunk.maps?.title ||
+                          "Area Location";
                         const uri = chunk.web?.uri || chunk.maps?.uri;
                         return uri ? (
                           <a
@@ -277,7 +304,9 @@ export default function ChatAssistantPage() {
                   <div className="mt-2.5 space-y-2 pt-2 border-t border-border/50">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                       <HardHat size={12} className="text-primary" />
-                      <span>Matching Specialists ({msg.matchedWorkers.length})</span>
+                      <span>
+                        Matching Specialists ({msg.matchedWorkers.length})
+                      </span>
                     </p>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {msg.matchedWorkers.map((worker: any) => (
@@ -288,10 +317,15 @@ export default function ChatAssistantPage() {
                           <div className="flex items-start justify-between gap-1.5">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-foreground text-xs truncate">{worker.name}</h3>
+                                <h3 className="font-bold text-foreground text-xs truncate">
+                                  {worker.name}
+                                </h3>
                                 {worker.phone_verified && (
                                   <span title="Verified">
-                                    <ShieldCheck size={12} className="text-emerald-500 shrink-0" />
+                                    <ShieldCheck
+                                      size={12}
+                                      className="text-emerald-500 shrink-0"
+                                    />
                                   </span>
                                 )}
                               </div>
@@ -314,7 +348,7 @@ export default function ChatAssistantPage() {
                             </a>
                             <a
                               href={`https://wa.me/91${worker.phone}?text=${encodeURIComponent(
-                                `Hi ${worker.name}, I found your profile on Local Worker for ${worker.category} work.`
+                                `Hi ${worker.name}, I found your profile on Local Worker for ${worker.category} work.`,
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -342,7 +376,9 @@ export default function ChatAssistantPage() {
                   <div className="mt-2.5 space-y-2 pt-2 border-t border-border/50">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                       <Building2 size={12} className="text-primary" />
-                      <span>Matching Agencies ({msg.matchedAgencies.length})</span>
+                      <span>
+                        Matching Agencies ({msg.matchedAgencies.length})
+                      </span>
                     </p>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {msg.matchedAgencies.map((agency: any) => (
@@ -353,10 +389,15 @@ export default function ChatAssistantPage() {
                           <div className="flex items-start justify-between gap-1.5">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-foreground text-xs truncate">{agency.name}</h3>
+                                <h3 className="font-bold text-foreground text-xs truncate">
+                                  {agency.name}
+                                </h3>
                                 {agency.verified && (
                                   <span title="Verified Agency">
-                                    <ShieldCheck size={12} className="text-emerald-500 shrink-0" />
+                                    <ShieldCheck
+                                      size={12}
+                                      className="text-emerald-500 shrink-0"
+                                    />
                                   </span>
                                 )}
                               </div>
@@ -364,7 +405,8 @@ export default function ChatAssistantPage() {
                                 {(agency.categories || []).join(", ")}
                               </p>
                               <p className="text-[10px] text-muted-foreground truncate">
-                                Areas: {(agency.service_locations || []).join(", ")}
+                                Areas:{" "}
+                                {(agency.service_locations || []).join(", ")}
                               </p>
                             </div>
                             <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
@@ -410,7 +452,10 @@ export default function ChatAssistantPage() {
                 <Sparkles size={13} />
               </div>
               <div className="flex items-center gap-2 rounded-2xl rounded-bl-xs border border-border bg-secondary px-3.5 py-2.5 text-xs text-muted-foreground">
-                <Loader2 size={13} className="animate-spin text-primary shrink-0" />
+                <Loader2
+                  size={13}
+                  className="animate-spin text-primary shrink-0"
+                />
                 <span>Finding matching specialists & agencies...</span>
               </div>
             </div>
@@ -463,7 +508,11 @@ export default function ChatAssistantPage() {
               aria-label="Send message"
               title="Send"
             >
-              {isLoading ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+              {isLoading ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Send size={15} />
+              )}
             </button>
           </form>
         </div>

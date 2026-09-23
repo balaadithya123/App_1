@@ -23,7 +23,9 @@ export interface LocationDetails {
  */
 export function getStandardLocation(): string {
   try {
-    const saved = localStorage.getItem(STANDARD_LOCATION_KEY) || localStorage.getItem(REGISTERED_LOCATION_KEY);
+    const saved =
+      localStorage.getItem(STANDARD_LOCATION_KEY) ||
+      localStorage.getItem(REGISTERED_LOCATION_KEY);
     if (saved && saved.trim()) return saved.trim();
   } catch {}
   return "Coimbatore";
@@ -33,7 +35,10 @@ export function getStandardLocation(): string {
  * Sets the active standard location across the entire app.
  * Broadcasts an event so all components update in real-time.
  */
-export function setStandardLocation(location: string, isRegistered = false): void {
+export function setStandardLocation(
+  location: string,
+  isRegistered = false,
+): void {
   const trimmed = location.trim();
   if (!trimmed) return;
   try {
@@ -41,7 +46,11 @@ export function setStandardLocation(location: string, isRegistered = false): voi
     if (isRegistered) {
       localStorage.setItem(REGISTERED_LOCATION_KEY, trimmed);
     }
-    window.dispatchEvent(new CustomEvent("user-location-changed", { detail: { location: trimmed } }));
+    window.dispatchEvent(
+      new CustomEvent("user-location-changed", {
+        detail: { location: trimmed },
+      }),
+    );
   } catch {}
 }
 
@@ -69,7 +78,9 @@ export function getGpsCoords(): GeoCoordinates | null {
  * Prompts device GPS via navigator.geolocation and reverse-geocodes to an address string.
  * Automatically saves as the standard location unless autoSave=false.
  */
-export async function detectGpsLocation(autoSave = true): Promise<LocationDetails | null> {
+export async function detectGpsLocation(
+  autoSave = true,
+): Promise<LocationDetails | null> {
   if (typeof window === "undefined" || !navigator.geolocation) {
     return null;
   }
@@ -81,14 +92,20 @@ export async function detectGpsLocation(autoSave = true): Promise<LocationDetail
         setGpsCoords({ lat: latitude, lng: longitude });
 
         try {
-          const res = await fetch(`/api/maps/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          const res = await fetch(
+            `/api/maps/reverse-geocode?lat=${latitude}&lng=${longitude}`,
+          );
           if (res.ok) {
             const data = await res.json();
             const locName =
               data.place_name ||
               data.locality ||
               data.city ||
-              (data.formatted_address ? data.formatted_address.replace(/Coordinates\s*\([^)]*\),?\s*/i, "").trim() : "") ||
+              (data.formatted_address
+                ? data.formatted_address
+                    .replace(/Coordinates\s*\([^)]*\),?\s*/i, "")
+                    .trim()
+                : "") ||
               "Local Area";
 
             const details: LocationDetails = {

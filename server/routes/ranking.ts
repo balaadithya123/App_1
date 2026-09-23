@@ -32,7 +32,9 @@ OUTPUT REQUIREMENTS:
 - "ranked": Ordered list starting with rank 1 (best). Include "score" (integer 0-100) reflecting holistic fit, and "reason" (single client-facing sentence explaining why this rank).
 - "excluded": Array of workers deliberately disqualified or excluded (primarily due to trust flags, complete category mismatch, or severe red flags) with explicit reasons.`;
 
-function deterministicFallbackRanking(input: RankingInputPayload): RankingOutputPayload {
+function deterministicFallbackRanking(
+  input: RankingInputPayload,
+): RankingOutputPayload {
   const { search, candidates } = input;
   const needText = (search.free_text_need || "").toLowerCase();
   const isUrgent =
@@ -44,7 +46,11 @@ function deterministicFallbackRanking(input: RankingInputPayload): RankingOutput
     needText.includes("fast");
 
   const excluded: ExcludedWorkerItem[] = [];
-  const validCandidates: { worker: RankingCandidateWorker; rawScore: number; reasonParts: string[] }[] = [];
+  const validCandidates: {
+    worker: RankingCandidateWorker;
+    rawScore: number;
+    reasonParts: string[];
+  }[] = [];
 
   for (const c of candidates) {
     // 1. Trust check: if trust flags exist, exclude or severely penalize
@@ -62,8 +68,9 @@ function deterministicFallbackRanking(input: RankingInputPayload): RankingOutput
 
     // Category match
     const categoryMatch = c.categories.some(
-      (cat) => cat.toLowerCase().includes(search.category.toLowerCase()) ||
-               search.category.toLowerCase().includes(cat.toLowerCase())
+      (cat) =>
+        cat.toLowerCase().includes(search.category.toLowerCase()) ||
+        search.category.toLowerCase().includes(cat.toLowerCase()),
     );
     if (categoryMatch) {
       score += 15;
@@ -92,10 +99,13 @@ function deterministicFallbackRanking(input: RankingInputPayload): RankingOutput
     // Proven Quality (Bayesian rating balance)
     if (c.avg_rating !== null && c.num_ratings > 0) {
       const ratingWeight = Math.min(c.num_ratings / 15, 1);
-      const effectiveRating = c.avg_rating * ratingWeight + 3.8 * (1 - ratingWeight);
+      const effectiveRating =
+        c.avg_rating * ratingWeight + 3.8 * (1 - ratingWeight);
       score += (effectiveRating - 3.5) * 8;
       if (c.num_ratings >= 10 && c.avg_rating >= 4.6) {
-        reasons.push(`proven ${c.avg_rating}★ quality across ${c.num_ratings} jobs`);
+        reasons.push(
+          `proven ${c.avg_rating}★ quality across ${c.num_ratings} jobs`,
+        );
       } else if (c.avg_rating >= 4.8) {
         reasons.push(`high ${c.avg_rating}★ rating`);
       }
@@ -127,9 +137,10 @@ function deterministicFallbackRanking(input: RankingInputPayload): RankingOutput
     const boundedScore = Math.min(99, Math.max(15, Math.round(score)));
 
     // Generate readable client-facing reason
-    const reasonText = reasons.length > 0
-      ? `Top match: ${reasons.join(", ")}.`
-      : `Qualified ${c.categories[0] || "technician"} within service area.`;
+    const reasonText =
+      reasons.length > 0
+        ? `Top match: ${reasons.join(", ")}.`
+        : `Qualified ${c.categories[0] || "technician"} within service area.`;
 
     validCandidates.push({
       worker: c,
@@ -159,7 +170,11 @@ export const handleEvaluateRanking: RequestHandler = async (req, res) => {
     const input = req.body as RankingInputPayload;
 
     if (!input || !input.search || !Array.isArray(input.candidates)) {
-      res.status(400).json({ message: "Invalid payload: 'search' and 'candidates' array required." });
+      res
+        .status(400)
+        .json({
+          message: "Invalid payload: 'search' and 'candidates' array required.",
+        });
       return;
     }
 
@@ -170,7 +185,9 @@ export const handleEvaluateRanking: RequestHandler = async (req, res) => {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      console.warn("GEMINI_API_KEY not set; using deterministic fallback ranking logic.");
+      console.warn(
+        "GEMINI_API_KEY not set; using deterministic fallback ranking logic.",
+      );
       const fallbackResult = deterministicFallbackRanking(input);
       res.json(fallbackResult);
       return;
@@ -227,7 +244,11 @@ Apply the 5 hierarchical ranking priorities. Produce strict JSON matching the sc
       required: ["ranked", "excluded"],
     };
 
-    const candidateModels = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+    const candidateModels = [
+      "gemini-3.8-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-flash-latest",
+    ];
     let succeeded = false;
 
     for (const modelName of candidateModels) {
@@ -244,7 +265,10 @@ Apply the 5 hierarchical ranking priorities. Produce strict JSON matching the sc
         });
 
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout waiting for ${modelName}`)), 4000)
+          setTimeout(
+            () => reject(new Error(`Timeout waiting for ${modelName}`)),
+            4000,
+          ),
         );
 
         const response = await Promise.race([promise, timeoutPromise]);
@@ -260,7 +284,9 @@ Apply the 5 hierarchical ranking priorities. Produce strict JSON matching the sc
     }
 
     if (!succeeded || !responseText) {
-      console.info("Gemini APIs unavailable/timed out; activating deterministic rule-based ranking engine.");
+      console.info(
+        "Gemini APIs unavailable/timed out; activating deterministic rule-based ranking engine.",
+      );
       const fallbackResult = deterministicFallbackRanking(input);
       res.json(fallbackResult);
       return;
@@ -285,12 +311,18 @@ Apply the 5 hierarchical ranking priorities. Produce strict JSON matching the sc
 
     res.json(parsed);
   } catch (err: unknown) {
-    console.info("Gemini ranking call falling back to deterministic heuristic ranker:", err instanceof Error ? err.message : err);
+    console.info(
+      "Gemini ranking call falling back to deterministic heuristic ranker:",
+      err instanceof Error ? err.message : err,
+    );
     try {
-      const fallbackResult = deterministicFallbackRanking(req.body as RankingInputPayload);
+      const fallbackResult = deterministicFallbackRanking(
+        req.body as RankingInputPayload,
+      );
       res.json(fallbackResult);
     } catch (fallbackErr) {
-      const message = err instanceof Error ? err.message : "Ranking evaluation error";
+      const message =
+        err instanceof Error ? err.message : "Ranking evaluation error";
       res.status(500).json({ message });
     }
   }

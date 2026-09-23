@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BadgeCheck, Star, MapPin, Phone, MessageCircle, Heart } from "lucide-react";
+import {
+  BadgeCheck,
+  Star,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Heart,
+} from "lucide-react";
 import type { Worker } from "@shared/workers";
 import { getWorkerContactHref, getWorkerWhatsAppHref } from "@/lib/contact";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
@@ -10,7 +17,9 @@ interface TrustStripWorkerCardProps {
   worker: Worker;
 }
 
-export default function TrustStripWorkerCard({ worker }: TrustStripWorkerCardProps) {
+export default function TrustStripWorkerCard({
+  worker,
+}: TrustStripWorkerCardProps) {
   const navigate = useNavigate();
   const [saved, setSaved] = useState(() => isWorkerSaved(worker.id));
 
@@ -19,7 +28,8 @@ export default function TrustStripWorkerCard({ worker }: TrustStripWorkerCardPro
       setSaved(isWorkerSaved(worker.id));
     };
     window.addEventListener("saved-workers-changed", handleSavedChange);
-    return () => window.removeEventListener("saved-workers-changed", handleSavedChange);
+    return () =>
+      window.removeEventListener("saved-workers-changed", handleSavedChange);
   }, [worker.id]);
 
   const rating = Number(worker.avg_rating || worker.rating || 4.8);
@@ -41,15 +51,25 @@ export default function TrustStripWorkerCard({ worker }: TrustStripWorkerCardPro
 
   const handleCall = (e: React.MouseEvent) => {
     e.stopPropagation();
-    void logContactEvent(worker.id, "call", { name: worker.name, category: worker.category });
-    void logAnalyticsEvent("call_click", worker.id, { source: "card_quick_action" });
+    void logContactEvent(worker.id, "call", {
+      name: worker.name,
+      category: worker.category,
+    });
+    void logAnalyticsEvent("call_click", worker.id, {
+      source: "card_quick_action",
+    });
     window.location.href = phoneHref;
   };
 
   const handleWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
-    void logContactEvent(worker.id, "whatsapp", { name: worker.name, category: worker.category });
-    void logAnalyticsEvent("whatsapp_click", worker.id, { source: "card_quick_action" });
+    void logContactEvent(worker.id, "whatsapp", {
+      name: worker.name,
+      category: worker.category,
+    });
+    void logAnalyticsEvent("whatsapp_click", worker.id, {
+      source: "card_quick_action",
+    });
     window.open(whatsappHref, "_blank", "noopener,noreferrer");
   };
 
@@ -79,7 +99,9 @@ export default function TrustStripWorkerCard({ worker }: TrustStripWorkerCardPro
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span>{worker.initials || worker.name.slice(0, 2).toUpperCase()}</span>
+              <span>
+                {worker.initials || worker.name.slice(0, 2).toUpperCase()}
+              </span>
             )}
           </div>
 
@@ -109,7 +131,9 @@ export default function TrustStripWorkerCard({ worker }: TrustStripWorkerCardPro
             >
               <Heart
                 size={12}
-                className={saved ? "text-primary fill-primary" : "text-[#989EA7]"}
+                className={
+                  saved ? "text-primary fill-primary" : "text-[#989EA7]"
+                }
               />
             </button>
           </div>
@@ -130,7 +154,9 @@ export default function TrustStripWorkerCard({ worker }: TrustStripWorkerCardPro
           <div className="inline-flex items-center gap-1 text-[#2C2C2C] dark:text-[#F4F4F5] font-bold">
             <Star size={12} className="fill-amber-400 text-amber-400" />
             <span>{rating.toFixed(1)}</span>
-            <span className="text-[10px] font-normal text-[#67696D] dark:text-[#A1A1AA]">({reviewsCount})</span>
+            <span className="text-[10px] font-normal text-[#67696D] dark:text-[#A1A1AA]">
+              ({reviewsCount})
+            </span>
           </div>
 
           {worker.locality && (

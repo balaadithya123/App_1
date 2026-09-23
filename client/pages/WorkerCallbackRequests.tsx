@@ -46,12 +46,18 @@ export default function WorkerCallbackRequests() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState<"all" | "new" | "contacted" | "saved">("all");
+  const [filter, setFilter] = useState<"all" | "new" | "contacted" | "saved">(
+    "all",
+  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [savedContacts, setSavedContacts] = useState<Record<string, SavedContact>>({});
+  const [savedContacts, setSavedContacts] = useState<
+    Record<string, SavedContact>
+  >({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | number | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<
+    string | number | null
+  >(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   // Load saved contacts from localStorage
@@ -71,46 +77,57 @@ export default function WorkerCallbackRequests() {
     window.setTimeout(() => setActionMessage(null), 3000);
   };
 
-  const loadRequests = useCallback(async (showLoader = false) => {
-    if (!supabase) {
-      setError("Callback requests are temporarily unavailable.");
-      setLoading(false);
-      return;
-    }
-
-    if (showLoader) setRefreshing(true);
-    setError("");
-
-    try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session) {
-        navigate("/login", { replace: true });
+  const loadRequests = useCallback(
+    async (showLoader = false) => {
+      if (!supabase) {
+        setError("Callback requests are temporarily unavailable.");
+        setLoading(false);
         return;
       }
 
-      if (sessionData.session.user.user_metadata?.role !== "worker") {
-        navigate("/", { replace: true });
-        return;
+      if (showLoader) setRefreshing(true);
+      setError("");
+
+      try {
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
+        if (sessionError || !sessionData.session) {
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        if (sessionData.session.user.user_metadata?.role !== "worker") {
+          navigate("/", { replace: true });
+          return;
+        }
+
+        const response = await fetch(`/api/callback-requests?_=${Date.now()}`, {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+          },
+        });
+        const data = (await response.json().catch(() => null)) as {
+          requests?: CallbackRequest[];
+          message?: string;
+        } | null;
+
+        if (!response.ok)
+          throw new Error(data?.message || "Unable to load callback requests.");
+        setRequests(data?.requests ?? []);
+      } catch (loadError) {
+        setError(
+          loadError instanceof Error
+            ? loadError.message
+            : "Unable to load callback requests.",
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
       }
-
-      const response = await fetch(`/api/callback-requests?_=${Date.now()}`, {
-        cache: "no-store",
-        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
-      });
-      const data = (await response.json().catch(() => null)) as {
-        requests?: CallbackRequest[];
-        message?: string;
-      } | null;
-
-      if (!response.ok) throw new Error(data?.message || "Unable to load callback requests.");
-      setRequests(data?.requests ?? []);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Unable to load callback requests.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [navigate]);
+    },
+    [navigate],
+  );
 
   useEffect(() => {
     void loadRequests();
@@ -161,11 +178,16 @@ export default function WorkerCallbackRequests() {
       "END:VCARD",
     ].join("\r\n");
 
-    const blob = new Blob([vCardContent], { type: "text/vcard;charset=utf-8;" });
+    const blob = new Blob([vCardContent], {
+      type: "text/vcard;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `${request.client_name.replace(/\s+/g, "_")}_contact.vcf`);
+    link.setAttribute(
+      "download",
+      `${request.client_name.replace(/\s+/g, "_")}_contact.vcf`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -196,7 +218,7 @@ export default function WorkerCallbackRequests() {
         });
       }
       setRequests((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: nextStatus } : r))
+        prev.map((r) => (r.id === id ? { ...r, status: nextStatus } : r)),
       );
       showToast(`Marked request as ${nextStatus}.`);
     } catch {
@@ -256,7 +278,13 @@ export default function WorkerCallbackRequests() {
             <div>
               <button
                 type="button"
-                onClick={() => (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0 ? navigate(-1) : navigate("/worker-dashboard"))}
+                onClick={() =>
+                  window.history.state &&
+                  typeof window.history.state.idx === "number" &&
+                  window.history.state.idx > 0
+                    ? navigate(-1)
+                    : navigate("/worker-dashboard")
+                }
                 className="mb-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground cursor-pointer"
               >
                 <ArrowLeft size={14} /> Back
@@ -270,7 +298,8 @@ export default function WorkerCallbackRequests() {
                     Callback Requests
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    Direct inquiries from verified account holders requesting your service.
+                    Direct inquiries from verified account holders requesting
+                    your service.
                   </p>
                 </div>
               </div>
@@ -283,7 +312,10 @@ export default function WorkerCallbackRequests() {
               aria-label="Refresh callbacks"
               className="inline-flex h-8 items-center gap-1.5 self-start rounded-md border border-border bg-secondary px-3 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background disabled:opacity-50 cursor-pointer sm:self-auto"
             >
-              <RefreshCw size={13} className={refreshing ? "animate-spin" : ""} />
+              <RefreshCw
+                size={13}
+                className={refreshing ? "animate-spin" : ""}
+              />
               <span>Refresh</span>
             </button>
           </div>
@@ -330,7 +362,8 @@ export default function WorkerCallbackRequests() {
                     : "border border-border bg-secondary text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Contacted ({requests.filter((r) => r.status === "contacted").length})
+                Contacted (
+                {requests.filter((r) => r.status === "contacted").length})
               </button>
               <button
                 type="button"
@@ -347,7 +380,10 @@ export default function WorkerCallbackRequests() {
             </div>
 
             <div className="relative flex-1 sm:max-w-[220px]">
-              <Search size={13} className="absolute left-2.5 top-2.5 text-muted-foreground" />
+              <Search
+                size={13}
+                className="absolute left-2.5 top-2.5 text-muted-foreground"
+              />
               <input
                 type="text"
                 placeholder="Search name, phone..."
@@ -361,7 +397,9 @@ export default function WorkerCallbackRequests() {
 
         {loading && (
           <section className="rounded-xl border border-border bg-card p-8 text-center">
-            <p className="text-xs text-muted-foreground">Loading callback requests...</p>
+            <p className="text-xs text-muted-foreground">
+              Loading callback requests...
+            </p>
           </section>
         )}
 
@@ -376,8 +414,13 @@ export default function WorkerCallbackRequests() {
 
         {!loading && !error && filteredRequests.length === 0 && (
           <section className="rounded-xl border border-dashed border-border bg-card p-8 text-center">
-            <ClipboardList className="mx-auto text-muted-foreground" size={28} />
-            <h2 className="mt-2 text-sm font-bold text-foreground">No callback requests found</h2>
+            <ClipboardList
+              className="mx-auto text-muted-foreground"
+              size={28}
+            />
+            <h2 className="mt-2 text-sm font-bold text-foreground">
+              No callback requests found
+            </h2>
             <p className="mt-1 text-xs text-muted-foreground">
               {filter === "saved"
                 ? "You haven't saved any clients yet. Click 'Save Person' on any callback card."
@@ -417,7 +460,8 @@ export default function WorkerCallbackRequests() {
                         )}
                       </div>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        Account Holder Lead · Requested {new Date(request.created_at).toLocaleDateString()}
+                        Account Holder Lead · Requested{" "}
+                        {new Date(request.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -438,7 +482,11 @@ export default function WorkerCallbackRequests() {
                     {/* Save Person Button */}
                     <button
                       type="button"
-                      title={isSaved ? "Saved to Client Book" : "Save this person's contact"}
+                      title={
+                        isSaved
+                          ? "Saved to Client Book"
+                          : "Save this person's contact"
+                      }
                       onClick={() => toggleSavePerson(request)}
                       className={`inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-semibold transition cursor-pointer ${
                         isSaved
@@ -446,7 +494,11 @@ export default function WorkerCallbackRequests() {
                           : "border-border bg-secondary text-foreground hover:bg-foreground hover:text-background"
                       }`}
                     >
-                      {isSaved ? <BookmarkCheck size={12} /> : <Bookmark size={12} />}
+                      {isSaved ? (
+                        <BookmarkCheck size={12} />
+                      ) : (
+                        <Bookmark size={12} />
+                      )}
                       <span>{isSaved ? "Saved" : "Save Person"}</span>
                     </button>
 
@@ -510,7 +562,10 @@ export default function WorkerCallbackRequests() {
                       Preferred Callback Time
                     </span>
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs font-bold text-foreground">
-                      <CalendarClock size={13} className="text-muted-foreground" />
+                      <CalendarClock
+                        size={13}
+                        className="text-muted-foreground"
+                      />
                       {request.preferred_time}
                     </p>
                   </div>
@@ -540,7 +595,7 @@ export default function WorkerCallbackRequests() {
 
                     <a
                       href={`https://wa.me/91${request.client_phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                        `Hello ${request.client_name}, I received your callback request for ${request.service_needed} on LocalWorker.`
+                        `Hello ${request.client_name}, I received your callback request for ${request.service_needed} on LocalWorker.`,
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -553,7 +608,9 @@ export default function WorkerCallbackRequests() {
                     <button
                       type="button"
                       title="Copy phone"
-                      onClick={() => copyPhone(request.client_phone, request.id)}
+                      onClick={() =>
+                        copyPhone(request.client_phone, request.id)
+                      }
                       className="inline-flex h-8 items-center gap-1 rounded-md border border-border bg-secondary px-2 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
                     >
                       {copiedId === String(request.id) ? (
@@ -561,7 +618,9 @@ export default function WorkerCallbackRequests() {
                       ) : (
                         <Copy size={13} />
                       )}
-                      <span>{copiedId === String(request.id) ? "Copied" : "Copy"}</span>
+                      <span>
+                        {copiedId === String(request.id) ? "Copied" : "Copy"}
+                      </span>
                     </button>
                   </div>
 

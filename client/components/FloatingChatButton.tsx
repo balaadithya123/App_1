@@ -25,7 +25,10 @@ export default function FloatingChatButton() {
   }
 
   return (
-    <aside aria-label="AI Assistant Quick Access" className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6">
+    <aside
+      aria-label="AI Assistant Quick Access"
+      className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6"
+    >
       <Link
         to="/assistant"
         className="group flex h-11 items-center gap-2 rounded-full border border-border bg-foreground px-3.5 text-background shadow-md transition-all duration-200 hover:opacity-90 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -38,4 +41,3 @@ export default function FloatingChatButton() {
     </aside>
   );
 }
-

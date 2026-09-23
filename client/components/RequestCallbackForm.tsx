@@ -1,5 +1,12 @@
 import { useState, useEffect, type FormEvent } from "react";
-import { X, UserCheck, ShieldAlert, PhoneCall, Clock, CheckCircle2 } from "lucide-react";
+import {
+  X,
+  UserCheck,
+  ShieldAlert,
+  PhoneCall,
+  Clock,
+  CheckCircle2,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { logAnalyticsEvent } from "@/lib/analytics";
 
@@ -89,28 +96,36 @@ export default function RequestCallbackForm({
 
     setSaving(true);
     try {
-      const { error: insertError } = await supabase.from("callback_requests").insert({
-        worker_id: workerId || null,
-        agency_id: agencyId || null,
-        client_name: finalClientName,
-        client_phone: normalizedPhone,
-        service_needed: serviceNeeded.trim(),
-        preferred_time: preferredTime.trim(),
-        notes: notes.trim() || null,
-      });
+      const { error: insertError } = await supabase
+        .from("callback_requests")
+        .insert({
+          worker_id: workerId || null,
+          agency_id: agencyId || null,
+          client_name: finalClientName,
+          client_phone: normalizedPhone,
+          service_needed: serviceNeeded.trim(),
+          preferred_time: preferredTime.trim(),
+          notes: notes.trim() || null,
+        });
 
       if (insertError) throw insertError;
 
-      void logAnalyticsEvent("callback_submitted", workerId || agencyId || null, {
-        service: serviceNeeded.trim(),
-        target_type: agencyId ? "agency" : "worker",
-      });
+      void logAnalyticsEvent(
+        "callback_submitted",
+        workerId || agencyId || null,
+        {
+          service: serviceNeeded.trim(),
+          target_type: agencyId ? "agency" : "worker",
+        },
+      );
 
       setMessage(`Callback requested successfully for ${targetName}!`);
       setPreferredTime("");
       setNotes("");
     } catch {
-      setError("Unable to send the callback request right now. Please try again.");
+      setError(
+        "Unable to send the callback request right now. Please try again.",
+      );
     } finally {
       setSaving(false);
     }
@@ -129,10 +144,14 @@ export default function RequestCallbackForm({
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100/20 text-primary">
                 <PhoneCall size={15} />
               </span>
-              <h2 className="text-lg font-bold text-[#2C2C2C]">Request a Callback</h2>
+              <h2 className="text-lg font-bold text-[#2C2C2C]">
+                Request a Callback
+              </h2>
             </div>
             <p className="mt-1 text-xs text-[#67696D]">
-              Ask <span className="font-semibold text-[#2C2C2C]">{targetName}</span> to contact you directly.
+              Ask{" "}
+              <span className="font-semibold text-[#2C2C2C]">{targetName}</span>{" "}
+              to contact you directly.
             </p>
           </div>
           <button
@@ -174,7 +193,9 @@ export default function RequestCallbackForm({
                   Account Holder
                 </span>
                 <p className="truncate text-xs font-bold text-[#2C2C2C]">
-                  {loadingUser ? "Loading account..." : accountName || "Verified Account Holder"}
+                  {loadingUser
+                    ? "Loading account..."
+                    : accountName || "Verified Account Holder"}
                 </p>
               </div>
               <span className="rounded-full border border-primary-100/40 bg-primary-100/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
@@ -195,7 +216,9 @@ export default function RequestCallbackForm({
                   inputMode="numeric"
                   maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  onChange={(e) =>
+                    setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
+                  }
                   placeholder="10-digit mobile number"
                   className="min-w-0 flex-1 bg-transparent px-3 text-xs font-medium text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden"
                 />

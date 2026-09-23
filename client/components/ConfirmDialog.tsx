@@ -109,10 +109,16 @@ export default function ConfirmDialog({
             {renderIcon()}
           </div>
           <div className="min-w-0 flex-1 pr-4">
-            <h2 id="confirm-dialog-title" className="text-base font-bold tracking-tight text-[#2C2C2C] sm:text-lg">
+            <h2
+              id="confirm-dialog-title"
+              className="text-base font-bold tracking-tight text-[#2C2C2C] sm:text-lg"
+            >
               {title}
             </h2>
-            <div id="confirm-dialog-description" className="mt-1 text-xs sm:text-sm text-[#67696D] leading-relaxed">
+            <div
+              id="confirm-dialog-description"
+              className="mt-1 text-xs sm:text-sm text-[#67696D] leading-relaxed"
+            >
               {description}
             </div>
           </div>
@@ -124,9 +130,13 @@ export default function ConfirmDialog({
             <div className="text-[11px] font-semibold uppercase tracking-wider text-[#67696D]">
               {itemDetails.label}
             </div>
-            <div className="mt-0.5 text-sm font-bold text-[#2C2C2C]">{itemDetails.value}</div>
+            <div className="mt-0.5 text-sm font-bold text-[#2C2C2C]">
+              {itemDetails.value}
+            </div>
             {itemDetails.subValue && (
-              <div className="mt-0.5 text-xs text-[#67696D]">{itemDetails.subValue}</div>
+              <div className="mt-0.5 text-xs text-[#67696D]">
+                {itemDetails.subValue}
+              </div>
             )}
           </div>
         )}

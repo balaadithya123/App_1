@@ -67,7 +67,9 @@ export default function Profile() {
   const [email, setEmail] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [pendingContact, setPendingContact] = useState<"email" | "phone" | null>(null);
+  const [pendingContact, setPendingContact] = useState<
+    "email" | "phone" | null
+  >(null);
   const [pendingValue, setPendingValue] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -84,11 +86,11 @@ export default function Profile() {
       user?.user_metadata?.role === "worker"
         ? "Worker"
         : user?.user_metadata?.role === "agency"
-        ? "Agency"
-        : user?.user_metadata?.role === "employer"
-        ? "Employer"
-        : "Member",
-    [user]
+          ? "Agency"
+          : user?.user_metadata?.role === "employer"
+            ? "Employer"
+            : "Member",
+    [user],
   );
   const isWorker = role === "Worker";
 
@@ -102,7 +104,10 @@ export default function Profile() {
       if (data.user) {
         const m = data.user.user_metadata ?? {};
         const rawPhone = m.phone || data.user.phone || "";
-        const normalizedPhone = rawPhone.replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+        const normalizedPhone = rawPhone
+          .replace(/^\+91/, "")
+          .replace(/\D/g, "")
+          .slice(-10);
         const next = {
           name: m.name || "",
           phone: normalizedPhone,
@@ -121,9 +126,11 @@ export default function Profile() {
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      },
+    );
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -143,11 +150,13 @@ export default function Profile() {
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       const path = `${user.id}/profile.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, {
-        upsert: true,
-        contentType: file.type,
-        cacheControl: "3600",
-      });
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, {
+          upsert: true,
+          contentType: file.type,
+          cacheControl: "3600",
+        });
       if (uploadError) throw uploadError;
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
@@ -158,10 +167,19 @@ export default function Profile() {
       const next = { ...profile, avatar_url: avatarUrl };
       setProfile(next);
       setDraft(next);
-      setUser((u: any) => (u ? { ...u, user_metadata: { ...u.user_metadata, avatar_url: avatarUrl } } : u));
+      setUser((u: any) =>
+        u
+          ? {
+              ...u,
+              user_metadata: { ...u.user_metadata, avatar_url: avatarUrl },
+            }
+          : u,
+      );
       setMessage("Profile photo updated.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to upload profile photo.");
+      setError(
+        e instanceof Error ? e.message : "Unable to upload profile photo.",
+      );
     } finally {
       setUploading(false);
     }
@@ -178,7 +196,8 @@ export default function Profile() {
     }
     setSaving(true);
     try {
-      const contactChanged = draftEmail.trim().toLowerCase() !== email.trim().toLowerCase();
+      const contactChanged =
+        draftEmail.trim().toLowerCase() !== email.trim().toLowerCase();
       const phoneChanged = phone !== profile.phone;
       const metadata = { ...draft, phone };
       if (contactChanged) {
@@ -187,11 +206,16 @@ export default function Profile() {
           setError("Enter a valid email address.");
           return;
         }
-        const { error: updateError } = await supabase.auth.updateUser({ email: newEmail, data: metadata });
+        const { error: updateError } = await supabase.auth.updateUser({
+          email: newEmail,
+          data: metadata,
+        });
         if (updateError) throw updateError;
         setPendingContact("email");
         setPendingValue(newEmail);
-        setMessage("A verification code has been sent to the new email address. Check your inbox.");
+        setMessage(
+          "A verification code has been sent to the new email address. Check your inbox.",
+        );
       } else if (phoneChanged) {
         const { error: updateError } = await supabase.auth.updateUser({
           phone: `+91${phone}`,
@@ -200,9 +224,13 @@ export default function Profile() {
         if (updateError) throw updateError;
         setPendingContact("phone");
         setPendingValue(phone);
-        setMessage("A verification code has been sent to the new phone number.");
+        setMessage(
+          "A verification code has been sent to the new phone number.",
+        );
       } else {
-        const { error: updateError } = await supabase.auth.updateUser({ data: metadata });
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: metadata,
+        });
         if (updateError) throw updateError;
         if (metadata.location) {
           setStandardLocation(metadata.location, true);
@@ -225,16 +253,23 @@ export default function Profile() {
     setMessage("");
     setSaving(true);
     try {
-      const verifyType = pendingContact === "email" ? "email_change" : "phone_change";
-      const verifyValue = pendingContact === "email" ? pendingValue : `+91${pendingValue}`;
+      const verifyType =
+        pendingContact === "email" ? "email_change" : "phone_change";
+      const verifyValue =
+        pendingContact === "email" ? pendingValue : `+91${pendingValue}`;
       const { error: verifyError } = await supabase.auth.verifyOtp({
         type: verifyType as any,
         token: otp.trim(),
         [pendingContact]: verifyValue,
       } as any);
       if (verifyError) throw verifyError;
-      const finalProfile = { ...draft, phone: pendingContact === "phone" ? pendingValue : draft.phone };
-      const { data, error: metadataError } = await supabase.auth.updateUser({ data: finalProfile });
+      const finalProfile = {
+        ...draft,
+        phone: pendingContact === "phone" ? pendingValue : draft.phone,
+      };
+      const { data, error: metadataError } = await supabase.auth.updateUser({
+        data: finalProfile,
+      });
       if (metadataError) throw metadataError;
       setUser(data.user ?? user);
       setProfile(finalProfile);
@@ -263,14 +298,23 @@ export default function Profile() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (!session) throw new Error("Your session has expired. Please log in again.");
-      const { data, error: fnError } = await supabase.functions.invoke("delete-account", { body: {} });
+      if (!session)
+        throw new Error("Your session has expired. Please log in again.");
+      const { data, error: fnError } = await supabase.functions.invoke(
+        "delete-account",
+        { body: {} },
+      );
       if (fnError) throw fnError;
-      if (!data?.success) throw new Error(data?.error || "Unable to delete your account.");
+      if (!data?.success)
+        throw new Error(data?.error || "Unable to delete your account.");
       await supabase.auth.signOut();
       navigate("/", { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to delete your account right now.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Unable to delete your account right now.",
+      );
       setDeleteOpen(false);
     } finally {
       setDeleting(false);
@@ -288,7 +332,9 @@ export default function Profile() {
       <PageShell backTo="/" backLabel="Home">
         <div className="mx-auto max-w-lg pb-24">
           <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-8 text-center shadow-soft">
-            <p className="text-sm font-semibold text-[#67696D] dark:text-[#A1A1AA]">Loading account details...</p>
+            <p className="text-sm font-semibold text-[#67696D] dark:text-[#A1A1AA]">
+              Loading account details...
+            </p>
           </section>
         </div>
         <NavBar />
@@ -308,7 +354,9 @@ export default function Profile() {
                 <UserRound size={28} strokeWidth={1.8} />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">Guest Account</h1>
+                <h1 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">
+                  Guest Account
+                </h1>
                 <p className="text-xs text-[#67696D] dark:text-[#A1A1AA] mt-0.5">
                   Sign in to access your worker profile and saved history.
                 </p>
@@ -345,7 +393,10 @@ export default function Profile() {
                   <Bookmark size={16} className="text-primary shrink-0" />
                   <span>Saved Workers & Bookmarks</span>
                 </div>
-                <ChevronRight size={14} className="text-[#989EA7] dark:text-[#71717A]" />
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
               </Link>
               <Link
                 to="/assistant"
@@ -355,7 +406,10 @@ export default function Profile() {
                   <Sparkles size={16} className="text-primary shrink-0" />
                   <span>AI Search Assistant</span>
                 </div>
-                <ChevronRight size={14} className="text-[#989EA7] dark:text-[#71717A]" />
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
               </Link>
               <Link
                 to="/voice-onboarding"
@@ -365,7 +419,10 @@ export default function Profile() {
                   <Mic size={16} className="text-primary shrink-0" />
                   <span>Voice Onboarding</span>
                 </div>
-                <ChevronRight size={14} className="text-[#989EA7] dark:text-[#71717A]" />
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
               </Link>
               <Link
                 to="/login"
@@ -375,7 +432,10 @@ export default function Profile() {
                   <Users size={16} className="text-primary shrink-0" />
                   <span>Agency Management Portal</span>
                 </div>
-                <ChevronRight size={14} className="text-[#989EA7] dark:text-[#71717A]" />
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
               </Link>
               <Link
                 to="/safety"
@@ -385,7 +445,10 @@ export default function Profile() {
                   <Shield size={16} className="text-primary shrink-0" />
                   <span>Safety, Verification & Rules</span>
                 </div>
-                <ChevronRight size={14} className="text-[#989EA7] dark:text-[#71717A]" />
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
               </Link>
             </div>
           </section>
@@ -407,7 +470,7 @@ export default function Profile() {
       ["Location", profile.location || "Not set"],
       ["Experience", profile.experience || "Not set"],
       ["Services Offered", profile.services || "Not set"],
-      ["About You", profile.about || "Not set"]
+      ["About You", profile.about || "Not set"],
     );
   }
 
@@ -420,7 +483,11 @@ export default function Profile() {
               <div className="relative">
                 <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] text-primary shadow-subtle">
                   {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Profile" className="h-full w-full object-cover" />
+                    <img
+                      src={profile.avatar_url}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <UserRound size={28} strokeWidth={1.8} />
                   )}
@@ -444,7 +511,9 @@ export default function Profile() {
                 </label>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">{profile.name || "My Account"}</h1>
+                <h1 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                  {profile.name || "My Account"}
+                </h1>
                 <p className="mt-0.5 text-xs font-semibold text-primary inline-flex items-center gap-1">
                   <UserCheck size={13} /> {role} Account
                 </p>
@@ -502,7 +571,9 @@ export default function Profile() {
                   .filter(([id]) => isWorker || ["name", "phone"].includes(id))
                   .map(([id, label]) => (
                     <div key={id}>
-                      <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">{label}</label>
+                      <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                        {label}
+                      </label>
                       {id === "phone" ? (
                         <div className="flex h-10 overflow-hidden rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#0A0A0A] transition">
                           <span className="flex items-center border-r border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#1c1c1c] px-3 text-xs font-bold text-[#67696D] dark:text-[#A1A1AA]">
@@ -513,7 +584,12 @@ export default function Profile() {
                             maxLength={10}
                             value={(draft as any)[id]}
                             onChange={(e) =>
-                              setDraft((v) => ({ ...v, [id]: e.target.value.replace(/\D/g, "").slice(0, 10) }))
+                              setDraft((v) => ({
+                                ...v,
+                                [id]: e.target.value
+                                  .replace(/\D/g, "")
+                                  .slice(0, 10),
+                              }))
                             }
                             disabled={pendingContact === "phone"}
                             placeholder="10-digit mobile number"
@@ -523,7 +599,9 @@ export default function Profile() {
                       ) : (
                         <input
                           value={(draft as any)[id]}
-                          onChange={(e) => setDraft((v) => ({ ...v, [id]: e.target.value }))}
+                          onChange={(e) =>
+                            setDraft((v) => ({ ...v, [id]: e.target.value }))
+                          }
                           className="h-10 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition placeholder:text-[#989EA7]"
                         />
                       )}
@@ -534,13 +612,17 @@ export default function Profile() {
                     name="location"
                     label="Primary Location / Service Area"
                     value={draft.location}
-                    onChange={(loc) => setDraft((v) => ({ ...v, location: loc }))}
+                    onChange={(loc) =>
+                      setDraft((v) => ({ ...v, location: loc }))
+                    }
                     placeholder="Search locality or auto-detect GPS..."
                     helperText="Stored as your standard location for nearby requests and discovery."
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Email Address</label>
+                  <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     value={draftEmail}
@@ -551,11 +633,15 @@ export default function Profile() {
                 </div>
                 {isWorker && (
                   <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">About You</label>
+                    <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                      About You
+                    </label>
                     <textarea
                       rows={3}
                       value={draft.about}
-                      onChange={(e) => setDraft((v) => ({ ...v, about: e.target.value }))}
+                      onChange={(e) =>
+                        setDraft((v) => ({ ...v, about: e.target.value }))
+                      }
                       className="w-full resize-none rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3 py-2.5 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition placeholder:text-[#989EA7]"
                     />
                   </div>
@@ -567,12 +653,19 @@ export default function Profile() {
                   {message}
                 </p>
               )}
-              {error && <p className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
+              {error && (
+                <p className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400">
+                  {error}
+                </p>
+              )}
 
               {pendingContact ? (
                 <div className="rounded-[16px] border border-primary-100/60 dark:border-primary/30 bg-primary-100/10 dark:bg-primary/5 p-4 shadow-subtle">
                   <p className="text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
-                    Verify your {pendingContact === "email" ? "new email" : "new phone number"}
+                    Verify your{" "}
+                    {pendingContact === "email"
+                      ? "new email"
+                      : "new phone number"}
                   </p>
                   <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
                     Enter the OTP sent to {pendingValue}.
@@ -647,11 +740,17 @@ export default function Profile() {
           {deleteOpen && (
             <div className="mt-4 rounded-[14px] border border-rose-200 dark:border-rose-900/80 bg-rose-50 dark:bg-rose-950/40 p-4 shadow-soft">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400" size={18} />
+                <AlertTriangle
+                  className="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400"
+                  size={18}
+                />
                 <div>
-                  <p className="font-bold text-xs text-rose-800 dark:text-rose-300">Delete your account?</p>
+                  <p className="font-bold text-xs text-rose-800 dark:text-rose-300">
+                    Delete your account?
+                  </p>
                   <p className="mt-1 text-[11px] leading-4 text-rose-700 dark:text-rose-400">
-                    This permanently removes your LocalWorker login account. This action cannot be undone.
+                    This permanently removes your LocalWorker login account.
+                    This action cannot be undone.
                   </p>
                 </div>
               </div>
@@ -681,4 +780,3 @@ export default function Profile() {
     </PageShell>
   );
 }
-

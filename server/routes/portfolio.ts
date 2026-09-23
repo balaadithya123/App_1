@@ -9,7 +9,9 @@ import { getAllWorkers } from "./workers";
 const memoryPortfolio: Map<string, WorkerPortfolioItem[]> = new Map();
 const memoryTrustFlags: Map<string, WorkerTrustFlag[]> = new Map();
 
-export const getTrustFlagsForWorker = async (workerId: string): Promise<WorkerTrustFlag[]> => {
+export const getTrustFlagsForWorker = async (
+  workerId: string,
+): Promise<WorkerTrustFlag[]> => {
   const flags = memoryTrustFlags.get(workerId) || [];
   try {
     const { data, error } = await supabase
@@ -27,7 +29,11 @@ export const getTrustFlagsForWorker = async (workerId: string): Promise<WorkerTr
   return flags;
 };
 
-export const addTrustFlag = async (flag: { worker_id: string; flag_type: string; reason: string }) => {
+export const addTrustFlag = async (flag: {
+  worker_id: string;
+  flag_type: string;
+  reason: string;
+}) => {
   const newFlag: WorkerTrustFlag = {
     id: `flag-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
     worker_id: flag.worker_id,
@@ -48,7 +54,10 @@ export const addTrustFlag = async (flag: { worker_id: string; flag_type: string;
       resolved: false,
     });
   } catch (err) {
-    console.warn("[trust_flags] Supabase insert failed, retained in memory:", err);
+    console.warn(
+      "[trust_flags] Supabase insert failed, retained in memory:",
+      err,
+    );
   }
   return newFlag;
 };
@@ -57,7 +66,10 @@ export const addTrustFlag = async (flag: { worker_id: string; flag_type: string;
 export const handleGetWorkerPortfolio: RequestHandler = async (req, res) => {
   try {
     const workerId = String(req.params.id || "");
-    const cleanPhone = workerId.replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const cleanPhone = workerId
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     if (!workerId) {
       res.status(400).json({ message: "Worker ID is required" });
       return;
@@ -68,7 +80,9 @@ export const handleGetWorkerPortfolio: RequestHandler = async (req, res) => {
       const { data, error } = await supabase
         .from("worker_portfolio")
         .select("id,worker_id,image_url,label,status,flag_reasons,uploaded_at")
-        .or(`worker_id.eq.${workerId}${cleanPhone ? `,worker_id.eq.${cleanPhone}` : ""}`)
+        .or(
+          `worker_id.eq.${workerId}${cleanPhone ? `,worker_id.eq.${cleanPhone}` : ""}`,
+        )
         .eq("status", "approved")
         .order("uploaded_at", { ascending: false });
 
@@ -89,11 +103,14 @@ export const handleGetWorkerPortfolio: RequestHandler = async (req, res) => {
         .maybeSingle();
 
       if (workerData?.portfolio_photos) {
-        const parsed = typeof workerData.portfolio_photos === "string" 
-          ? JSON.parse(workerData.portfolio_photos) 
-          : workerData.portfolio_photos;
+        const parsed =
+          typeof workerData.portfolio_photos === "string"
+            ? JSON.parse(workerData.portfolio_photos)
+            : workerData.portfolio_photos;
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const approved = parsed.filter((p: any) => p.status === "approved" || !p.status);
+          const approved = parsed.filter(
+            (p: any) => p.status === "approved" || !p.status,
+          );
           res.json({ photos: approved });
           return;
         }
@@ -102,7 +119,11 @@ export const handleGetWorkerPortfolio: RequestHandler = async (req, res) => {
       // Fall through
     }
 
-    const photos = (memoryPortfolio.get(workerId) || memoryPortfolio.get(cleanPhone) || []).filter((p) => p.status === "approved");
+    const photos = (
+      memoryPortfolio.get(workerId) ||
+      memoryPortfolio.get(cleanPhone) ||
+      []
+    ).filter((p) => p.status === "approved");
     res.json({ photos });
   } catch (err) {
     console.error("[portfolio] get error:", err);
@@ -119,16 +140,24 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
       return;
     }
     const token = authorization.slice("Bearer ".length);
-    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    const { data: authData, error: authError } =
+      await supabase.auth.getUser(token);
     if (authError || !authData.user) {
       res.status(401).json({ message: "Session expired or invalid" });
       return;
     }
 
-    const phone = String(authData.user.phone || authData.user.user_metadata?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const phone = String(
+      authData.user.phone || authData.user.user_metadata?.phone || "",
+    )
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const allWorkers = await getAllWorkers();
-    const worker = allWorkers.find((w) => w.phone === phone || w.id === authData.user.id);
-    const workerId = worker ? worker.id : (phone || authData.user.id);
+    const worker = allWorkers.find(
+      (w) => w.phone === phone || w.id === authData.user.id,
+    );
+    const workerId = worker ? worker.id : phone || authData.user.id;
 
     // 1. Try Supabase worker_portfolio table
     try {
@@ -156,11 +185,14 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
         .maybeSingle();
 
       if (workerData?.portfolio_photos) {
-        const parsed = typeof workerData.portfolio_photos === "string" 
-          ? JSON.parse(workerData.portfolio_photos) 
-          : workerData.portfolio_photos;
+        const parsed =
+          typeof workerData.portfolio_photos === "string"
+            ? JSON.parse(workerData.portfolio_photos)
+            : workerData.portfolio_photos;
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const approved = parsed.filter((p: any) => p.status === "approved" || !p.status);
+          const approved = parsed.filter(
+            (p: any) => p.status === "approved" || !p.status,
+          );
           res.json({ photos: approved, workerId });
           return;
         }
@@ -169,7 +201,11 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
       // Fall through
     }
 
-    const photos = (memoryPortfolio.get(workerId) || memoryPortfolio.get(phone) || []).filter((p) => p.status === "approved");
+    const photos = (
+      memoryPortfolio.get(workerId) ||
+      memoryPortfolio.get(phone) ||
+      []
+    ).filter((p) => p.status === "approved");
     res.json({ photos, workerId });
   } catch (err) {
     console.error("[portfolio] get my error:", err);
@@ -186,30 +222,46 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
       return;
     }
     const token = authorization.slice("Bearer ".length);
-    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    const { data: authData, error: authError } =
+      await supabase.auth.getUser(token);
     if (authError || !authData.user) {
       res.status(401).json({ message: "Session expired or invalid" });
       return;
     }
 
-    const phone = String(authData.user.phone || authData.user.user_metadata?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const phone = String(
+      authData.user.phone || authData.user.user_metadata?.phone || "",
+    )
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const allWorkers = await getAllWorkers();
-    const worker = allWorkers.find((w) => w.phone === phone || w.id === authData.user.id);
-    const workerId = worker ? worker.id : (phone || authData.user.id);
+    const worker = allWorkers.find(
+      (w) => w.phone === phone || w.id === authData.user.id,
+    );
+    const workerId = worker ? worker.id : phone || authData.user.id;
 
     const payloadSchema = z.object({
-      images: z.array(
-        z.object({
-          data: z.string().min(10),
-          name: z.string().default("work_photo.jpg"),
-          label: z.string().max(100).optional().default(""),
-        })
-      ).min(1).max(10),
+      images: z
+        .array(
+          z.object({
+            data: z.string().min(10),
+            name: z.string().default("work_photo.jpg"),
+            label: z.string().max(100).optional().default(""),
+          }),
+        )
+        .min(1)
+        .max(10),
     });
 
     const parsed = payloadSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ message: "Invalid photo upload payload. Send between 1 and 10 photos." });
+      res
+        .status(400)
+        .json({
+          message:
+            "Invalid photo upload payload. Send between 1 and 10 photos.",
+        });
       return;
     }
 
@@ -228,14 +280,19 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
     } catch {}
 
     if (existingPhotos.length === 0) {
-      existingPhotos = (memoryPortfolio.get(workerId) || memoryPortfolio.get(phone) || []).filter((p) => p.status === "approved");
+      existingPhotos = (
+        memoryPortfolio.get(workerId) ||
+        memoryPortfolio.get(phone) ||
+        []
+      ).filter((p) => p.status === "approved");
     }
 
     // Cap uploads at 10 images per worker (storage cost control)
     const currentCount = existingPhotos.length;
     if (currentCount >= 10) {
       res.status(400).json({
-        message: "Maximum limit reached. Each worker profile can have at most 10 portfolio photos. Please delete an existing photo before uploading a new one.",
+        message:
+          "Maximum limit reached. Each worker profile can have at most 10 portfolio photos. Please delete an existing photo before uploading a new one.",
       });
       return;
     }
@@ -294,7 +351,10 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
           status: "approved",
         });
       } catch (err) {
-        console.warn("[portfolio] Supabase worker_portfolio insert fallback:", err);
+        console.warn(
+          "[portfolio] Supabase worker_portfolio insert fallback:",
+          err,
+        );
       }
 
       uploadedResults.push(photoItem);
@@ -318,27 +378,35 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
       if (phone) {
         await supabase
           .from("workers")
-          .update({ portfolio_photos: JSON.stringify(updatedPhotos), updated_at: new Date().toISOString() })
+          .update({
+            portfolio_photos: JSON.stringify(updatedPhotos),
+            updated_at: new Date().toISOString(),
+          })
           .eq("phone", phone);
       }
       if (workerId) {
         await supabase
           .from("workers")
-          .update({ portfolio_photos: JSON.stringify(updatedPhotos), updated_at: new Date().toISOString() })
+          .update({
+            portfolio_photos: JSON.stringify(updatedPhotos),
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", workerId);
       }
     } catch {}
 
-    const message = failedCount > 0
-      ? `${uploadedResults.length} photo(s) uploaded successfully. ${failedCount} photo couldn't be used.`
-      : `${uploadedResults.length} photo(s) uploaded successfully.`;
+    const message =
+      failedCount > 0
+        ? `${uploadedResults.length} photo(s) uploaded successfully. ${failedCount} photo couldn't be used.`
+        : `${uploadedResults.length} photo(s) uploaded successfully.`;
 
     res.status(201).json({
       message,
       photos: updatedPhotos,
     });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to upload portfolio photos";
+    const message =
+      err instanceof Error ? err.message : "Failed to upload portfolio photos";
     console.error("[portfolio] upload error:", err);
     res.status(500).json({ message });
   }
@@ -355,7 +423,12 @@ export const handleDeletePortfolioPhoto: RequestHandler = async (req, res) => {
     }
     const token = authorization.slice("Bearer ".length);
     const { data: authData } = await supabase.auth.getUser(token);
-    const phone = String(authData?.user?.phone || authData?.user?.user_metadata?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const phone = String(
+      authData?.user?.phone || authData?.user?.user_metadata?.phone || "",
+    )
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
 
     // Try Supabase delete
     try {
@@ -368,7 +441,10 @@ export const handleDeletePortfolioPhoto: RequestHandler = async (req, res) => {
       if (filtered.length !== photos.length) {
         memoryPortfolio.set(wId, filtered);
         try {
-          await supabase.from("workers").update({ portfolio_photos: JSON.stringify(filtered) }).or(`id.eq.${wId},phone.eq.${phone}`);
+          await supabase
+            .from("workers")
+            .update({ portfolio_photos: JSON.stringify(filtered) })
+            .or(`id.eq.${wId},phone.eq.${phone}`);
         } catch {}
       }
     }
@@ -381,7 +457,10 @@ export const handleDeletePortfolioPhoto: RequestHandler = async (req, res) => {
 };
 
 // GET /api/admin/workers-with-flags
-export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) => {
+export const handleGetAdminWorkersWithFlags: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const allWorkers = await getAllWorkers();
 
@@ -410,7 +489,8 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) =
           } else {
             const existing = combinedWorkersMap.get(dw.id);
             existing.agency_id = dw.agency_id || existing.agency_id;
-            existing.phone_verified = dw.phone_verified ?? existing.phone_verified;
+            existing.phone_verified =
+              dw.phone_verified ?? existing.phone_verified;
           }
         }
       }
@@ -418,14 +498,24 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) =
 
     let agencies: any[] = [];
     try {
-      const { data: agData } = await supabase.from("agencies").select("id,name,agency_code");
+      const { data: agData } = await supabase
+        .from("agencies")
+        .select("id,name,agency_code");
       if (Array.isArray(agData)) agencies = agData;
     } catch {}
 
     const agencyMap = new Map<string, { name: string; code: string }>();
     for (const ag of agencies) {
-      if (ag.id) agencyMap.set(String(ag.id).toLowerCase(), { name: ag.name, code: ag.agency_code || ag.id });
-      if (ag.agency_code) agencyMap.set(String(ag.agency_code).toLowerCase(), { name: ag.name, code: ag.agency_code });
+      if (ag.id)
+        agencyMap.set(String(ag.id).toLowerCase(), {
+          name: ag.name,
+          code: ag.agency_code || ag.id,
+        });
+      if (ag.agency_code)
+        agencyMap.set(String(ag.agency_code).toLowerCase(), {
+          name: ag.name,
+          code: ag.agency_code,
+        });
     }
 
     let dbFlags: any[] = [];
@@ -448,19 +538,29 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) =
       flagsByWorker.set(wId, arr);
     }
 
-    const workersWithFlags = Array.from(combinedWorkersMap.values()).map((w) => {
-      const workerFlags = (flagsByWorker.get(w.id) || flagsByWorker.get(w.phone) || []).filter((f) => !f.resolved);
-      const portfolioCount = (memoryPortfolio.get(w.id) || []).length;
-      const agencyInfo = w.agency_id ? agencyMap.get(String(w.agency_id).toLowerCase()) : null;
-      return {
-        ...w,
-        agency_name: agencyInfo?.name || (w.agency_id ? `Agency (${w.agency_id})` : null),
-        agency_code: agencyInfo?.code || w.agency_id || null,
-        trust_flags: workerFlags,
-        portfolio_count: portfolioCount,
-        has_flags: workerFlags.length > 0,
-      };
-    });
+    const workersWithFlags = Array.from(combinedWorkersMap.values()).map(
+      (w) => {
+        const workerFlags = (
+          flagsByWorker.get(w.id) ||
+          flagsByWorker.get(w.phone) ||
+          []
+        ).filter((f) => !f.resolved);
+        const portfolioCount = (memoryPortfolio.get(w.id) || []).length;
+        const agencyInfo = w.agency_id
+          ? agencyMap.get(String(w.agency_id).toLowerCase())
+          : null;
+        return {
+          ...w,
+          agency_name:
+            agencyInfo?.name ||
+            (w.agency_id ? `Agency (${w.agency_id})` : null),
+          agency_code: agencyInfo?.code || w.agency_id || null,
+          trust_flags: workerFlags,
+          portfolio_count: portfolioCount,
+          has_flags: workerFlags.length > 0,
+        };
+      },
+    );
 
     res.json({ workers: workersWithFlags });
   } catch (err) {
@@ -484,7 +584,10 @@ export const handleResolveWorkerFlags: RequestHandler = async (req, res) => {
     memoryTrustFlags.set(workerId, flags);
 
     try {
-      await supabase.from("worker_trust_flags").update({ resolved: true }).eq("worker_id", workerId);
+      await supabase
+        .from("worker_trust_flags")
+        .update({ resolved: true })
+        .eq("worker_id", workerId);
     } catch {}
 
     res.json({ message: "Flags resolved successfully." });
@@ -495,16 +598,24 @@ export const handleResolveWorkerFlags: RequestHandler = async (req, res) => {
 };
 
 // POST /api/admin/workers/:workerId/toggle-verify
-export const handleToggleWorkerVerification: RequestHandler = async (req, res) => {
+export const handleToggleWorkerVerification: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const workerId = req.params.workerId;
     const { verified } = req.body as { verified: boolean };
 
     try {
-      await supabase.from("workers").update({ phone_verified: verified }).eq("id", workerId);
+      await supabase
+        .from("workers")
+        .update({ phone_verified: verified })
+        .eq("id", workerId);
     } catch {}
 
-    res.json({ message: `Worker verification status set to ${verified ? "verified" : "unverified"}.` });
+    res.json({
+      message: `Worker verification status set to ${verified ? "verified" : "unverified"}.`,
+    });
   } catch (err) {
     console.error("[admin workers] toggle verification error:", err);
     res.status(500).json({ message: "Unable to update worker verification." });

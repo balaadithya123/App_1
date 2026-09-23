@@ -6,7 +6,10 @@ export function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "light";
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === "dark" || saved === "light") return saved;
-  if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
     return "dark";
   }
   return "light";
@@ -29,7 +32,9 @@ export function applyTheme(theme: Theme) {
 }
 
 export function toggleTheme(): Theme {
-  const current = document.documentElement.classList.contains("dark") ? "dark" : "light";
+  const current = document.documentElement.classList.contains("dark")
+    ? "dark"
+    : "light";
   const next: Theme = current === "dark" ? "light" : "dark";
   applyTheme(next);
   return next;
