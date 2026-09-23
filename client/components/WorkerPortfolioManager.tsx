@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Camera, Image as ImageIcon, Trash2, Upload, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
+import { Camera, Image as ImageIcon, Trash2, Upload, CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { WorkerPortfolioItem } from "@shared/api";
 
@@ -43,7 +43,7 @@ export default function WorkerPortfolioManager() {
 
     const remainingSlots = 10 - photos.length;
     if (remainingSlots <= 0) {
-      setError("You have reached the maximum limit of 10 portfolio photos.");
+      setError("Maximum limit reached. Each worker profile can have at most 10 portfolio photos.");
       return;
     }
 
@@ -56,7 +56,6 @@ export default function WorkerPortfolioManager() {
         throw new Error("Your session expired. Please sign in again.");
       }
 
-      // Convert all files to base64 data URLs
       const encodedImages = await Promise.all(
         selectedFiles.map(
           (file) =>
@@ -80,14 +79,14 @@ export default function WorkerPortfolioManager() {
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || "Failed to upload photos");
+        throw new Error(result.message || "Photo couldn't be used.");
       }
 
       setPhotos(result.photos || []);
-      setSuccess(`${selectedFiles.length} photo(s) added to your portfolio.`);
+      setSuccess(result.message || `${selectedFiles.length} photo(s) added to your portfolio.`);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err: any) {
-      setError(err.message || "Failed to upload photos. Please try again.");
+      setError(err.message || "Photo couldn't be used.");
     } finally {
       setUploading(false);
     }
@@ -95,6 +94,7 @@ export default function WorkerPortfolioManager() {
 
   const handleDelete = async (photoId: string) => {
     setError("");
+    setSuccess("");
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) return;
@@ -106,9 +106,10 @@ export default function WorkerPortfolioManager() {
       });
       if (res.ok) {
         setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+        setSuccess("Photo deleted from portfolio.");
       } else {
         const err = await res.json().catch(() => null);
-        setError(err?.message || "Failed to delete photo");
+        setError(err?.message || "Unable to delete photo.");
       }
     } catch {
       setError("Unable to delete photo.");
@@ -208,18 +209,6 @@ export default function WorkerPortfolioManager() {
                 className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                 referrerPolicy="no-referrer"
               />
-
-              {photo.status === "flagged" ? (
-                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-amber-500/95 px-2 py-0.5 text-[9px] font-bold text-white shadow-xs">
-                  <AlertTriangle size={10} />
-                  <span>Flagged</span>
-                </div>
-              ) : (
-                <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-emerald-600/90 px-1.5 py-0.5 text-[9px] font-semibold text-white shadow-xs backdrop-blur-xs">
-                  <CheckCircle2 size={10} />
-                  <span>Active</span>
-                </div>
-              )}
 
               <button
                 type="button"
