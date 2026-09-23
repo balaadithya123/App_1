@@ -1,4 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("../lib/supabase", () => {
+  return {
+    supabase: {
+      from: () => ({
+        select: () => ({ single: async () => ({ data: null, error: null }) }),
+        insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
+      }),
+    },
+  };
+});
+
 import { staticWorkers } from "../../shared/workers";
 import { filterWorkers } from "../../client/lib/search";
 import { findWorkerById } from "../../client/lib/workers";

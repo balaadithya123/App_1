@@ -1,4 +1,60 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("../lib/supabase", () => {
+  const memoryStore = new Map<string, any[]>();
+
+  class MockQueryBuilder {
+    private table: string;
+    private insertData?: any[];
+
+    constructor(table: string) {
+      this.table = table;
+      if (!memoryStore.has(table)) memoryStore.set(table, []);
+    }
+
+    select() {
+      return this;
+    }
+
+    insert(data: any | any[]) {
+      this.insertData = Array.isArray(data) ? data : [data];
+      return this;
+    }
+
+    private execute() {
+      const rows = memoryStore.get(this.table) || [];
+      if (this.insertData) {
+        const createdRows = this.insertData.map((item) => ({
+          id: item.id || `mock-${Date.now()}`,
+          created_at: new Date().toISOString(),
+          ...item,
+        }));
+        rows.push(...createdRows);
+        memoryStore.set(this.table, rows);
+        return {
+          data: createdRows.length === 1 ? createdRows[0] : createdRows,
+          error: null,
+        };
+      }
+      return { data: rows, error: null };
+    }
+
+    async single() {
+      const res = this.execute();
+      const item = Array.isArray(res.data) ? res.data[0] : res.data;
+      return { data: item, error: null };
+    }
+  }
+
+  return {
+    supabase: {
+      from(table: string) {
+        return new MockQueryBuilder(table);
+      },
+    },
+  };
+});
+
 import { reportSchema } from "./reports";
 import { saveReport } from "../lib/reports";
 
