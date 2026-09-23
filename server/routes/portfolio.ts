@@ -5,7 +5,7 @@ import { screenImageSilently } from "./portfolio-screen";
 import type { WorkerPortfolioItem, WorkerTrustFlag } from "@shared/api";
 import { getAllWorkers } from "./workers";
 
-// In-memory fallback stores to guarantee zero downtime even if Supabase table is pending migration
+// In-memory fallback stores to guarantee availability
 const memoryPortfolio: Map<string, WorkerPortfolioItem[]> = new Map();
 const memoryTrustFlags: Map<string, WorkerTrustFlag[]> = new Map();
 
@@ -17,13 +17,12 @@ export const getTrustFlagsForWorker = async (workerId: string): Promise<WorkerTr
       .select("id,worker_id,flag_type,reason,resolved,created_at")
       .eq("worker_id", workerId);
     if (!error && data) {
-      // Merge unique
       const existingIds = new Set(data.map((d: any) => d.id));
       const memoryUnique = flags.filter((f) => !existingIds.has(f.id));
       return [...data, ...memoryUnique];
     }
   } catch {
-    // Fall back to memory
+    // Fall back
   }
   return flags;
 };
@@ -111,7 +110,7 @@ export const handleGetWorkerPortfolio: RequestHandler = async (req, res) => {
   }
 };
 
-// GET /api/workers/my-portfolio (Worker's own dashboard view)
+// GET /api/workers/my-portfolio (Worker's own portfolio view)
 export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
   try {
     const authorization = req.headers.authorization;
@@ -137,6 +136,7 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
         .from("worker_portfolio")
         .select("id,worker_id,image_url,label,status,flag_reasons,uploaded_at")
         .or(`worker_id.eq.${workerId}${phone ? `,worker_id.eq.${phone}` : ""}`)
+        .eq("status", "approved")
         .order("uploaded_at", { ascending: false });
 
       if (!error && data && data.length > 0) {
@@ -160,7 +160,8 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
           ? JSON.parse(workerData.portfolio_photos) 
           : workerData.portfolio_photos;
         if (Array.isArray(parsed) && parsed.length > 0) {
-          res.json({ photos: parsed, workerId });
+          const approved = parsed.filter((p: any) => p.status === "approved" || !p.status);
+          res.json({ photos: approved, workerId });
           return;
         }
       }
@@ -168,7 +169,7 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
       // Fall through
     }
 
-    const photos = memoryPortfolio.get(workerId) || memoryPortfolio.get(phone) || [];
+    const photos = (memoryPortfolio.get(workerId) || memoryPortfolio.get(phone) || []).filter((p) => p.status === "approved");
     res.json({ photos, workerId });
   } catch (err) {
     console.error("[portfolio] get my error:", err);
@@ -176,7 +177,7 @@ export const handleGetMyPortfolio: RequestHandler = async (req, res) => {
   }
 };
 
-// POST /api/workers/portfolio (Upload up to 8-10 photos)
+// POST /api/workers/portfolio (Upload photos with 10-cap enforcement and silent Gemini vision screening)
 export const handleUploadPortfolio: RequestHandler = async (req, res) => {
   try {
     const authorization = req.headers.authorization;
@@ -187,7 +188,7 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
     const token = authorization.slice("Bearer ".length);
     const { data: authData, error: authError } = await supabase.auth.getUser(token);
     if (authError || !authData.user) {
-      res.status(401).json({ message: "Session expired" });
+      res.status(401).json({ message: "Session expired or invalid" });
       return;
     }
 
@@ -212,30 +213,46 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
       return;
     }
 
-    // 1. Always try to fetch from DB to ensure we have latest data
+    // 1. Always check current existing approved photos in DB / memory
     let existingPhotos: WorkerPortfolioItem[] = [];
     try {
       const { data: dbPhotos } = await supabase
         .from("worker_portfolio")
         .select("id,worker_id,image_url,label,status,flag_reasons,uploaded_at")
         .or(`worker_id.eq.${workerId}${phone ? `,worker_id.eq.${phone}` : ""}`)
+        .eq("status", "approved")
         .order("uploaded_at", { ascending: false });
       if (Array.isArray(dbPhotos) && dbPhotos.length > 0) {
         existingPhotos = dbPhotos;
       }
     } catch {}
 
-    if (existingPhotos.length + parsed.data.images.length > 10) {
+    if (existingPhotos.length === 0) {
+      existingPhotos = (memoryPortfolio.get(workerId) || memoryPortfolio.get(phone) || []).filter((p) => p.status === "approved");
+    }
+
+    // Cap uploads at 10 images per worker (storage cost control)
+    const currentCount = existingPhotos.length;
+    if (currentCount >= 10) {
       res.status(400).json({
-        message: `You can have at most 10 portfolio photos. Currently you have ${existingPhotos.length}.`,
+        message: "Maximum limit reached. Each worker profile can have at most 10 portfolio photos. Please delete an existing photo before uploading a new one.",
+      });
+      return;
+    }
+
+    if (currentCount + parsed.data.images.length > 10) {
+      const remainingSlots = 10 - currentCount;
+      res.status(400).json({
+        message: `Uploading ${parsed.data.images.length} photo(s) would exceed the 10-photo portfolio cap. You can upload at most ${remainingSlots} more photo(s).`,
       });
       return;
     }
 
     const uploadedResults: WorkerPortfolioItem[] = [];
+    let failedCount = 0;
 
     for (const img of parsed.data.images) {
-      // Background silent screening
+      // Run through silent Gemini vision screening BEFORE storing or displaying
       const screening = await screenImageSilently({
         id: `img-${Date.now()}`,
         name: img.name,
@@ -243,70 +260,82 @@ export const handleUploadPortfolio: RequestHandler = async (req, res) => {
         data: img.data,
       });
 
-      const isStockOrDuplicate = Boolean(screening.checks?.is_stock_photo);
-      const isInappropriate = Boolean(screening.checks?.contains_inappropriate_content);
-      const isRejected = (screening.verdict === "rejected") && (isStockOrDuplicate || isInappropriate);
+      const isPassed =
+        screening.verdict === "approved" &&
+        !screening.checks.is_stock_photo &&
+        !screening.checks.contains_inappropriate_content &&
+        !screening.checks.contains_identifiable_third_party &&
+        !screening.checks.image_quality_issue &&
+        screening.checks.shows_actual_work;
 
+      if (!isPassed) {
+        // Failed photo: SILENTLY DROPPED — NOT stored/shown in portfolio!
+        failedCount++;
+        continue;
+      }
+
+      // Passed photo: persist to worker_portfolio table
       const photoItem: WorkerPortfolioItem = {
         id: `port-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
         worker_id: workerId,
         image_url: img.data,
         label: img.label?.trim() || undefined,
         uploaded_at: new Date().toISOString(),
-        status: isRejected ? "flagged" : "approved",
-        flag_reasons: isRejected ? screening.reasons : undefined,
+        status: "approved",
       };
 
-      if (isRejected) {
-        await addTrustFlag({
-          worker_id: workerId,
-          flag_type: isStockOrDuplicate ? "stock_portfolio_detected" : "moderation_review_needed",
-          reason: screening.reasons.join("; ") || "Photo flagged during moderation.",
-        });
-      }
-
-      // Save to Supabase worker_portfolio table
       try {
         await supabase.from("worker_portfolio").insert({
           id: photoItem.id,
           worker_id: photoItem.worker_id,
+          user_id: authData.user.id,
           image_url: photoItem.image_url,
           label: photoItem.label || null,
-          status: photoItem.status,
-          flag_reasons: photoItem.flag_reasons || null,
+          status: "approved",
         });
       } catch (err) {
         console.warn("[portfolio] Supabase worker_portfolio insert fallback:", err);
       }
 
-      existingPhotos.unshift(photoItem);
       uploadedResults.push(photoItem);
     }
 
-    // Save full array to workers table column for guaranteed database storage
+    if (uploadedResults.length === 0 && failedCount > 0) {
+      res.status(400).json({
+        message: "Photo couldn't be used.",
+      });
+      return;
+    }
+
+    // Combine newly uploaded photos with existing photos
+    const updatedPhotos = [...uploadedResults, ...existingPhotos];
+
+    memoryPortfolio.set(workerId, updatedPhotos);
+    if (phone) memoryPortfolio.set(phone, updatedPhotos);
+
+    // Save backup to workers table
     try {
       if (phone) {
         await supabase
           .from("workers")
-          .update({ portfolio_photos: JSON.stringify(existingPhotos), updated_at: new Date().toISOString() })
+          .update({ portfolio_photos: JSON.stringify(updatedPhotos), updated_at: new Date().toISOString() })
           .eq("phone", phone);
       }
       if (workerId) {
         await supabase
           .from("workers")
-          .update({ portfolio_photos: JSON.stringify(existingPhotos), updated_at: new Date().toISOString() })
+          .update({ portfolio_photos: JSON.stringify(updatedPhotos), updated_at: new Date().toISOString() })
           .eq("id", workerId);
       }
-    } catch (workerSaveErr) {
-      console.warn("[portfolio] Save to workers table note:", workerSaveErr);
-    }
+    } catch {}
 
-    memoryPortfolio.set(workerId, existingPhotos);
-    if (phone) memoryPortfolio.set(phone, existingPhotos);
+    const message = failedCount > 0
+      ? `${uploadedResults.length} photo(s) uploaded successfully. ${failedCount} photo couldn't be used.`
+      : `${uploadedResults.length} photo(s) uploaded successfully.`;
 
     res.status(201).json({
-      message: `${uploadedResults.length} photo(s) uploaded successfully.`,
-      photos: existingPhotos,
+      message,
+      photos: updatedPhotos,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to upload portfolio photos";
@@ -351,12 +380,11 @@ export const handleDeletePortfolioPhoto: RequestHandler = async (req, res) => {
   }
 };
 
-// GET /api/admin/workers-with-flags (Admin directory list with trust flags and agency affiliation)
+// GET /api/admin/workers-with-flags
 export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) => {
   try {
     const allWorkers = await getAllWorkers();
 
-    // Query direct supabase workers to make sure no agency-linked worker is missed
     const combinedWorkersMap = new Map<string, any>();
     for (const w of allWorkers) {
       combinedWorkersMap.set(w.id, { ...w });
@@ -388,7 +416,6 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) =
       }
     } catch {}
 
-    // Load agencies to map agency names & codes
     let agencies: any[] = [];
     try {
       const { data: agData } = await supabase.from("agencies").select("id,name,agency_code");
@@ -400,17 +427,13 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (req, res) =
       if (ag.id) agencyMap.set(String(ag.id).toLowerCase(), { name: ag.name, code: ag.agency_code || ag.id });
       if (ag.agency_code) agencyMap.set(String(ag.agency_code).toLowerCase(), { name: ag.name, code: ag.agency_code });
     }
-    agencyMap.set("agency-admin", { name: "Admin Agency", code: "AGN-ADMN" });
-    agencyMap.set("agn-admn", { name: "Admin Agency", code: "AGN-ADMN" });
 
-    // Load all trust flags from Supabase & memory
     let dbFlags: any[] = [];
     try {
       const { data } = await supabase.from("worker_trust_flags").select("*");
       if (data) dbFlags = data;
     } catch {}
 
-    // Combine with memory flags
     const flagsByWorker = new Map<string, WorkerTrustFlag[]>();
     for (const flag of dbFlags) {
       const arr = flagsByWorker.get(flag.worker_id) || [];
@@ -454,14 +477,12 @@ export const handleResolveWorkerFlags: RequestHandler = async (req, res) => {
       res.status(400).json({ message: "Worker ID is required." });
       return;
     }
-    // Resolve in memory
     const flags = memoryTrustFlags.get(workerId) || [];
     flags.forEach((f) => {
       f.resolved = true;
     });
     memoryTrustFlags.set(workerId, flags);
 
-    // Resolve in Supabase
     try {
       await supabase.from("worker_trust_flags").update({ resolved: true }).eq("worker_id", workerId);
     } catch {}
