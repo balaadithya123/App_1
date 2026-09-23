@@ -5,7 +5,9 @@ vi.mock("../lib/supabase", () => {
     supabase: {
       from: () => ({
         select: () => ({ single: async () => ({ data: null, error: null }) }),
-        insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
+        insert: () => ({
+          select: () => ({ single: async () => ({ data: null, error: null }) }),
+        }),
       }),
     },
   };
@@ -14,7 +16,11 @@ vi.mock("../lib/supabase", () => {
 import { staticWorkers } from "../../shared/workers";
 import { filterWorkers } from "../../client/lib/search";
 import { findWorkerById } from "../../client/lib/workers";
-import { createWorker, createWorkerId, workerRegistrationSchema } from "./workers";
+import {
+  createWorker,
+  createWorkerId,
+  workerRegistrationSchema,
+} from "./workers";
 
 const registration = {
   fullName: "Anika Rao",
@@ -54,7 +60,9 @@ describe("worker registration flow", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.flatten().fieldErrors.fullName).toContain("Full name is required");
+    expect(result.error?.flatten().fieldErrors.fullName).toContain(
+      "Full name is required",
+    );
   });
 
   it("rejects invalid worker phone numbers", () => {
@@ -64,11 +72,16 @@ describe("worker registration flow", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error?.flatten().fieldErrors.phone).toContain("Phone number must be exactly 10 digits");
+    expect(result.error?.flatten().fieldErrors.phone).toContain(
+      "Phone number must be exactly 10 digits",
+    );
   });
 
   it("includes created worker in search results", () => {
-    const worker = createWorker(workerRegistrationSchema.parse(registration), staticWorkers);
+    const worker = createWorker(
+      workerRegistrationSchema.parse(registration),
+      staticWorkers,
+    );
     const allWorkers = [...staticWorkers, worker];
     const results = filterWorkers(allWorkers, "solar", "cuddalore");
 
@@ -76,7 +89,10 @@ describe("worker registration flow", () => {
   });
 
   it("can look up a worker by id", () => {
-    const worker = createWorker(workerRegistrationSchema.parse(registration), staticWorkers);
+    const worker = createWorker(
+      workerRegistrationSchema.parse(registration),
+      staticWorkers,
+    );
     const profileWorker = findWorkerById([worker], "9876543210");
 
     expect(profileWorker).toMatchObject({
@@ -100,7 +116,10 @@ describe("worker registration flow", () => {
     const firstWorker = createWorker(requested, staticWorkers);
     expect(firstWorker.id).toBe("my-custom-id");
 
-    const secondWorker = createWorker(requested, [...staticWorkers, firstWorker]);
+    const secondWorker = createWorker(requested, [
+      ...staticWorkers,
+      firstWorker,
+    ]);
     expect(secondWorker.id).toBe("my-custom-id-2");
   });
 

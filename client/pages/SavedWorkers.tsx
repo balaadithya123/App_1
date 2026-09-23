@@ -1,11 +1,27 @@
 import { useEffect, useState } from "react";
-import { Heart, MapPin, Trash2, ArrowRight, MessageCircle, Phone, Star, StickyNote, ShieldCheck, Search } from "lucide-react";
+import {
+  Heart,
+  MapPin,
+  Trash2,
+  ArrowRight,
+  MessageCircle,
+  Phone,
+  Star,
+  StickyNote,
+  ShieldCheck,
+  Search,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import NavBar from "@/components/NavBar";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse } from "@shared/api";
-import { getSavedWorkerIds, toggleSavedWorker, getWorkerNote, setWorkerNote } from "@/lib/favorites";
+import {
+  getSavedWorkerIds,
+  toggleSavedWorker,
+  getWorkerNote,
+  setWorkerNote,
+} from "@/lib/favorites";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 
 function WorkerNoteInput({ workerId }: { workerId: string }) {
@@ -50,12 +66,17 @@ export default function SavedWorkers() {
 
   useEffect(() => {
     fetch("/api/workers", { cache: "no-store" })
-      .then(async (response) => (response.ok ? ((await response.json()) as WorkersResponse).workers : staticWorkers))
+      .then(async (response) =>
+        response.ok
+          ? ((await response.json()) as WorkersResponse).workers
+          : staticWorkers,
+      )
       .then(setWorkers)
       .catch(() => setWorkers(staticWorkers));
 
     window.addEventListener("saved-workers-changed", refreshSaved);
-    return () => window.removeEventListener("saved-workers-changed", refreshSaved);
+    return () =>
+      window.removeEventListener("saved-workers-changed", refreshSaved);
   }, []);
 
   const savedWorkers = workers.filter((worker) => savedIds.includes(worker.id));
@@ -86,7 +107,8 @@ export default function SavedWorkers() {
                   My Circle
                 </h1>
                 <p className="mt-0.5 text-xs text-[#67696D] dark:text-[#A1A1AA]">
-                  Your private list of trusted professionals. Go straight back to the same person instead of re-browsing.
+                  Your private list of trusted professionals. Go straight back
+                  to the same person instead of re-browsing.
                 </p>
               </div>
             </div>
@@ -102,27 +124,45 @@ export default function SavedWorkers() {
             <div className="space-y-3.5">
               {savedWorkers.map((worker) => {
                 const phone = String(worker.phone || "").replace(/\D/g, "");
-                const whatsappUrl = phone ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}` : "";
-                const rating = Number(worker.avg_rating || worker.rating || 4.8);
+                const whatsappUrl = phone
+                  ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}`
+                  : "";
+                const rating = Number(
+                  worker.avg_rating || worker.rating || 4.8,
+                );
 
                 const handleCall = (e: React.MouseEvent) => {
                   e.stopPropagation();
-                  void logContactEvent(worker.id, "call", { name: worker.name, category: worker.category });
-                  void logAnalyticsEvent("call_click", worker.id, { source: "my_circle_card" });
+                  void logContactEvent(worker.id, "call", {
+                    name: worker.name,
+                    category: worker.category,
+                  });
+                  void logAnalyticsEvent("call_click", worker.id, {
+                    source: "my_circle_card",
+                  });
                   window.location.href = `tel:${worker.phone}`;
                 };
 
                 const handleWhatsApp = (e: React.MouseEvent) => {
                   e.stopPropagation();
-                  void logContactEvent(worker.id, "whatsapp", { name: worker.name, category: worker.category });
-                  void logAnalyticsEvent("whatsapp_click", worker.id, { source: "my_circle_card" });
+                  void logContactEvent(worker.id, "whatsapp", {
+                    name: worker.name,
+                    category: worker.category,
+                  });
+                  void logAnalyticsEvent("whatsapp_click", worker.id, {
+                    source: "my_circle_card",
+                  });
                   window.open(whatsappUrl, "_blank", "noopener,noreferrer");
                 };
 
                 return (
                   <article
                     key={worker.id}
-                    onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+                    onClick={() =>
+                      navigate(
+                        `/worker?worker=${encodeURIComponent(worker.id)}`,
+                      )
+                    }
                     className="group relative rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 transition-all hover:border-primary/50 hover:shadow-soft shadow-subtle cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -137,7 +177,8 @@ export default function SavedWorkers() {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            worker.initials || worker.name.slice(0, 2).toUpperCase()
+                            worker.initials ||
+                            worker.name.slice(0, 2).toUpperCase()
                           )}
                         </div>
 
@@ -146,17 +187,27 @@ export default function SavedWorkers() {
                             {worker.name}
                           </h2>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
-                            <span className="font-bold text-primary">{worker.category}</span>
+                            <span className="font-bold text-primary">
+                              {worker.category}
+                            </span>
                             <span className="text-[#989EA7]">·</span>
                             <div className="inline-flex items-center gap-1 font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
-                              <Star size={11} className="fill-amber-400 text-amber-400" />
+                              <Star
+                                size={11}
+                                className="fill-amber-400 text-amber-400"
+                              />
                               <span>{rating.toFixed(1)}</span>
                             </div>
                           </div>
                           {worker.locality && (
                             <p className="mt-1 flex items-center gap-1 text-xs text-[#67696D] dark:text-[#A1A1AA] truncate">
-                              <MapPin size={12} className="shrink-0 text-primary" />
-                              <span className="truncate">{worker.locality}</span>
+                              <MapPin
+                                size={12}
+                                className="shrink-0 text-primary"
+                              />
+                              <span className="truncate">
+                                {worker.locality}
+                              </span>
                             </p>
                           )}
                         </div>
@@ -238,9 +289,12 @@ export default function SavedWorkers() {
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100/15 text-primary mb-3.5">
                 <ShieldCheck size={28} className="text-primary" />
               </div>
-              <h2 className="text-lg font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Your Circle is Empty</h2>
+              <h2 className="text-lg font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                Your Circle is Empty
+              </h2>
               <p className="mt-1.5 text-xs text-[#67696D] dark:text-[#A1A1AA] max-w-sm mx-auto leading-relaxed">
-                Save a worker after you contact them, so you can find them again next time.
+                Save a worker after you contact them, so you can find them again
+                next time.
               </p>
               <p className="mt-1 text-[11px] text-[#989EA7] dark:text-[#71717A]">
                 Stored privately on this device — no account needed.

@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { Building2, CheckCircle2, Link2, Loader2, AlertCircle, ArrowRight, ShieldCheck, Unlink, X } from "lucide-react";
+import {
+  Building2,
+  CheckCircle2,
+  Link2,
+  Loader2,
+  AlertCircle,
+  ArrowRight,
+  ShieldCheck,
+  Unlink,
+  X,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -9,7 +19,10 @@ interface WorkerAgencyAffiliationProps {
   userPhone?: string;
 }
 
-export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAgencyAffiliationProps) {
+export default function WorkerAgencyAffiliation({
+  userId,
+  userPhone,
+}: WorkerAgencyAffiliationProps) {
   const [loading, setLoading] = useState(true);
   const [agency, setAgency] = useState<any>(null);
   const [workerRecord, setWorkerRecord] = useState<any>(null);
@@ -25,7 +38,10 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
       return;
     }
 
-    const cleanPhone = String(userPhone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const cleanPhone = String(userPhone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
 
     // 1. Check local storage cache for instant render
     const cacheKey = `lw_affiliation_${userId || cleanPhone}`;
@@ -46,9 +62,12 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
         headers["Authorization"] = `Bearer ${sessionData.session.access_token}`;
       }
 
-      const res = await fetch(`/api/agencies/worker-affiliation?phone=${encodeURIComponent(cleanPhone)}&workerId=${encodeURIComponent(userId || "")}`, {
-        headers,
-      });
+      const res = await fetch(
+        `/api/agencies/worker-affiliation?phone=${encodeURIComponent(cleanPhone)}&workerId=${encodeURIComponent(userId || "")}`,
+        {
+          headers,
+        },
+      );
 
       if (res.ok) {
         const data = await res.json();
@@ -56,7 +75,10 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
           setAgency(data.agency);
           setWorkerRecord(data.worker);
           try {
-            localStorage.setItem(cacheKey, JSON.stringify({ agency: data.agency, worker: data.worker }));
+            localStorage.setItem(
+              cacheKey,
+              JSON.stringify({ agency: data.agency, worker: data.worker }),
+            );
           } catch {}
           setLoading(false);
           return;
@@ -73,9 +95,13 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
       // 3. Fallback to direct Supabase query
       if (supabase) {
-        let query = supabase.from("workers").select("id,name,phone,agency_id,category,locality");
+        let query = supabase
+          .from("workers")
+          .select("id,name,phone,agency_id,category,locality");
         if (userId && cleanPhone) {
-          query = query.or(`id.eq.${userId},phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
+          query = query.or(
+            `id.eq.${userId},phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`,
+          );
         } else if (userId) {
           query = query.eq("id", userId);
         } else if (cleanPhone) {
@@ -83,24 +109,36 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
         }
 
         const { data: workers } = await query;
-        const worker = Array.isArray(workers) && workers.length > 0 ? workers[0] : null;
+        const worker =
+          Array.isArray(workers) && workers.length > 0 ? workers[0] : null;
 
         if (worker) {
           setWorkerRecord(worker);
           if (worker.agency_id) {
             const { data: ag } = await supabase
               .from("agencies")
-              .select("id,name,phone,email,agency_code,verified,team_size_band,categories,service_locations,description")
-              .or(`id.eq.${worker.agency_id},agency_code.eq.${worker.agency_id}`);
-            
+              .select(
+                "id,name,phone,email,agency_code,verified,team_size_band,categories,service_locations,description",
+              )
+              .or(
+                `id.eq.${worker.agency_id},agency_code.eq.${worker.agency_id}`,
+              );
+
             const agencyObj = Array.isArray(ag) && ag.length > 0 ? ag[0] : null;
             if (agencyObj) {
               setAgency(agencyObj);
               try {
-                localStorage.setItem(cacheKey, JSON.stringify({ agency: agencyObj, worker }));
+                localStorage.setItem(
+                  cacheKey,
+                  JSON.stringify({ agency: agencyObj, worker }),
+                );
               } catch {}
             } else {
-              setAgency({ id: worker.agency_id, name: "Affiliated Agency", verified: true });
+              setAgency({
+                id: worker.agency_id,
+                name: "Affiliated Agency",
+                verified: true,
+              });
             }
           } else {
             setAgency(null);
@@ -128,21 +166,30 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
     const code = agencyCodeInput.trim();
     if (!code) {
-      setError("Please enter an agency code or ID (e.g. AGN-ADMN or agency-admin).");
+      setError(
+        "Please enter an agency code or ID (e.g. AGN-ADMN or agency-admin).",
+      );
       return;
     }
 
-    const cleanPhone = String(userPhone || workerRecord?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const cleanPhone = String(userPhone || workerRecord?.phone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const workerIdToUse = workerRecord?.id || cleanPhone || userId;
     if (!workerIdToUse) {
-      setError("Worker record could not be found. Please update your profile first.");
+      setError(
+        "Worker record could not be found. Please update your profile first.",
+      );
       return;
     }
 
     setSubmitting(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
       if (sessionData?.session?.access_token) {
         headers["Authorization"] = `Bearer ${sessionData.session.access_token}`;
       }
@@ -175,11 +222,19 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
       setAgency(data.agency);
       setAgencyCodeInput("");
-      setSuccess(`Successfully affiliated with ${data.agency.name || "Agency"}! Link is active in your dashboard.`);
-      
+      setSuccess(
+        `Successfully affiliated with ${data.agency.name || "Agency"}! Link is active in your dashboard.`,
+      );
+
       const cacheKey = `lw_affiliation_${userId || cleanPhone}`;
       try {
-        localStorage.setItem(cacheKey, JSON.stringify({ agency: data.agency, worker: data.worker || workerRecord }));
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            agency: data.agency,
+            worker: data.worker || workerRecord,
+          }),
+        );
       } catch {}
 
       void loadAffiliation();
@@ -196,11 +251,16 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
     setSubmitting(true);
     setShowLeaveConfirm(false);
     try {
-      const cleanPhone = String(userPhone || workerRecord?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+      const cleanPhone = String(userPhone || workerRecord?.phone || "")
+        .replace(/^\+91/, "")
+        .replace(/\D/g, "")
+        .slice(-10);
       const targetId = workerRecord?.id || userId || cleanPhone;
 
       const { data: sessionData } = await supabase.auth.getSession();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
       if (sessionData?.session?.access_token) {
         headers["Authorization"] = `Bearer ${sessionData.session.access_token}`;
       }
@@ -218,12 +278,18 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
       if (supabase && targetId) {
         try {
-          await supabase.from("workers").update({ agency_id: null }).eq("id", targetId);
+          await supabase
+            .from("workers")
+            .update({ agency_id: null })
+            .eq("id", targetId);
         } catch {}
       }
       if (supabase && cleanPhone) {
         try {
-          await supabase.from("workers").update({ agency_id: null }).or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
+          await supabase
+            .from("workers")
+            .update({ agency_id: null })
+            .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
         } catch {}
       }
 
@@ -259,9 +325,12 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
             <Building2 size={16} />
           </span>
           <div>
-            <h2 className="text-sm font-bold text-[#2C2C2C]">Agency Affiliation</h2>
+            <h2 className="text-sm font-bold text-[#2C2C2C]">
+              Agency Affiliation
+            </h2>
             <p className="text-xs text-[#67696D]">
-              Work independently or join a licensed agency team for bulk contracts.
+              Work independently or join a licensed agency team for bulk
+              contracts.
             </p>
           </div>
         </div>
@@ -298,7 +367,9 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-[#2C2C2C]">{agency.name}</h3>
+                  <h3 className="text-sm font-bold text-[#2C2C2C]">
+                    {agency.name}
+                  </h3>
                   {agency.verified && (
                     <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-primary">
                       <ShieldCheck size={11} />
@@ -307,8 +378,15 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
                   )}
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#67696D]">
-                  <span>Code: <strong className="font-mono text-[#2C2C2C]">{agency.agency_code || "AGN-..."}</strong></span>
-                  {agency.team_size_band && <span>· Team Size: {agency.team_size_band}</span>}
+                  <span>
+                    Code:{" "}
+                    <strong className="font-mono text-[#2C2C2C]">
+                      {agency.agency_code || "AGN-..."}
+                    </strong>
+                  </span>
+                  {agency.team_size_band && (
+                    <span>· Team Size: {agency.team_size_band}</span>
+                  )}
                   {agency.phone && <span>· Helpline: {agency.phone}</span>}
                 </div>
               </div>
@@ -347,7 +425,9 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
             itemDetails={{
               label: "Current Agency",
               value: agency.name || "Affiliated Agency",
-              subValue: agency.agency_code ? `Invite Code: ${agency.agency_code}` : undefined,
+              subValue: agency.agency_code
+                ? `Invite Code: ${agency.agency_code}`
+                : undefined,
             }}
             confirmText="Leave Agency"
             cancelText="Cancel"
@@ -359,17 +439,26 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
       ) : (
         <div className="space-y-4">
           <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
-            <h3 className="text-xs font-bold text-[#2C2C2C] mb-1">Have an Agency Joining Code?</h3>
+            <h3 className="text-xs font-bold text-[#2C2C2C] mb-1">
+              Have an Agency Joining Code?
+            </h3>
             <p className="text-xs text-[#67696D] mb-3">
-              If your contractor or agency gave you a 4–6 character invite code (e.g. <code>AGN-ADMN</code> or <code>AGN-7K2P</code>), enter it below to join their verified roster.
+              If your contractor or agency gave you a 4–6 character invite code
+              (e.g. <code>AGN-ADMN</code> or <code>AGN-7K2P</code>), enter it
+              below to join their verified roster.
             </p>
 
-            <form onSubmit={handleJoinAgency} className="flex flex-col sm:flex-row gap-2">
+            <form
+              onSubmit={handleJoinAgency}
+              className="flex flex-col sm:flex-row gap-2"
+            >
               <div className="relative flex-1">
                 <input
                   type="text"
                   value={agencyCodeInput}
-                  onChange={(e) => setAgencyCodeInput(e.target.value.toUpperCase())}
+                  onChange={(e) =>
+                    setAgencyCodeInput(e.target.value.toUpperCase())
+                  }
                   placeholder="e.g. AGN-ADMN"
                   className="h-10 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 font-mono text-sm uppercase tracking-wider text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden focus:border-primary focus:ring-2 focus:ring-primary/20"
                   required
@@ -397,7 +486,10 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
 
           <div className="flex items-center justify-between text-xs text-[#67696D] px-1">
             <span>Looking for agencies to collaborate with?</span>
-            <Link to="/search?type=agencies" className="text-primary hover:underline font-semibold inline-flex items-center gap-1">
+            <Link
+              to="/search?type=agencies"
+              className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
+            >
               <span>Browse registered agencies</span>
               <ArrowRight size={11} />
             </Link>
@@ -407,4 +499,3 @@ export default function WorkerAgencyAffiliation({ userId, userPhone }: WorkerAge
     </section>
   );
 }
-

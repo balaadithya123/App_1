@@ -26,7 +26,8 @@ export default defineConfig(({ mode }) => ({
       manifest: {
         name: "Local Worker Discovery",
         short_name: "Workora",
-        description: "Platform for discovering, contacting, and managing local workers and agencies.",
+        description:
+          "Platform for discovering, contacting, and managing local workers and agencies.",
         start_url: "/",
         scope: "/",
         display: "standalone",

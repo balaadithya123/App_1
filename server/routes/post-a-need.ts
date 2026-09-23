@@ -1,6 +1,10 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
-import type { ApiErrorResponse, PostNeedResponse, RecordLeadResponse } from "../../shared/api";
+import type {
+  ApiErrorResponse,
+  PostNeedResponse,
+  RecordLeadResponse,
+} from "../../shared/api";
 import type { Worker } from "../../shared/workers";
 import { getAllWorkers } from "./workers";
 import { supabase } from "../lib/supabase";
@@ -20,7 +24,8 @@ export const handlePostANeed: RequestHandler = async (req, res) => {
     const parseResult = postNeedSchema.safeParse(req.body);
     if (!parseResult.success) {
       res.status(400).json({
-        message: "Please fill in all required fields (category, description, location).",
+        message:
+          "Please fill in all required fields (category, description, location).",
         errors: z.flattenError(parseResult.error).fieldErrors,
       } satisfies ApiErrorResponse);
       return;
@@ -39,7 +44,11 @@ export const handlePostANeed: RequestHandler = async (req, res) => {
       if (!normCategory || normCategory === "all services") return true;
       const wCat = (w.category || "").trim().toLowerCase();
       const wServices = (w.services || []).map((s) => s.toLowerCase());
-      return wCat.includes(normCategory) || normCategory.includes(wCat) || wServices.some((s) => s.includes(normCategory));
+      return (
+        wCat.includes(normCategory) ||
+        normCategory.includes(wCat) ||
+        wServices.some((s) => s.includes(normCategory))
+      );
     };
 
     const isLocationMatch = (w: Worker) => {
@@ -111,7 +120,12 @@ export const handlePostANeed: RequestHandler = async (req, res) => {
       await supabase.from("analytics_events").insert({
         event_type: "post_a_need_submitted",
         worker_id: matchedWorkers[0]?.id || null,
-        metadata: { category, location, description_len: description.length, matched_count: matchedWorkers.length },
+        metadata: {
+          category,
+          location,
+          description_len: description.length,
+          matched_count: matchedWorkers.length,
+        },
       });
     } catch {}
 
@@ -122,16 +136,23 @@ export const handlePostANeed: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("[post-a-need] Error matching workers:", error);
     res.status(500).json({
-      message: error instanceof Error ? error.message : "Unable to match workers right now.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to match workers right now.",
     } satisfies ApiErrorResponse);
   }
 };
 
 export const handleRecordLead: RequestHandler = async (req, res) => {
   try {
-    const workerId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const workerId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
     if (!workerId) {
-      res.status(400).json({ message: "Worker ID is required." } satisfies ApiErrorResponse);
+      res
+        .status(400)
+        .json({ message: "Worker ID is required." } satisfies ApiErrorResponse);
       return;
     }
 
@@ -157,7 +178,8 @@ export const handleRecordLead: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("[record-lead] Error recording lead:", error);
     res.status(500).json({
-      message: error instanceof Error ? error.message : "Unable to record lead.",
+      message:
+        error instanceof Error ? error.message : "Unable to record lead.",
     } satisfies ApiErrorResponse);
   }
 };

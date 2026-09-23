@@ -19,12 +19,15 @@ export const readReports = async (): Promise<Report[]> => {
     throw new Error(`Unable to load reports from Supabase: ${error.message}`);
   }
 
-  return z.array(persistedReportSchema).parse(data ?? []).map((report) => ({
-    id: report.id,
-    reason: report.reason,
-    feedback: report.feedback,
-    createdAt: report.created_at ?? new Date().toISOString(),
-  }));
+  return z
+    .array(persistedReportSchema)
+    .parse(data ?? [])
+    .map((report) => ({
+      id: report.id,
+      reason: report.reason,
+      feedback: report.feedback,
+      createdAt: report.created_at ?? new Date().toISOString(),
+    }));
 };
 
 export const saveReport = async (reportRequest: ReportRequest) => {

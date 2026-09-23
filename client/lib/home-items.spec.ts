@@ -32,7 +32,7 @@ describe("home-items plain date arithmetic & reminder logic", () => {
     const today = new Date(2026, 8, 21); // 2026-09-21
     const status = getReminderStatus(
       { last_serviced_date: "2026-05-21", interval_months: 4 },
-      today
+      today,
     );
     expect(status.isDue).toBe(true);
     expect(status.isOverdue).toBe(false);
@@ -45,7 +45,7 @@ describe("home-items plain date arithmetic & reminder logic", () => {
     // Serviced 2026-01-21 with 6 month interval -> due 2026-07-21 (2 months overdue)
     const status = getReminderStatus(
       { last_serviced_date: "2026-01-21", interval_months: 6 },
-      today
+      today,
     );
     expect(status.isDue).toBe(true);
     expect(status.isOverdue).toBe(true);
@@ -58,7 +58,7 @@ describe("home-items plain date arithmetic & reminder logic", () => {
     // Serviced today with 4 month interval -> due 2027-01-21
     const status = getReminderStatus(
       { last_serviced_date: "2026-09-21", interval_months: 4 },
-      today
+      today,
     );
     expect(status.isDue).toBe(false);
     expect(status.isOverdue).toBe(false);
@@ -125,8 +125,12 @@ describe("home-items plain date arithmetic & reminder logic", () => {
   it("provides quick preset date strings for onboarding", () => {
     const today = new Date(2026, 8, 21);
     expect(getPresetLastServicedDate("today", today)).toBe("2026-09-21");
-    expect(getPresetLastServicedDate("1_3_months_ago", today)).toBe("2026-07-21");
-    expect(getPresetLastServicedDate("6_plus_months_ago", today)).toBe("2026-03-21");
+    expect(getPresetLastServicedDate("1_3_months_ago", today)).toBe(
+      "2026-07-21",
+    );
+    expect(getPresetLastServicedDate("6_plus_months_ago", today)).toBe(
+      "2026-03-21",
+    );
   });
 
   it("contains all 9 required recurring maintenance catalog items", () => {

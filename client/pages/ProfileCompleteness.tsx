@@ -72,7 +72,11 @@ export default function ProfileCompleteness() {
       const path = `${user.id}/profile.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
+        .upload(path, file, {
+          upsert: true,
+          contentType: file.type,
+          cacheControl: "3600",
+        });
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
@@ -85,7 +89,10 @@ export default function ProfileCompleteness() {
 
       setUser((prev: any) => ({
         ...prev,
-        user_metadata: { ...(prev?.user_metadata || {}), avatar_url: avatarUrl },
+        user_metadata: {
+          ...(prev?.user_metadata || {}),
+          avatar_url: avatarUrl,
+        },
       }));
       setActionNotice("Profile photo uploaded successfully!");
       setTimeout(() => setActionNotice(null), 3000);
@@ -119,13 +126,16 @@ export default function ProfileCompleteness() {
 
   const m = user.user_metadata || {};
   const isFilled = (value: unknown) =>
-    Boolean(String(value ?? "").trim() && String(value).trim() !== "Not added yet");
+    Boolean(
+      String(value ?? "").trim() && String(value).trim() !== "Not added yet",
+    );
 
   const checks: CheckItem[] = [
     {
       id: "photo",
       label: "Profile Photo",
-      description: "Clients are 4x more likely to contact profiles with a clear picture.",
+      description:
+        "Clients are 4x more likely to contact profiles with a clear picture.",
       done: Boolean(m.avatar_url),
       actionText: "Upload Photo",
       fieldKey: "avatar_url",
@@ -157,7 +167,8 @@ export default function ProfileCompleteness() {
     {
       id: "services",
       label: "Specific Services Offered",
-      description: "List specific jobs you do (e.g. Inverter Wiring, Fan Installation).",
+      description:
+        "List specific jobs you do (e.g. Inverter Wiring, Fan Installation).",
       done: Array.isArray(m.services)
         ? m.services.some((s: any) => isFilled(s))
         : isFilled(m.services),
@@ -213,7 +224,13 @@ export default function ProfileCompleteness() {
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <button
             type="button"
-            onClick={() => (window.history.state && typeof window.history.state.idx === "number" && window.history.state.idx > 0 ? navigate(-1) : navigate("/worker-dashboard"))}
+            onClick={() =>
+              window.history.state &&
+              typeof window.history.state.idx === "number" &&
+              window.history.state.idx > 0
+                ? navigate(-1)
+                : navigate("/worker-dashboard")
+            }
             className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#67696D] transition hover:text-[#2C2C2C] cursor-pointer"
           >
             <ArrowLeft size={14} /> Back
@@ -232,13 +249,16 @@ export default function ProfileCompleteness() {
                   Profile Completeness
                 </h1>
                 <p className="mt-1 text-xs text-[#67696D]">
-                  Complete all sections to maximize your search ranking and client callbacks.
+                  Complete all sections to maximize your search ranking and
+                  client callbacks.
                 </p>
               </div>
             </div>
 
             <div className="flex items-baseline gap-1.5 self-start rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-4 py-2 sm:self-auto">
-              <span className="text-2xl font-bold text-[#2C2C2C]">{percent}%</span>
+              <span className="text-2xl font-bold text-[#2C2C2C]">
+                {percent}%
+              </span>
               <span className="text-xs text-[#67696D]">Score</span>
             </div>
           </div>
@@ -263,7 +283,9 @@ export default function ProfileCompleteness() {
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
           <div className="flex items-center justify-between border-b border-[#E7ECF1] pb-3">
             <div>
-              <h2 className="text-sm font-bold text-[#2C2C2C]">Completeness Checklist</h2>
+              <h2 className="text-sm font-bold text-[#2C2C2C]">
+                Completeness Checklist
+              </h2>
               <p className="text-xs text-[#67696D]">
                 {completedCount} of {checks.length} items complete
               </p>
@@ -306,7 +328,9 @@ export default function ProfileCompleteness() {
                     <p className="truncate text-xs font-bold text-[#2C2C2C] sm:text-sm">
                       {item.label}
                     </p>
-                    <p className="text-[11px] text-[#67696D]">{item.description}</p>
+                    <p className="text-[11px] text-[#67696D]">
+                      {item.description}
+                    </p>
                   </div>
                 </div>
 
@@ -323,7 +347,11 @@ export default function ProfileCompleteness() {
                       className="inline-flex h-8 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer active:scale-95"
                     >
                       {item.id === "photo" && <Camera size={12} />}
-                      <span>{uploadingPhoto && item.id === "photo" ? "Uploading..." : item.actionText}</span>
+                      <span>
+                        {uploadingPhoto && item.id === "photo"
+                          ? "Uploading..."
+                          : item.actionText}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -333,10 +361,15 @@ export default function ProfileCompleteness() {
 
           {/* Phone Security Notice */}
           <div className="mt-5 flex items-center gap-3 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
-            <ShieldCheck size={20} className={phoneVerified ? "text-primary" : "text-[#989EA7]"} />
+            <ShieldCheck
+              size={20}
+              className={phoneVerified ? "text-primary" : "text-[#989EA7]"}
+            />
             <div>
               <p className="text-xs font-bold text-[#2C2C2C]">
-                {phoneVerified ? "Phone Verified Account" : "Phone Verification"}
+                {phoneVerified
+                  ? "Phone Verified Account"
+                  : "Phone Verification"}
               </p>
               <p className="text-[11px] text-[#67696D]">
                 {phoneVerified

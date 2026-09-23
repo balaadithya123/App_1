@@ -5,7 +5,9 @@ function readSavedWorkerIds(): string[] {
   if (typeof window === "undefined") return [];
   try {
     const value = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(value) ? value.filter((id): id is string => typeof id === "string") : [];
+    return Array.isArray(value)
+      ? value.filter((id): id is string => typeof id === "string")
+      : [];
   } catch {
     return [];
   }
@@ -14,7 +16,9 @@ function readSavedWorkerIds(): string[] {
 function readWorkerNotes(): Record<string, string> {
   if (typeof window === "undefined") return {};
   try {
-    const value = JSON.parse(window.localStorage.getItem(NOTES_STORAGE_KEY) || "{}");
+    const value = JSON.parse(
+      window.localStorage.getItem(NOTES_STORAGE_KEY) || "{}",
+    );
     return typeof value === "object" && value !== null ? value : {};
   } catch {
     return {};
@@ -32,7 +36,9 @@ export function isWorkerSaved(workerId: string): boolean {
 export function toggleSavedWorker(workerId: string): boolean {
   const current = readSavedWorkerIds();
   const saved = current.includes(workerId);
-  const next = saved ? current.filter((id) => id !== workerId) : [...current, workerId];
+  const next = saved
+    ? current.filter((id) => id !== workerId)
+    : [...current, workerId];
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   window.dispatchEvent(new CustomEvent("saved-workers-changed"));
   return !saved;
@@ -54,4 +60,3 @@ export function setWorkerNote(workerId: string, note: string): void {
   window.localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
   window.dispatchEvent(new CustomEvent("saved-workers-changed"));
 }
-

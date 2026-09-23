@@ -22,16 +22,26 @@ export const filterWorkers = (
   const serviceStem = stemWord(normalizedService);
 
   return workers.filter((worker) => {
-    const searchableServices = [worker.name, worker.category, ...worker.services].map(
-      (value) => normalizeSearchValue(value),
-    );
+    const searchableServices = [
+      worker.name,
+      worker.category,
+      ...worker.services,
+    ].map((value) => normalizeSearchValue(value));
     const searchableLocation = normalizeSearchValue(worker.locality);
 
     const matchesService =
       !normalizedService ||
       searchableServices.some((value) => {
-        if (value.includes(normalizedService) || normalizedService.includes(value)) return true;
-        if (serviceStem && (value.includes(serviceStem) || stemWord(value).includes(serviceStem))) return true;
+        if (
+          value.includes(normalizedService) ||
+          normalizedService.includes(value)
+        )
+          return true;
+        if (
+          serviceStem &&
+          (value.includes(serviceStem) || stemWord(value).includes(serviceStem))
+        )
+          return true;
         return false;
       });
 
@@ -41,4 +51,3 @@ export const filterWorkers = (
     return matchesService && matchesLocation;
   });
 };
-

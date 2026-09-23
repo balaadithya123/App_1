@@ -69,7 +69,8 @@ export const getCatalogIcon = (iconName: string, className = "h-4 w-4") => {
   }
 };
 
-type QuickDateChoice = "today" | "1_3_months_ago" | "6_plus_months_ago" | "custom";
+type QuickDateChoice =
+  "today" | "1_3_months_ago" | "6_plus_months_ago" | "custom";
 
 interface CatalogItemFormState {
   selected: boolean;
@@ -87,20 +88,27 @@ export default function AddReminderSheet({
   initialMode = "catalog",
 }: AddReminderSheetProps) {
   const [activeTab, setActiveTab] = useState<"catalog" | "custom">(initialMode);
-  const [catalog, setCatalog] = useState<MaintenanceCatalogItem[]>(DEFAULT_MAINTENANCE_CATALOG);
+  const [catalog, setCatalog] = useState<MaintenanceCatalogItem[]>(
+    DEFAULT_MAINTENANCE_CATALOG,
+  );
   const [loadingCatalog, setLoadingCatalog] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
   // Catalog item choices state
-  const [catalogState, setCatalogState] = useState<Record<string, CatalogItemFormState>>({});
+  const [catalogState, setCatalogState] = useState<
+    Record<string, CatalogItemFormState>
+  >({});
 
   // Custom reminder state
   const [customLabel, setCustomLabel] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [customInterval, setCustomInterval] = useState<number>(6);
-  const [customDateChoice, setCustomDateChoice] = useState<QuickDateChoice>("today");
-  const [customExactDate, setCustomExactDate] = useState<string>(() => formatDateIso(new Date()));
+  const [customDateChoice, setCustomDateChoice] =
+    useState<QuickDateChoice>("today");
+  const [customExactDate, setCustomExactDate] = useState<string>(() =>
+    formatDateIso(new Date()),
+  );
 
   useEffect(() => {
     if (open) {
@@ -184,7 +192,9 @@ export default function AddReminderSheet({
     }));
   };
 
-  const selectedCatalogCount = Object.values(catalogState).filter((s) => s.selected).length;
+  const selectedCatalogCount = Object.values(catalogState).filter(
+    (s) => s.selected,
+  ).length;
 
   const handleSaveCatalogItems = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,7 +202,9 @@ export default function AddReminderSheet({
 
     setSubmitting(true);
     try {
-      const itemsToCreate: Array<Omit<HomeItem, "id" | "created_at" | "updated_at">> = [];
+      const itemsToCreate: Array<
+        Omit<HomeItem, "id" | "created_at" | "updated_at">
+      > = [];
 
       for (const catItem of catalog) {
         const state = catalogState[catItem.item_type];
@@ -210,13 +222,16 @@ export default function AddReminderSheet({
           item_type: catItem.item_type,
           label: state.label.trim() || catItem.default_label,
           last_serviced_date: lastServiced,
-          interval_months: state.intervalMonths || catItem.default_interval_months,
+          interval_months:
+            state.intervalMonths || catItem.default_interval_months,
           category_slug: catItem.category_slug,
         });
       }
 
       await createBatchUserHomeItems(itemsToCreate);
-      setSuccessMessage(`Added ${itemsToCreate.length} home reminder${itemsToCreate.length > 1 ? "s" : ""}!`);
+      setSuccessMessage(
+        `Added ${itemsToCreate.length} home reminder${itemsToCreate.length > 1 ? "s" : ""}!`,
+      );
       onItemsAdded();
       setTimeout(() => {
         onOpenChange(false);
@@ -279,9 +294,12 @@ export default function AddReminderSheet({
               <Clock size={16} />
             </span>
             <div>
-              <SheetTitle className="text-lg font-bold tracking-tight">Add Home Reminder</SheetTitle>
+              <SheetTitle className="text-lg font-bold tracking-tight">
+                Add Home Reminder
+              </SheetTitle>
               <SheetDescription className="text-xs text-[#67696D] dark:text-[#989EA7]">
-                Track periodic maintenance cycles for your home appliances & fittings.
+                Track periodic maintenance cycles for your home appliances &
+                fittings.
               </SheetDescription>
             </div>
           </div>
@@ -328,7 +346,11 @@ export default function AddReminderSheet({
               </p>
             </div>
           ) : activeTab === "catalog" ? (
-            <form id="catalog-form" onSubmit={handleSaveCatalogItems} className="space-y-4">
+            <form
+              id="catalog-form"
+              onSubmit={handleSaveCatalogItems}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between text-xs text-[#67696D] dark:text-[#989EA7] px-1">
                 <span>Select items you have at home:</span>
                 <span className="font-semibold text-primary">
@@ -337,7 +359,9 @@ export default function AddReminderSheet({
               </div>
 
               {loadingCatalog ? (
-                <div className="py-8 text-center text-xs text-[#67696D]">Loading catalog items...</div>
+                <div className="py-8 text-center text-xs text-[#67696D]">
+                  Loading catalog items...
+                </div>
               ) : (
                 catalog.map((item) => {
                   const state = catalogState[item.item_type] || {
@@ -361,7 +385,9 @@ export default function AddReminderSheet({
                         <Checkbox
                           id={`cb-${item.item_type}`}
                           checked={state.selected}
-                          onCheckedChange={(c) => toggleCatalogItemSelected(item.item_type, !!c)}
+                          onCheckedChange={(c) =>
+                            toggleCatalogItemSelected(item.item_type, !!c)
+                          }
                           className="mt-1"
                         />
                         <div className="flex-1 min-w-0">
@@ -372,7 +398,9 @@ export default function AddReminderSheet({
                             <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F6F9FC] dark:bg-[#1C1C1C] text-[#67696D] dark:text-[#A1A1AA]">
                               {getCatalogIcon(item.icon_name, "h-3.5 w-3.5")}
                             </span>
-                            <span className="truncate">{item.default_label}</span>
+                            <span className="truncate">
+                              {item.default_label}
+                            </span>
                             <span className="ml-auto shrink-0 text-[11px] font-normal text-[#67696D] dark:text-[#989EA7] bg-[#F0F4F8] dark:bg-[#1C1C1C] px-2 py-0.5 rounded-full">
                               Every {item.default_interval_months} mo
                             </span>
@@ -389,15 +417,26 @@ export default function AddReminderSheet({
                                   {(
                                     [
                                       { id: "today", label: "Today" },
-                                      { id: "1_3_months_ago", label: "1–3 mo ago" },
-                                      { id: "6_plus_months_ago", label: "6+ mo ago" },
+                                      {
+                                        id: "1_3_months_ago",
+                                        label: "1–3 mo ago",
+                                      },
+                                      {
+                                        id: "6_plus_months_ago",
+                                        label: "6+ mo ago",
+                                      },
                                       { id: "custom", label: "Custom date" },
                                     ] as const
                                   ).map((choice) => (
                                     <button
                                       type="button"
                                       key={choice.id}
-                                      onClick={() => setDateChoiceForItem(item.item_type, choice.id)}
+                                      onClick={() =>
+                                        setDateChoiceForItem(
+                                          item.item_type,
+                                          choice.id,
+                                        )
+                                      }
                                       className={`rounded-lg px-2 py-1.5 text-[11px] font-medium transition cursor-pointer text-center ${
                                         state.dateChoice === choice.id
                                           ? "bg-primary text-white font-semibold shadow-xs"
@@ -412,11 +451,19 @@ export default function AddReminderSheet({
 
                               {state.dateChoice === "custom" && (
                                 <div className="flex items-center gap-2 pt-1">
-                                  <Calendar size={13} className="text-[#67696D]" />
+                                  <Calendar
+                                    size={13}
+                                    className="text-[#67696D]"
+                                  />
                                   <input
                                     type="date"
                                     value={state.customDate}
-                                    onChange={(e) => setCustomDateForItem(item.item_type, e.target.value)}
+                                    onChange={(e) =>
+                                      setCustomDateForItem(
+                                        item.item_type,
+                                        e.target.value,
+                                      )
+                                    }
                                     max={formatDateIso(new Date())}
                                     className="rounded-lg border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] px-2.5 py-1 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:outline-none focus:ring-1 focus:ring-primary"
                                   />
@@ -432,7 +479,10 @@ export default function AddReminderSheet({
                                     max={60}
                                     value={state.intervalMonths}
                                     onChange={(e) =>
-                                      setIntervalForItem(item.item_type, Number(e.target.value) || 1)
+                                      setIntervalForItem(
+                                        item.item_type,
+                                        Number(e.target.value) || 1,
+                                      )
                                     }
                                     className="w-14 rounded-md border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] px-2 py-0.5 text-center text-xs text-[#2C2C2C] dark:text-[#F4F4F5]"
                                   />
@@ -449,7 +499,11 @@ export default function AddReminderSheet({
               )}
             </form>
           ) : (
-            <form id="custom-form" onSubmit={handleSaveCustomReminder} className="space-y-4">
+            <form
+              id="custom-form"
+              onSubmit={handleSaveCustomReminder}
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
                   Reminder Label <span className="text-rose-500">*</span>
@@ -476,13 +530,15 @@ export default function AddReminderSheet({
                   className="w-full rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] px-3.5 py-2.5 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] placeholder:text-[#989EA7] focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
                 />
                 <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#989EA7]">
-                  Used for finding matching nearby specialists when this reminder is due.
+                  Used for finding matching nearby specialists when this
+                  reminder is due.
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
-                  Service Cycle Interval <span className="text-rose-500">*</span>
+                  Service Cycle Interval{" "}
+                  <span className="text-rose-500">*</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -491,10 +547,16 @@ export default function AddReminderSheet({
                     max={60}
                     required
                     value={customInterval}
-                    onChange={(e) => setCustomInterval(Math.max(1, Number(e.target.value) || 1))}
+                    onChange={(e) =>
+                      setCustomInterval(
+                        Math.max(1, Number(e.target.value) || 1),
+                      )
+                    }
                     className="w-24 rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] px-3 py-2 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] focus:outline-none focus:ring-2 focus:ring-primary"
                   />
-                  <span className="text-xs text-[#67696D] dark:text-[#989EA7]">months between services</span>
+                  <span className="text-xs text-[#67696D] dark:text-[#989EA7]">
+                    months between services
+                  </span>
                 </div>
               </div>
 
@@ -566,8 +628,8 @@ export default function AddReminderSheet({
                   {submitting
                     ? "Adding..."
                     : selectedCatalogCount === 0
-                    ? "Select items to add"
-                    : `Add ${selectedCatalogCount} Reminder${selectedCatalogCount > 1 ? "s" : ""}`}
+                      ? "Select items to add"
+                      : `Add ${selectedCatalogCount} Reminder${selectedCatalogCount > 1 ? "s" : ""}`}
                 </span>
               </button>
             ) : (

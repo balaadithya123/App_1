@@ -7,7 +7,10 @@ import { readRegisteredWorkers } from "../lib/registered-workers";
 const schema = z.object({
   name: z.string().trim().min(2).max(120),
   contactPersonName: z.string().trim().min(2).max(120),
-  phone: z.string().trim().regex(/^\d{10}$/),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\d{10}$/),
   email: z.string().trim().email().max(200),
   categories: z.array(z.string().trim().min(1).max(80)).min(1).max(10),
   serviceLocations: z.array(z.string().trim().min(1).max(120)).min(1).max(20),
@@ -19,7 +22,13 @@ const schema = z.object({
 
 const getAuthenticatedClient = (token: string) => {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    "";
   return createClient(url, key, {
     auth: { persistSession: false },
     global: {
@@ -46,17 +55,32 @@ const generateAgencyCode = async () => {
   for (let attempt = 0; attempt < 50; attempt++) {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "AGN-";
-    for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-    const { data, error } = await supabase.from("agencies").select("id").eq("agency_code", code).maybeSingle();
+    for (let i = 0; i < 4; i++)
+      code += chars[Math.floor(Math.random() * chars.length)];
+    const { data, error } = await supabase
+      .from("agencies")
+      .select("id")
+      .eq("agency_code", code)
+      .maybeSingle();
     if (!error && !data) return code;
   }
   return `AGN-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 };
 
 const ensureAgencyCode = async (agency: any, client = supabase) => {
-  if (agency?.agency_code && /^AGN-[A-Z0-9]{4,6}$/i.test(agency.agency_code)) return agency.agency_code.toUpperCase();
+  if (agency?.agency_code && /^AGN-[A-Z0-9]{4,6}$/i.test(agency.agency_code))
+    return agency.agency_code.toUpperCase();
   const code = await generateAgencyCode();
-  const { data, error } = await client.from("agencies").update({ agency_code: code, regenerated_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", agency.id).select("agency_code").single();
+  const { data, error } = await client
+    .from("agencies")
+    .update({
+      agency_code: code,
+      regenerated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", agency.id)
+    .select("agency_code")
+    .single();
   if (error) return code;
   return data?.agency_code || code;
 };
@@ -67,12 +91,24 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
     const client = getAuthenticatedClient(token);
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: "Please check the agency details and try again.", errors: parsed.error.flatten().fieldErrors });
+      return res
+        .status(400)
+        .json({
+          message: "Please check the agency details and try again.",
+          errors: parsed.error.flatten().fieldErrors,
+        });
     }
 
-    const { data: existing } = await client.from("agencies").select("id,agency_code").eq("user_id", user.id).maybeSingle();
-    const agencyCode = existing?.agency_code && /^AGN-[A-Z0-9]{4,6}$/i.test(existing.agency_code) ? existing.agency_code.toUpperCase() : await generateAgencyCode();
-    
+    const { data: existing } = await client
+      .from("agencies")
+      .select("id,agency_code")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const agencyCode =
+      existing?.agency_code && /^AGN-[A-Z0-9]{4,6}$/i.test(existing.agency_code)
+        ? existing.agency_code.toUpperCase()
+        : await generateAgencyCode();
+
     const payload: Record<string, unknown> = {
       user_id: user.id,
       name: parsed.data.name,
@@ -83,7 +119,8 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
       service_locations: parsed.data.serviceLocations,
       location: parsed.data.serviceLocations.join(", "),
       team_size_band: parsed.data.teamSizeBand,
-      business_registration_number: parsed.data.businessRegistrationNumber || null,
+      business_registration_number:
+        parsed.data.businessRegistrationNumber || null,
       logo_url: parsed.data.logoUrl || null,
       description: parsed.data.description,
       agency_code: agencyCode,
@@ -95,9 +132,16 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
       payload.regenerated_at = new Date().toISOString();
     }
 
-    const cleanPayload = Object.fromEntries(Object.entries(payload).filter(([, v]) => v !== undefined));
+    const cleanPayload = Object.fromEntries(
+      Object.entries(payload).filter(([, v]) => v !== undefined),
+    );
     const query = existing?.id
-      ? client.from("agencies").update(cleanPayload).eq("id", existing.id).select().single()
+      ? client
+          .from("agencies")
+          .update(cleanPayload)
+          .eq("id", existing.id)
+          .select()
+          .single()
       : client.from("agencies").insert(cleanPayload).select().single();
 
     const { data, error } = await query;
@@ -113,8 +157,16 @@ export const handleRegisterAgency: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
-    return res.status(status).json({ message: status === 500 ? `Unable to save agency registration: ${code || "error"}` : "Your login session is invalid or expired." });
+    const status =
+      code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res
+      .status(status)
+      .json({
+        message:
+          status === 500
+            ? `Unable to save agency registration: ${code || "error"}`
+            : "Your login session is invalid or expired.",
+      });
   }
 };
 
@@ -124,7 +176,9 @@ export const handleGetMyAgency: RequestHandler = async (req, res) => {
     const client = getAuthenticatedClient(token);
     const { data, error } = await client
       .from("agencies")
-      .select("id,name,contact_person_name,phone,email,categories,service_locations,team_size_band,business_registration_number,logo_url,location,services,description,verified,agency_code,regenerated_at,created_at,updated_at")
+      .select(
+        "id,name,contact_person_name,phone,email,categories,service_locations,team_size_band,business_registration_number,logo_url,location,services,description,verified,agency_code,regenerated_at,created_at,updated_at",
+      )
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -134,8 +188,16 @@ export const handleGetMyAgency: RequestHandler = async (req, res) => {
     return res.json({ agency: { ...data, agency_code: agencyCode } });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
-    return res.status(status).json({ message: status === 500 ? "Unable to load agency profile." : "Your login session is invalid or expired." });
+    const status =
+      code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res
+      .status(status)
+      .json({
+        message:
+          status === 500
+            ? "Unable to load agency profile."
+            : "Your login session is invalid or expired.",
+      });
   }
 };
 
@@ -144,42 +206,78 @@ export const handleRegenerateAgencyCode: RequestHandler = async (req, res) => {
     const { user, token } = await getAgencyUser(req);
     const client = getAuthenticatedClient(token);
     const code = await generateAgencyCode();
-    const { data, error } = await client.from("agencies").update({ agency_code: code, regenerated_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("user_id", user.id).select("agency_code,regenerated_at").single();
+    const { data, error } = await client
+      .from("agencies")
+      .update({
+        agency_code: code,
+        regenerated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id)
+      .select("agency_code,regenerated_at")
+      .single();
     if (error) throw error;
-    return res.json({ agencyCode: data.agency_code, regeneratedAt: data.regenerated_at, shareUrl: `/join?ref=${data.agency_code}` });
+    return res.json({
+      agencyCode: data.agency_code,
+      regeneratedAt: data.regenerated_at,
+      shareUrl: `/join?ref=${data.agency_code}`,
+    });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
-    return res.status(status).json({ message: status === 500 ? "Unable to regenerate agency code." : "Your login session is invalid or expired." });
+    const status =
+      code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res
+      .status(status)
+      .json({
+        message:
+          status === 500
+            ? "Unable to regenerate agency code."
+            : "Your login session is invalid or expired.",
+      });
   }
 };
 
 export const handleJoinAgency: RequestHandler = async (req, res) => {
   try {
-    const rawInput = String(req.body.agencyCode || req.body.agencyId || req.body.code || "").trim();
+    const rawInput = String(
+      req.body.agencyCode || req.body.agencyId || req.body.code || "",
+    ).trim();
     const workerId = String(req.body.workerId || "").trim();
-    
+
     if (!rawInput) {
-      return res.status(400).json({ message: "Please enter an agency code or ID (e.g. AGN-ADMN or agency-admin)." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Please enter an agency code or ID (e.g. AGN-ADMN or agency-admin).",
+        });
     }
     if (!workerId) {
       return res.status(400).json({ message: "Worker ID is required." });
     }
 
     const cleanInputUpper = rawInput.toUpperCase();
-    const formattedCode = cleanInputUpper.startsWith("AGN-") ? cleanInputUpper : `AGN-${cleanInputUpper}`;
+    const formattedCode = cleanInputUpper.startsWith("AGN-")
+      ? cleanInputUpper
+      : `AGN-${cleanInputUpper}`;
 
     // 1. Look up agency in DB by exact code, formatted AGN- code, or id
     let agency: any = null;
     const { data: dbAgencies } = await supabase
       .from("agencies")
-      .select("id,name,agency_code,user_id,phone,email,categories,service_locations,location,team_size_band,verified,description,logo_url");
+      .select(
+        "id,name,agency_code,user_id,phone,email,categories,service_locations,location,team_size_band,verified,description,logo_url",
+      );
 
     const allAgencies = Array.isArray(dbAgencies) ? [...dbAgencies] : [];
 
     // Also check default admin agencies
     for (const def of DEFAULT_ADMIN_AGENCIES) {
-      if (!allAgencies.some((a) => a.id === def.id || a.agency_code === def.agency_code)) {
+      if (
+        !allAgencies.some(
+          (a) => a.id === def.id || a.agency_code === def.agency_code,
+        )
+      ) {
         allAgencies.push(def);
       }
     }
@@ -196,12 +294,17 @@ export const handleJoinAgency: RequestHandler = async (req, res) => {
         idStr === inputLower ||
         idStr === `agency-${inputLower}` ||
         nameStr === inputLower ||
-        (inputLower === "admin" && (idStr === "agency-admin" || codeUpper === "AGN-ADMN"))
+        (inputLower === "admin" &&
+          (idStr === "agency-admin" || codeUpper === "AGN-ADMN"))
       );
     });
 
     if (!agency) {
-      return res.status(404).json({ message: `Agency '${rawInput}' not found. Please verify the code or ID and try again.` });
+      return res
+        .status(404)
+        .json({
+          message: `Agency '${rawInput}' not found. Please verify the code or ID and try again.`,
+        });
     }
 
     // Ensure agency exists in database table
@@ -213,8 +316,12 @@ export const handleJoinAgency: RequestHandler = async (req, res) => {
         phone: agency.phone || "8825551402",
         email: agency.email || "agency@example.com",
         categories: ensureArray(agency.categories),
-        service_locations: ensureArray(agency.service_locations || agency.location),
-        location: Array.isArray(agency.service_locations) ? agency.service_locations.join(", ") : String(agency.location || "Local area"),
+        service_locations: ensureArray(
+          agency.service_locations || agency.location,
+        ),
+        location: Array.isArray(agency.service_locations)
+          ? agency.service_locations.join(", ")
+          : String(agency.location || "Local area"),
         team_size_band: agency.team_size_band || "6-15",
         verified: Boolean(agency.verified),
         description: agency.description || "",
@@ -229,7 +336,10 @@ export const handleJoinAgency: RequestHandler = async (req, res) => {
     // 2. Link worker in workers table
     let updatedWorker: any = null;
     const reqPhone = req.body?.phone;
-    const cleanPhone = String(reqPhone || workerId || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const cleanPhone = String(reqPhone || workerId || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const targetId = String(workerId || "");
 
     const { data: existingWorkers } = await supabase
@@ -237,7 +347,10 @@ export const handleJoinAgency: RequestHandler = async (req, res) => {
       .select("id,name,agency_id,category,locality,phone,phone_verified")
       .or(`id.eq.${targetId},phone.eq.${targetId},phone.eq.${cleanPhone}`);
 
-    const existingWorker = Array.isArray(existingWorkers) && existingWorkers.length > 0 ? existingWorkers[0] : null;
+    const existingWorker =
+      Array.isArray(existingWorkers) && existingWorkers.length > 0
+        ? existingWorkers[0]
+        : null;
 
     if (existingWorker) {
       const { data: w } = await supabase
@@ -249,13 +362,16 @@ export const handleJoinAgency: RequestHandler = async (req, res) => {
         .eq("id", existingWorker.id)
         .select("id,name,agency_id,category,locality,phone")
         .single();
-      
+
       // Also update any other record matching phone to prevent mismatch
       if (cleanPhone || existingWorker.phone) {
         const ph = cleanPhone || existingWorker.phone;
         await supabase
           .from("workers")
-          .update({ agency_id: agency.id, updated_at: new Date().toISOString() })
+          .update({
+            agency_id: agency.id,
+            updated_at: new Date().toISOString(),
+          })
           .or(`phone.eq.${ph},phone.eq.+91${ph}`);
       }
 
@@ -310,7 +426,12 @@ export const handleJoinAgency: RequestHandler = async (req, res) => {
       },
     });
   } catch (error) {
-    return res.status(500).json({ message: error instanceof Error ? error.message : "Unable to join the agency." });
+    return res
+      .status(500)
+      .json({
+        message:
+          error instanceof Error ? error.message : "Unable to join the agency.",
+      });
   }
 };
 
@@ -326,11 +447,16 @@ export const handleGetWorkerAffiliation: RequestHandler = async (req, res) => {
       const { data: authData } = await supabase.auth.getUser(token);
       if (authData?.user) {
         userId = authData.user.id;
-        userPhone = String(authData.user.phone || authData.user.user_metadata?.phone || "");
+        userPhone = String(
+          authData.user.phone || authData.user.user_metadata?.phone || "",
+        );
       }
     }
 
-    const queryPhone = String(req.query.phone || userPhone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const queryPhone = String(req.query.phone || userPhone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const queryWorkerId = String(req.query.workerId || userId || "");
 
     if (!queryPhone && !queryWorkerId) {
@@ -343,7 +469,8 @@ export const handleGetWorkerAffiliation: RequestHandler = async (req, res) => {
       .select("id,name,agency_id,category,locality,phone,phone_verified")
       .or(`id.eq.${queryWorkerId},phone.eq.${queryPhone}`);
 
-    const worker = Array.isArray(workers) && workers.length > 0 ? workers[0] : null;
+    const worker =
+      Array.isArray(workers) && workers.length > 0 ? workers[0] : null;
     if (!worker || !worker.agency_id) {
       return res.json({ agency: null, worker });
     }
@@ -353,7 +480,9 @@ export const handleGetWorkerAffiliation: RequestHandler = async (req, res) => {
     try {
       const { data: dbAgencies } = await supabase
         .from("agencies")
-        .select("id,name,phone,email,agency_code,verified,team_size_band,categories,service_locations,description")
+        .select(
+          "id,name,phone,email,agency_code,verified,team_size_band,categories,service_locations,description",
+        )
         .or(`id.eq.${worker.agency_id},agency_code.eq.${worker.agency_id}`);
       if (Array.isArray(dbAgencies) && dbAgencies.length > 0) {
         foundAgency = dbAgencies[0];
@@ -362,12 +491,19 @@ export const handleGetWorkerAffiliation: RequestHandler = async (req, res) => {
 
     if (!foundAgency) {
       foundAgency = DEFAULT_ADMIN_AGENCIES.find(
-        (a) => a.id === worker.agency_id || a.agency_code === worker.agency_id || (worker.agency_id === "agency-admin" && a.id === "agency-admin")
+        (a) =>
+          a.id === worker.agency_id ||
+          a.agency_code === worker.agency_id ||
+          (worker.agency_id === "agency-admin" && a.id === "agency-admin"),
       );
     }
 
     return res.json({
-      agency: foundAgency || { id: worker.agency_id, name: "Affiliated Agency", verified: true },
+      agency: foundAgency || {
+        id: worker.agency_id,
+        name: "Affiliated Agency",
+        verified: true,
+      },
       worker,
     });
   } catch (error) {
@@ -389,21 +525,31 @@ export const handleLeaveAgency: RequestHandler = async (req, res) => {
         const { data: authData } = await supabase.auth.getUser(token);
         if (authData?.user) {
           authUserId = authData.user.id;
-          authUserPhone = String(authData.user.phone || authData.user.user_metadata?.phone || "");
+          authUserPhone = String(
+            authData.user.phone || authData.user.user_metadata?.phone || "",
+          );
         }
       } catch {}
     }
 
-    const cleanPhone = String(phone || authUserPhone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const cleanPhone = String(phone || authUserPhone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const targetId = String(workerId || authUserId || "");
 
     if (!targetId && !cleanPhone) {
-      return res.status(400).json({ message: "Worker ID or phone is required to leave agency." });
+      return res
+        .status(400)
+        .json({ message: "Worker ID or phone is required to leave agency." });
     }
 
     if (targetId) {
       try {
-        await supabase.from("workers").update({ agency_id: null, updated_at: new Date().toISOString() }).eq("id", targetId);
+        await supabase
+          .from("workers")
+          .update({ agency_id: null, updated_at: new Date().toISOString() })
+          .eq("id", targetId);
       } catch {}
     }
     if (cleanPhone) {
@@ -411,7 +557,9 @@ export const handleLeaveAgency: RequestHandler = async (req, res) => {
         await supabase
           .from("workers")
           .update({ agency_id: null, updated_at: new Date().toISOString() })
-          .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone},phone.eq.0${cleanPhone}`);
+          .or(
+            `phone.eq.${cleanPhone},phone.eq.+91${cleanPhone},phone.eq.0${cleanPhone}`,
+          );
       } catch {}
     }
 
@@ -429,7 +577,10 @@ const ensureArray = (val: any): string[] => {
       const parsed = JSON.parse(val);
       if (Array.isArray(parsed)) return parsed;
     } catch {}
-    return val.split(",").map((s) => s.trim()).filter(Boolean);
+    return val
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
   return [];
 };
@@ -442,12 +593,21 @@ const DEFAULT_ADMIN_AGENCIES = [
     contact_person_name: "Admin",
     phone: "8825551402",
     email: "pgbalaadithya@gmail.com",
-    categories: ["Electrician", "Plumber", "Carpenter", "Painter", "Cleaner", "AC Repair", "Other"],
+    categories: [
+      "Electrician",
+      "Plumber",
+      "Carpenter",
+      "Painter",
+      "Cleaner",
+      "AC Repair",
+      "Other",
+    ],
     service_locations: ["Chennai", "Trichy", "Kattur", "Tamil Nadu"],
     location: "Chennai, Trichy",
     team_size_band: "6-15",
     logo_url: null,
-    description: "Verified multi-service agency providing licensed electricians, plumbers, carpenters, and technical repair teams across all zones.",
+    description:
+      "Verified multi-service agency providing licensed electricians, plumbers, carpenters, and technical repair teams across all zones.",
     verified: true,
     agency_code: "AGN-ADMN",
     created_at: new Date().toISOString(),
@@ -456,9 +616,13 @@ const DEFAULT_ADMIN_AGENCIES = [
 
 export const handleGetAgencies: RequestHandler = async (req, res) => {
   try {
-    const service = String(req.query.service || "").trim().toLowerCase();
-    const location = String(req.query.location || "").trim().toLowerCase();
-    
+    const service = String(req.query.service || "")
+      .trim()
+      .toLowerCase();
+    const location = String(req.query.location || "")
+      .trim()
+      .toLowerCase();
+
     // Check if token was provided in header
     const authorization = req.headers.authorization;
     let queryClient = supabase;
@@ -469,7 +633,9 @@ export const handleGetAgencies: RequestHandler = async (req, res) => {
 
     const { data, error } = await queryClient
       .from("agencies")
-      .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,created_at")
+      .select(
+        "id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -478,15 +644,19 @@ export const handleGetAgencies: RequestHandler = async (req, res) => {
     }
 
     const fetchedRows = Array.isArray(data) ? data : [];
-    
+
     // Combine fetched rows with default admin agency if not already present
     const combinedRows = [...fetchedRows];
     for (const def of DEFAULT_ADMIN_AGENCIES) {
       const exists = combinedRows.some(
         (r) =>
           r.id === def.id ||
-          String(r.name || "").trim().toLowerCase() === def.name.toLowerCase() ||
-          String(r.name || "").trim().toLowerCase() === "admin"
+          String(r.name || "")
+            .trim()
+            .toLowerCase() === def.name.toLowerCase() ||
+          String(r.name || "")
+            .trim()
+            .toLowerCase() === "admin",
       );
       if (!exists) {
         combinedRows.push(def);
@@ -496,7 +666,9 @@ export const handleGetAgencies: RequestHandler = async (req, res) => {
     // Calculate actual worker counts for each agency
     let allWorkersList: any[] = [];
     try {
-      const { data: dbWorkers } = await queryClient.from("workers").select("id,agency_id");
+      const { data: dbWorkers } = await queryClient
+        .from("workers")
+        .select("id,agency_id");
       if (Array.isArray(dbWorkers)) allWorkersList = dbWorkers;
     } catch {}
 
@@ -510,9 +682,13 @@ export const handleGetAgencies: RequestHandler = async (req, res) => {
 
     const agencies = combinedRows
       .map((a) => {
-        const countById = workerCounts.get(String(a.id || "").toLowerCase()) || 0;
-        const countByCode = workerCounts.get(String(a.agency_code || "").toLowerCase()) || 0;
-        const totalCount = countById + (a.agency_code && a.id !== a.agency_code ? countByCode : 0);
+        const countById =
+          workerCounts.get(String(a.id || "").toLowerCase()) || 0;
+        const countByCode =
+          workerCounts.get(String(a.agency_code || "").toLowerCase()) || 0;
+        const totalCount =
+          countById +
+          (a.agency_code && a.id !== a.agency_code ? countByCode : 0);
         return {
           ...a,
           categories: ensureArray(a.categories),
@@ -521,22 +697,39 @@ export const handleGetAgencies: RequestHandler = async (req, res) => {
         };
       })
       .filter((a) => {
-        const matchesService = !service || a.categories.some((c: string) => c.toLowerCase().includes(service) || service.includes(c.toLowerCase()));
+        const matchesService =
+          !service ||
+          a.categories.some(
+            (c: string) =>
+              c.toLowerCase().includes(service) ||
+              service.includes(c.toLowerCase()),
+          );
         const matchesLoc =
           !location ||
-          a.service_locations.some((l: string) => l.toLowerCase().includes(location) || location.includes(l.toLowerCase())) ||
+          a.service_locations.some(
+            (l: string) =>
+              l.toLowerCase().includes(location) ||
+              location.includes(l.toLowerCase()),
+          ) ||
           (a.location && a.location.toLowerCase().includes(location));
         return matchesService && matchesLoc;
       });
 
     return res.json({ agencies });
   } catch (error) {
-    return res.status(500).json({ message: error instanceof Error ? error.message : "Unable to load agencies." });
+    return res
+      .status(500)
+      .json({
+        message:
+          error instanceof Error ? error.message : "Unable to load agencies.",
+      });
   }
 };
 
 const isDummyProfileNameOrPhone = (name?: string, phone?: string) => {
-  const n = String(name || "").toLowerCase().trim();
+  const n = String(name || "")
+    .toLowerCase()
+    .trim();
   const p = String(phone || "").trim();
   return (
     n === "anika rao" ||
@@ -553,7 +746,8 @@ const isDummyProfileNameOrPhone = (name?: string, phone?: string) => {
 export const handleGetAgencyTeam: RequestHandler = async (req, res) => {
   try {
     const rawId = String(req.params.id || "").trim();
-    if (!rawId) return res.status(400).json({ message: "Agency id is required." });
+    if (!rawId)
+      return res.status(400).json({ message: "Agency id is required." });
 
     const normalizedCode = rawId.toUpperCase().replace(/^AGENCY-/, "AGN-");
     const cleanId = rawId.replace(/^agn-/i, "").replace(/^agency-/i, "");
@@ -563,8 +757,12 @@ export const handleGetAgencyTeam: RequestHandler = async (req, res) => {
     try {
       const { data: dbAgencies } = await supabase
         .from("agencies")
-        .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id")
-        .or(`id.eq.${rawId},agency_code.eq.${rawId},agency_code.eq.${normalizedCode},agency_code.ilike.%${cleanId}%,name.ilike.%${rawId}%`);
+        .select(
+          "id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id",
+        )
+        .or(
+          `id.eq.${rawId},agency_code.eq.${rawId},agency_code.eq.${normalizedCode},agency_code.ilike.%${cleanId}%,name.ilike.%${rawId}%`,
+        );
 
       if (Array.isArray(dbAgencies) && dbAgencies.length > 0) {
         targetAgency = dbAgencies[0];
@@ -582,22 +780,29 @@ export const handleGetAgencyTeam: RequestHandler = async (req, res) => {
           rawId === "agency-admin" ||
           d.agency_code === rawId ||
           d.agency_code === normalizedCode ||
-          d.name.toLowerCase().includes(rawId.toLowerCase())
+          d.name.toLowerCase().includes(rawId.toLowerCase()),
       );
       if (foundDef) targetAgency = { ...foundDef };
     }
 
     if (!targetAgency) {
       // Return a default agency representation if standard admin handle is requested
-      if (rawId === "agency-admin" || rawId === "admin" || rawId === "AGN-ADMN") {
+      if (
+        rawId === "agency-admin" ||
+        rawId === "admin" ||
+        rawId === "AGN-ADMN"
+      ) {
         targetAgency = { ...DEFAULT_ADMIN_AGENCIES[0] };
       }
     }
 
-    if (!targetAgency) return res.status(404).json({ message: "Agency not found." });
+    if (!targetAgency)
+      return res.status(404).json({ message: "Agency not found." });
 
     targetAgency.categories = ensureArray(targetAgency.categories);
-    targetAgency.service_locations = ensureArray(targetAgency.service_locations || targetAgency.location);
+    targetAgency.service_locations = ensureArray(
+      targetAgency.service_locations || targetAgency.location,
+    );
 
     const targetMatchIds = [
       targetAgency.id,
@@ -615,7 +820,9 @@ export const handleGetAgencyTeam: RequestHandler = async (req, res) => {
     try {
       const { data: dbWorkers } = await supabase
         .from("workers")
-        .select("id,name,category,locality,initials,photo_url,phone,phone_verified,contact_events_count,services,experience,available_today,urgent_today,agency_id");
+        .select(
+          "id,name,category,locality,initials,photo_url,phone,phone_verified,contact_events_count,services,experience,available_today,urgent_today,agency_id",
+        );
       if (Array.isArray(dbWorkers)) allWorkersList = dbWorkers;
     } catch {}
 
@@ -635,13 +842,21 @@ export const handleGetAgencyTeam: RequestHandler = async (req, res) => {
           tid === wAid ||
           wAid.includes(tid) ||
           tid.includes(wAid) ||
-          wAid.replace(/^agn-/i, "").replace(/^agency-/i, "") === tid.replace(/^agn-/i, "").replace(/^agency-/i, "")
+          wAid.replace(/^agn-/i, "").replace(/^agency-/i, "") ===
+            tid.replace(/^agn-/i, "").replace(/^agency-/i, ""),
       );
     });
 
     return res.json({ agency: targetAgency, workers: teamWorkers });
   } catch (error) {
-    return res.status(500).json({ message: error instanceof Error ? error.message : "Unable to load agency profile." });
+    return res
+      .status(500)
+      .json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to load agency profile.",
+      });
   }
 };
 
@@ -651,40 +866,60 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
     const client = getAuthenticatedClient(token);
     let { data: agency } = await client
       .from("agencies")
-      .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id")
+      .select(
+        "id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id",
+      )
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (!agency) {
       const { data: fallbackAg } = await supabase
         .from("agencies")
-        .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id")
+        .select(
+          "id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id",
+        )
         .eq("user_id", user.id)
         .maybeSingle();
       agency = fallbackAg;
     }
 
     const userEmail = String(user.email || "").toLowerCase();
-    const userPhone = String(user.user_metadata?.phone || user.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const userPhone = String(user.user_metadata?.phone || user.phone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
 
     // Also look up by phone or email if user_id wasn't linked yet
     if (!agency && (userPhone || userEmail)) {
       const { data: matchedAg } = await supabase
         .from("agencies")
-        .select("id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id")
-        .or(`email.eq.${userEmail},phone.eq.${userPhone},phone.eq.+91${userPhone}`)
+        .select(
+          "id,name,phone,email,categories,service_locations,location,team_size_band,logo_url,description,verified,agency_code,user_id",
+        )
+        .or(
+          `email.eq.${userEmail},phone.eq.${userPhone},phone.eq.+91${userPhone}`,
+        )
         .maybeSingle();
       if (matchedAg) {
         agency = matchedAg;
         // link user_id
-        await supabase.from("agencies").update({ user_id: user.id }).eq("id", matchedAg.id);
+        await supabase
+          .from("agencies")
+          .update({ user_id: user.id })
+          .eq("id", matchedAg.id);
       }
     }
 
     // If user is admin or matches default admin agency
-    const isAdmin = user.app_metadata?.is_admin === true || user.user_metadata?.role === "admin" || userEmail === "pgbalaadithya@gmail.com";
+    const isAdmin =
+      user.app_metadata?.is_admin === true ||
+      user.user_metadata?.role === "admin" ||
+      userEmail === "pgbalaadithya@gmail.com";
 
-    if (!agency && (isAdmin || userEmail.includes("admin") || userPhone === "8825551402")) {
+    if (
+      !agency &&
+      (isAdmin || userEmail.includes("admin") || userPhone === "8825551402")
+    ) {
       const defaultAdmin = DEFAULT_ADMIN_AGENCIES[0];
       agency = {
         ...defaultAdmin,
@@ -721,7 +956,9 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
     const agencyCode = await ensureAgencyCode(agency, client);
     agency.agency_code = agencyCode;
     agency.categories = ensureArray(agency.categories);
-    agency.service_locations = ensureArray(agency.service_locations || agency.location);
+    agency.service_locations = ensureArray(
+      agency.service_locations || agency.location,
+    );
 
     // Fetch live workers who have joined this agency
     // Match agency.id, agency.agency_code, agency.user_id, agency.name, or default admin handles
@@ -738,16 +975,17 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
 
     // Also include stripped codes (without "agn-" or "agency-")
     for (const tid of [...targetIds]) {
-      const stripped = tid.replace(/^agn-/, "").replace(/^agency-/, "").trim();
+      const stripped = tid
+        .replace(/^agn-/, "")
+        .replace(/^agency-/, "")
+        .trim();
       if (stripped && !targetIds.includes(stripped)) {
         targetIds.push(stripped);
       }
     }
-    
+
     // Always use elevated server client to bypass RLS worker isolation
-    const { data: dbWorkers } = await supabase
-      .from("workers")
-      .select("*");
+    const { data: dbWorkers } = await supabase.from("workers").select("*");
 
     const regWorkers = await readRegisteredWorkers();
     const allWorkersMap = new Map<string, any>();
@@ -766,11 +1004,21 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
       if (!w || !w.agency_id) return false;
       if (isDummyProfileNameOrPhone(w.name, w.phone)) return false;
       const wAid = String(w.agency_id).toLowerCase().trim();
-      const strippedWAid = wAid.replace(/^agn-/, "").replace(/^agency-/, "").trim();
+      const strippedWAid = wAid
+        .replace(/^agn-/, "")
+        .replace(/^agency-/, "")
+        .trim();
       return targetIds.some((tid) => {
         if (tid === wAid || tid === strippedWAid) return true;
-        const strippedTid = tid.replace(/^agn-/, "").replace(/^agency-/, "").trim();
-        if (strippedTid && (strippedTid === strippedWAid || strippedTid === wAid)) return true;
+        const strippedTid = tid
+          .replace(/^agn-/, "")
+          .replace(/^agency-/, "")
+          .trim();
+        if (
+          strippedTid &&
+          (strippedTid === strippedWAid || strippedTid === wAid)
+        )
+          return true;
         if (wAid.includes(tid) || tid.includes(wAid)) return true;
         return false;
       });
@@ -785,7 +1033,9 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
     if (workerIds.length > 0) {
       const { data: cbData } = await supabase
         .from("callback_requests")
-        .select("id,worker_id,client_name,client_phone,service_needed,preferred_time,notes,created_at,status")
+        .select(
+          "id,worker_id,client_name,client_phone,service_needed,preferred_time,notes,created_at,status",
+        )
         .in("worker_id", workerIds)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -797,59 +1047,121 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
       workers: workersList,
       stats: {
         linkedWorkers: workersList.length,
-        whatsappClicks7d: workersList.reduce((sum: number, w: any) => sum + (Number(w.contact_events_count) || 0), 0),
+        whatsappClicks7d: workersList.reduce(
+          (sum: number, w: any) => sum + (Number(w.contact_events_count) || 0),
+          0,
+        ),
         callbacks7d: callbacks.length,
       },
       callbacks,
     });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
-    return res.status(status).json({ message: status === 500 ? `Unable to load agency dashboard: ${code || "server error"}` : "Your login session is invalid or expired." });
+    const status =
+      code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res
+      .status(status)
+      .json({
+        message:
+          status === 500
+            ? `Unable to load agency dashboard: ${code || "server error"}`
+            : "Your login session is invalid or expired.",
+      });
   }
 };
 
-export const handleUpdateAgencyCallbackStatus: RequestHandler = async (req, res) => {
+export const handleUpdateAgencyCallbackStatus: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { user, token } = await getAgencyUser(req);
     const client = getAuthenticatedClient(token);
     const id = String(req.params.id || "");
-    const parsed = z.object({ status: z.enum(["new", "contacted", "closed"]) }).safeParse(req.body);
-    if (!id || !parsed.success) return res.status(400).json({ message: "Invalid callback update." });
-    const { data: agency } = await client.from("agencies").select("id").eq("user_id", user.id).maybeSingle();
-    if (!agency) return res.status(404).json({ message: "Agency profile not found." });
-    const { data, error } = await client.from("callback_requests").update({ status: parsed.data.status }).eq("id", id).select("id,status").single();
+    const parsed = z
+      .object({ status: z.enum(["new", "contacted", "closed"]) })
+      .safeParse(req.body);
+    if (!id || !parsed.success)
+      return res.status(400).json({ message: "Invalid callback update." });
+    const { data: agency } = await client
+      .from("agencies")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!agency)
+      return res.status(404).json({ message: "Agency profile not found." });
+    const { data, error } = await client
+      .from("callback_requests")
+      .update({ status: parsed.data.status })
+      .eq("id", id)
+      .select("id,status")
+      .single();
     if (error) throw error;
     return res.json({ callback: data });
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
-    return res.status(status).json({ message: status === 500 ? "Unable to update callback request." : "Your login session is invalid or expired." });
+    const status =
+      code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    return res
+      .status(status)
+      .json({
+        message:
+          status === 500
+            ? "Unable to update callback request."
+            : "Your login session is invalid or expired.",
+      });
   }
 };
 
 // POST /api/agencies/remove-worker
-export const handleRemoveWorkerFromAgency: RequestHandler = async (req, res) => {
+export const handleRemoveWorkerFromAgency: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { workerId, phone } = req.body || {};
     if (!workerId && !phone) {
-      return res.status(400).json({ message: "Worker ID or phone is required to remove worker from roster." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Worker ID or phone is required to remove worker from roster.",
+        });
     }
 
-    const cleanPhone = String(phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const cleanPhone = String(phone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
     const targetId = String(workerId || "");
 
     if (targetId) {
-      await supabase.from("workers").update({ agency_id: null, updated_at: new Date().toISOString() }).eq("id", targetId);
+      await supabase
+        .from("workers")
+        .update({ agency_id: null, updated_at: new Date().toISOString() })
+        .eq("id", targetId);
     }
     if (cleanPhone) {
-      await supabase.from("workers").update({ agency_id: null, updated_at: new Date().toISOString() }).or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
+      await supabase
+        .from("workers")
+        .update({ agency_id: null, updated_at: new Date().toISOString() })
+        .or(`phone.eq.${cleanPhone},phone.eq.+91${cleanPhone}`);
     }
 
-    return res.json({ success: true, message: "Worker has been removed from your agency roster." });
+    return res.json({
+      success: true,
+      message: "Worker has been removed from your agency roster.",
+    });
   } catch (error) {
     console.error("[agencies] remove worker error:", error);
-    return res.status(500).json({ message: error instanceof Error ? error.message : "Unable to remove worker from roster." });
+    return res
+      .status(500)
+      .json({
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to remove worker from roster.",
+      });
   }
 };
 
@@ -901,14 +1213,16 @@ let activeAgencyProjects: Array<{
 // GET /api/agencies/projects
 export const handleGetAgencyProjects: RequestHandler = async (req, res) => {
   try {
-    const agencyId = String(req.query.agencyId || req.query.agency_id || "agency-admin");
+    const agencyId = String(
+      req.query.agencyId || req.query.agency_id || "agency-admin",
+    );
     const filtered = activeAgencyProjects.filter(
       (p) =>
         !agencyId ||
         p.agency_id === agencyId ||
         p.agency_id === "agency-admin" ||
         agencyId === "agency-admin" ||
-        agencyId === "admin"
+        agencyId === "admin",
     );
     return res.json({ projects: filtered });
   } catch (error) {
@@ -919,9 +1233,24 @@ export const handleGetAgencyProjects: RequestHandler = async (req, res) => {
 // POST /api/agencies/projects
 export const handleCreateAgencyProject: RequestHandler = async (req, res) => {
   try {
-    const { title, client_name, client_phone, worker_id, worker_name, service, location, deadline, agency_id } = req.body || {};
+    const {
+      title,
+      client_name,
+      client_phone,
+      worker_id,
+      worker_name,
+      service,
+      location,
+      deadline,
+      agency_id,
+    } = req.body || {};
     if (!title || !client_name || !worker_id) {
-      return res.status(400).json({ message: "Project title, client name, and assigned worker are required." });
+      return res
+        .status(400)
+        .json({
+          message:
+            "Project title, client name, and assigned worker are required.",
+        });
     }
 
     const newProject = {
@@ -942,7 +1271,9 @@ export const handleCreateAgencyProject: RequestHandler = async (req, res) => {
     activeAgencyProjects.unshift(newProject);
     return res.status(201).json({ success: true, project: newProject });
   } catch (error) {
-    return res.status(500).json({ message: "Unable to create project assignment." });
+    return res
+      .status(500)
+      .json({ message: "Unable to create project assignment." });
   }
 };
 
@@ -950,7 +1281,8 @@ export const handleCreateAgencyProject: RequestHandler = async (req, res) => {
 export const handleDeleteAgencyProject: RequestHandler = async (req, res) => {
   try {
     const id = String(req.params.id || "");
-    if (!id) return res.status(400).json({ message: "Project ID is required." });
+    if (!id)
+      return res.status(400).json({ message: "Project ID is required." });
 
     const beforeLen = activeAgencyProjects.length;
     activeAgencyProjects = activeAgencyProjects.filter((p) => p.id !== id);
@@ -961,7 +1293,9 @@ export const handleDeleteAgencyProject: RequestHandler = async (req, res) => {
       deleted: beforeLen !== activeAgencyProjects.length,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Unable to delete project assignment." });
+    return res
+      .status(500)
+      .json({ message: "Unable to delete project assignment." });
   }
 };
 
@@ -979,48 +1313,90 @@ export const handleGetWorkerProjects: RequestHandler = async (req, res) => {
         const { data: authData } = await supabase.auth.getUser(token);
         if (authData?.user) {
           authUserId = authData.user.id;
-          authUserPhone = String(authData.user.phone || authData.user.user_metadata?.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
-          authUserName = String(authData.user.user_metadata?.name || authData.user.user_metadata?.fullName || "").trim().toLowerCase();
+          authUserPhone = String(
+            authData.user.phone || authData.user.user_metadata?.phone || "",
+          )
+            .replace(/^\+91/, "")
+            .replace(/\D/g, "")
+            .slice(-10);
+          authUserName = String(
+            authData.user.user_metadata?.name ||
+              authData.user.user_metadata?.fullName ||
+              "",
+          )
+            .trim()
+            .toLowerCase();
         }
       } catch {}
     }
 
-    const queryWorkerId = String(req.query.workerId || req.query.worker_id || authUserId || "").trim();
-    const queryPhone = String(req.query.phone || authUserPhone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
+    const queryWorkerId = String(
+      req.query.workerId || req.query.worker_id || authUserId || "",
+    ).trim();
+    const queryPhone = String(req.query.phone || authUserPhone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
 
     // Get matching worker info from DB if possible
-    let targetWorkerIds = [queryWorkerId, authUserId, queryPhone, authUserPhone].filter(Boolean).map(x => String(x).toLowerCase());
+    let targetWorkerIds = [queryWorkerId, authUserId, queryPhone, authUserPhone]
+      .filter(Boolean)
+      .map((x) => String(x).toLowerCase());
 
     const filtered = activeAgencyProjects.filter((p) => {
       const pWid = String(p.worker_id || "").toLowerCase();
       const pWName = String(p.worker_name || "").toLowerCase();
-      
+
       // Match by worker ID, phone, or name
-      if (targetWorkerIds.some(tid => tid === pWid || pWid.includes(tid) || tid.includes(pWid))) return true;
-      if (authUserName && (pWName.includes(authUserName) || authUserName.includes(pWName))) return true;
+      if (
+        targetWorkerIds.some(
+          (tid) => tid === pWid || pWid.includes(tid) || tid.includes(pWid),
+        )
+      )
+        return true;
+      if (
+        authUserName &&
+        (pWName.includes(authUserName) || authUserName.includes(pWName))
+      )
+        return true;
       // Default: if in dev/single worker context and user has projects
       return false;
     });
 
     // If no direct project matches and the user is authenticated as worker, return relevant active demo projects so worker can see the assigned flow
-    const results = filtered.length > 0 ? filtered : activeAgencyProjects.slice(0, 2);
+    const results =
+      filtered.length > 0 ? filtered : activeAgencyProjects.slice(0, 2);
 
     return res.json({ projects: results });
   } catch (error) {
     console.error("[agencies] get worker projects error:", error);
-    return res.status(500).json({ message: "Unable to load assigned worker projects." });
+    return res
+      .status(500)
+      .json({ message: "Unable to load assigned worker projects." });
   }
 };
 
 // PATCH /api/workers/projects/:id/status (Worker updates status of assigned project)
-export const handleUpdateWorkerProjectStatus: RequestHandler = async (req, res) => {
+export const handleUpdateWorkerProjectStatus: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const id = String(req.params.id || "");
     const { status } = req.body || {};
 
-    if (!id) return res.status(400).json({ message: "Project ID is required." });
-    if (!status || !["active", "in_progress", "completed", "cancelled"].includes(status)) {
-      return res.status(400).json({ message: "Valid status ('active', 'in_progress', 'completed', 'cancelled') is required." });
+    if (!id)
+      return res.status(400).json({ message: "Project ID is required." });
+    if (
+      !status ||
+      !["active", "in_progress", "completed", "cancelled"].includes(status)
+    ) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Valid status ('active', 'in_progress', 'completed', 'cancelled') is required.",
+        });
     }
 
     const project = activeAgencyProjects.find((p) => p.id === id);
@@ -1036,9 +1412,8 @@ export const handleUpdateWorkerProjectStatus: RequestHandler = async (req, res) 
       project,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Unable to update project status." });
+    return res
+      .status(500)
+      .json({ message: "Unable to update project status." });
   }
 };
-
-
-

@@ -9,8 +9,12 @@ const EMAIL_KEY = "localworker.rememberedEmail";
 
 export default function Login() {
   const navigate = useNavigate();
-  const remembered = typeof window !== "undefined" && localStorage.getItem(REMEMBER_KEY) === "true";
-  const [email, setEmail] = useState(remembered ? localStorage.getItem(EMAIL_KEY) ?? "" : "");
+  const remembered =
+    typeof window !== "undefined" &&
+    localStorage.getItem(REMEMBER_KEY) === "true";
+  const [email, setEmail] = useState(
+    remembered ? (localStorage.getItem(EMAIL_KEY) ?? "") : "",
+  );
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(remembered);
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +25,9 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!supabase) {
-      setError("Login is not configured yet. Please check the Supabase environment variables.");
+      setError(
+        "Login is not configured yet. Please check the Supabase environment variables.",
+      );
       return;
     }
     setLoading(true);
@@ -34,7 +40,7 @@ export default function Login() {
       setError(
         loginError.message.includes("Invalid login credentials")
           ? "Incorrect email or password."
-          : loginError.message
+          : loginError.message,
       );
       return;
     }
@@ -46,9 +52,16 @@ export default function Login() {
       localStorage.removeItem(EMAIL_KEY);
     }
     const role = data.user?.user_metadata?.role;
-    navigate(role === "worker" ? "/worker-dashboard" : role === "agency" ? "/agency" : "/profile", {
-      replace: true,
-    });
+    navigate(
+      role === "worker"
+        ? "/worker-dashboard"
+        : role === "agency"
+          ? "/agency"
+          : "/profile",
+      {
+        replace: true,
+      },
+    );
   };
 
   return (
@@ -59,14 +72,19 @@ export default function Login() {
             <UserRound size={24} />
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">Welcome back</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
+            Welcome back
+          </h1>
           <p className="mt-1.5 text-xs text-[#67696D] dark:text-[#A1A1AA]">
             Sign in to manage your worker profile, bookmarks, and requests.
           </p>
 
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
             <div>
-              <label htmlFor="login-email" className="mb-1.5 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <label
+                htmlFor="login-email"
+                className="mb-1.5 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]"
+              >
                 Email Address
               </label>
               <input
@@ -81,7 +99,10 @@ export default function Login() {
             </div>
 
             <div>
-              <label htmlFor="login-password" className="mb-1.5 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <label
+                htmlFor="login-password"
+                className="mb-1.5 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]"
+              >
                 Password
               </label>
               <div className="relative">
@@ -117,7 +138,10 @@ export default function Login() {
             </div>
 
             {error && (
-              <p role="alert" className="rounded-[12px] border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-900/60 px-3.5 py-2.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
+              <p
+                role="alert"
+                className="rounded-[12px] border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-900/60 px-3.5 py-2.5 text-xs font-semibold text-rose-600 dark:text-rose-400"
+              >
                 {error}
               </p>
             )}
@@ -139,7 +163,9 @@ export default function Login() {
           </form>
 
           <div className="mt-6 border-t border-[#E7ECF1] dark:border-[#1F1F1F] pt-5 text-center">
-            <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">Don't have an account yet?</p>
+            <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">
+              Don't have an account yet?
+            </p>
             <div className="mt-3 flex items-center justify-center gap-2">
               <Link
                 to="/join"
@@ -160,4 +186,3 @@ export default function Login() {
     </PageShell>
   );
 }
-

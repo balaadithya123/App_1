@@ -24,18 +24,25 @@ export const logAnalyticsEvent = async (
 export const logContactEvent = async (
   workerId: string,
   source: "whatsapp" | "call" | string,
-  details?: { name?: string; category?: string }
+  details?: { name?: string; category?: string },
 ) => {
   // Always trigger local track record pending entry
   try {
-    recordContactForTrackRecord(workerId, source, details?.name, details?.category);
+    recordContactForTrackRecord(
+      workerId,
+      source,
+      details?.name,
+      details?.category,
+    );
   } catch (err) {
     console.warn("[contact-events] track record record error:", err);
   }
 
   if (!supabase) return;
   try {
-    const { error } = await supabase.from("contact_events").insert({ worker_id: workerId, source });
+    const { error } = await supabase
+      .from("contact_events")
+      .insert({ worker_id: workerId, source });
     if (error) console.warn("[contact-events] logging failed:", error.message);
   } catch (error) {
     console.warn("[contact-events] logging failed:", error);

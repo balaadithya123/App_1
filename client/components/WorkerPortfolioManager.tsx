@@ -1,5 +1,12 @@
 import { useEffect, useState, useRef } from "react";
-import { Camera, Image as ImageIcon, Trash2, Upload, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Camera,
+  Image as ImageIcon,
+  Trash2,
+  Upload,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import type { WorkerPortfolioItem } from "@shared/api";
 
@@ -43,7 +50,9 @@ export default function WorkerPortfolioManager() {
 
     const remainingSlots = 10 - photos.length;
     if (remainingSlots <= 0) {
-      setError("Maximum limit reached. Each worker profile can have at most 10 portfolio photos.");
+      setError(
+        "Maximum limit reached. Each worker profile can have at most 10 portfolio photos.",
+      );
       return;
     }
 
@@ -61,11 +70,12 @@ export default function WorkerPortfolioManager() {
           (file) =>
             new Promise<{ data: string; name: string }>((resolve, reject) => {
               const reader = new FileReader();
-              reader.onload = () => resolve({ data: reader.result as string, name: file.name });
+              reader.onload = () =>
+                resolve({ data: reader.result as string, name: file.name });
               reader.onerror = reject;
               reader.readAsDataURL(file);
-            })
-        )
+            }),
+        ),
       );
 
       const response = await fetch("/api/workers/portfolio", {
@@ -83,7 +93,10 @@ export default function WorkerPortfolioManager() {
       }
 
       setPhotos(result.photos || []);
-      setSuccess(result.message || `${selectedFiles.length} photo(s) added to your portfolio.`);
+      setSuccess(
+        result.message ||
+          `${selectedFiles.length} photo(s) added to your portfolio.`,
+      );
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err: any) {
       setError(err.message || "Photo couldn't be used.");
@@ -125,13 +138,16 @@ export default function WorkerPortfolioManager() {
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[#2C2C2C]">Work Portfolio</h2>
+              <h2 className="text-sm font-bold text-[#2C2C2C]">
+                Work Portfolio
+              </h2>
               <span className="rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-2 py-0.5 text-[10px] font-semibold text-[#67696D]">
                 {photos.length} / 10 photos
               </span>
             </div>
             <p className="text-xs text-[#67696D]">
-              Upload photos of your completed work to showcase your trade skills to clients.
+              Upload photos of your completed work to showcase your trade skills
+              to clients.
             </p>
           </div>
         </div>
@@ -191,9 +207,12 @@ export default function WorkerPortfolioManager() {
       ) : photos.length === 0 ? (
         <div className="mt-4 flex flex-col items-center justify-center rounded-[16px] border border-dashed border-[#E7ECF1] bg-[#F6F9FC] p-8 text-center">
           <ImageIcon size={28} className="text-[#989EA7] mb-2" />
-          <p className="text-xs font-bold text-[#2C2C2C]">No work photos uploaded yet</p>
+          <p className="text-xs font-bold text-[#2C2C2C]">
+            No work photos uploaded yet
+          </p>
           <p className="mt-1 text-[11px] text-[#67696D] max-w-xs">
-            Adding 3–5 pictures of your finished jobs builds trust and helps customers choose your service.
+            Adding 3–5 pictures of your finished jobs builds trust and helps
+            customers choose your service.
           </p>
         </div>
       ) : (

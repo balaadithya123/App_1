@@ -22,7 +22,8 @@ export default function WorkerGrowthCard() {
         cache: "no-store",
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result?.message || "Unable to load reach");
+      if (!response.ok)
+        throw new Error(result?.message || "Unable to load reach");
       setViewsTotal(Number(result.profileViewsTotal) || 0);
       setViewsThisWeek(Number(result.profileViewsThisWeek) || 0);
       setReferralCode(result.referralCode || null);
@@ -42,7 +43,9 @@ export default function WorkerGrowthCard() {
     return () => window.removeEventListener("focus", onFocus);
   }, [load]);
 
-  const inviteLink = referralCode ? `${window.location.origin}/join?ref=${encodeURIComponent(referralCode)}` : "";
+  const inviteLink = referralCode
+    ? `${window.location.origin}/join?ref=${encodeURIComponent(referralCode)}`
+    : "";
 
   const handleCopy = () => {
     if (!inviteLink) return;
@@ -52,7 +55,9 @@ export default function WorkerGrowthCard() {
   };
 
   return (
-    <div className={`grid gap-3 ${verified && referralCode ? "sm:grid-cols-2" : "grid-cols-1"}`}>
+    <div
+      className={`grid gap-3 ${verified && referralCode ? "sm:grid-cols-2" : "grid-cols-1"}`}
+    >
       {/* Metric 1: Profile Reach */}
       <section className="rounded-xl border border-border bg-card p-4 transition-colors">
         <div className="flex items-center justify-between">
@@ -65,12 +70,20 @@ export default function WorkerGrowthCard() {
         </div>
         <div className="mt-3 grid grid-cols-2 gap-4">
           <div>
-            <span className="text-2xl font-bold tracking-tight text-foreground">{viewsThisWeek}</span>
-            <span className="text-[10px] text-muted-foreground block">This week</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground">
+              {viewsThisWeek}
+            </span>
+            <span className="text-[10px] text-muted-foreground block">
+              This week
+            </span>
           </div>
           <div>
-            <span className="text-2xl font-bold tracking-tight text-foreground">{viewsTotal}</span>
-            <span className="text-[10px] text-muted-foreground block">Total</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground">
+              {viewsTotal}
+            </span>
+            <span className="text-[10px] text-muted-foreground block">
+              Total
+            </span>
           </div>
         </div>
         <div className="mt-3 flex items-center justify-between border-t border-border/80 pt-3">
@@ -120,7 +133,11 @@ export default function WorkerGrowthCard() {
               onClick={handleCopy}
               className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-secondary px-3 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background cursor-pointer"
             >
-              {copied ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
+              {copied ? (
+                <Check size={13} className="text-primary" />
+              ) : (
+                <Copy size={13} />
+              )}
               <span>{copied ? "Copied" : "Copy"}</span>
             </button>
           </div>
@@ -129,4 +146,3 @@ export default function WorkerGrowthCard() {
     </div>
   );
 }
-

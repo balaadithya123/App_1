@@ -45,7 +45,14 @@ const FIXED_CATEGORIES = [
   "appliance repair",
 ] as const;
 
-const COMMON_LANGUAGES = ["Tamil", "Hindi", "English", "Telugu", "Kannada", "Malayalam"];
+const COMMON_LANGUAGES = [
+  "Tamil",
+  "Hindi",
+  "English",
+  "Telugu",
+  "Kannada",
+  "Malayalam",
+];
 
 const SAMPLE_PRESETS = [
   {
@@ -72,7 +79,8 @@ const DICTIONARY = {
   en: {
     badge: "Voice Onboarding Prototype",
     title: "Speak Your Profile",
-    subtitle: "Just tap record and speak for up to 60 seconds in Tamil, Hindi, or English. Gemini AI will convert your voice note into a verified profile.",
+    subtitle:
+      "Just tap record and speak for up to 60 seconds in Tamil, Hindi, or English. Gemini AI will convert your voice note into a verified profile.",
     tapToRecord: "Tap to Speak",
     recordingState: "Listening... Speak freely",
     stopRecording: "Done Speaking (Stop)",
@@ -88,11 +96,14 @@ const DICTIONARY = {
     ],
     trySample: "Or test with a sample voice note:",
     transcribingTitle: "Transcribing & Extracting...",
-    transcribingSub: "Gemini 2.5 Flash is mapping your speech into structured profile fields...",
+    transcribingSub:
+      "Gemini 2.5 Flash is mapping your speech into structured profile fields...",
     transcriptSectionTitle: "What You Said (Voice Transcript)",
-    transcriptEditTip: "Spoken words captured by speech AI. You can edit this directly:",
+    transcriptEditTip:
+      "Spoken words captured by speech AI. You can edit this directly:",
     formSectionTitle: "Verify & Edit Extracted Details",
-    formSectionSub: "Review the fields below. Any uncertain fields are highlighted with an alert flag.",
+    formSectionSub:
+      "Review the fields below. Any uncertain fields are highlighted with an alert flag.",
     fullName: "Full Name",
     services: "Trade / Service Categories",
     servicesHint: "Select all that apply:",
@@ -112,12 +123,14 @@ const DICTIONARY = {
     step1: "1. Record Voice",
     step2: "2. Verify & Edit",
     step3: "3. Confirmed Payload",
-    micPermissionError: "Microphone access was denied or not available. Please allow microphone permissions or use one of the sample voice notes below.",
+    micPermissionError:
+      "Microphone access was denied or not available. Please allow microphone permissions or use one of the sample voice notes below.",
   },
   ta: {
     badge: "குரல் பதிவு முன்மாதிரி",
     title: "பேசி சுயவிவரம் உருவாக்குங்கள்",
-    subtitle: "மைக் பொத்தானை அழுத்தி 60 விநாடிகள் வரை தமிழ், இந்தி அல்லது ஆங்கிலத்தில் பேசுங்கள். AI தானாக விவரங்களை நிரப்பும்.",
+    subtitle:
+      "மைக் பொத்தானை அழுத்தி 60 விநாடிகள் வரை தமிழ், இந்தி அல்லது ஆங்கிலத்தில் பேசுங்கள். AI தானாக விவரங்களை நிரப்பும்.",
     tapToRecord: "பேச மைக் அழுத்தவும்",
     recordingState: "கேட்கிறது... தாராளமாக பேசுங்கள்",
     stopRecording: "பேசி முடிந்தது (நிறுத்து)",
@@ -133,11 +146,13 @@ const DICTIONARY = {
     ],
     trySample: "அல்லது மாதிரி குரல் மூலம் சோதிக்கவும்:",
     transcribingTitle: "குரலை எழுத்தாக்கி பிரிக்கிறது...",
-    transcribingSub: "Gemini 2.5 Flash உங்கள் குரலை கேட்டு விவரங்களை எடுத்துக்கொண்டிருக்கிறது...",
+    transcribingSub:
+      "Gemini 2.5 Flash உங்கள் குரலை கேட்டு விவரங்களை எடுத்துக்கொண்டிருக்கிறது...",
     transcriptSectionTitle: "நீங்கள் பேசியது (குரல் உரை)",
     transcriptEditTip: "பதிவான உரை. தவறுகள் இருந்தால் மாற்றிக்கொள்ளலாம்:",
     formSectionTitle: "விவரங்களை சரிபார்க்கவும்",
-    formSectionSub: "கீழே உள்ள விவரங்களை சரிபார்த்து தேவைப்பட்டால் திருத்துங்கள். சந்தேகம் உள்ளவை ⚠️ குறியிடப்படும்.",
+    formSectionSub:
+      "கீழே உள்ள விவரங்களை சரிபார்த்து தேவைப்பட்டால் திருத்துங்கள். சந்தேகம் உள்ளவை ⚠️ குறியிடப்படும்.",
     fullName: "முழு பெயர்",
     services: "தொழில் / வேலை வகைகள்",
     servicesHint: "உங்களுக்கு தெரிந்த தொழில்களைத் தேர்ந்தெடுக்கவும்:",
@@ -157,12 +172,14 @@ const DICTIONARY = {
     step1: "1. குரல் பதிவு",
     step2: "2. சரிபார்த்தல்",
     step3: "3. இறுதி JSON",
-    micPermissionError: "மைக் அனுமதி கிடைக்கவில்லை. மைக் அனுமதியை வழங்கி முயற்சிக்கவும் அல்லது கீழே உள்ள மாதிரி குரல் குறிப்பைப் பயன்படுத்தவும்.",
+    micPermissionError:
+      "மைக் அனுமதி கிடைக்கவில்லை. மைக் அனுமதியை வழங்கி முயற்சிக்கவும் அல்லது கீழே உள்ள மாதிரி குரல் குறிப்பைப் பயன்படுத்தவும்.",
   },
   hi: {
     badge: "वॉइस ऑनबोर्डिंग प्रोटोटाइप",
     title: "बोलकर अपनी प्रोफाइल बनाएं",
-    subtitle: "माइक बटन दबाकर 60 सेकंड तक हिंदी, तमिल या अंग्रेज़ी में बोलें। AI आपकी प्रोफाइल अपने आप तैयार करेगा।",
+    subtitle:
+      "माइक बटन दबाकर 60 सेकंड तक हिंदी, तमिल या अंग्रेज़ी में बोलें। AI आपकी प्रोफाइल अपने आप तैयार करेगा।",
     tapToRecord: "बोलने के लिए दबाएं",
     recordingState: "सुन रहे हैं... अब बोलें",
     stopRecording: "बोलना बंद करें",
@@ -178,11 +195,14 @@ const DICTIONARY = {
     ],
     trySample: "या तैयार नमूने से टेस्ट करें:",
     transcribingTitle: "आवाज़ सुनकर जानकारी निकाली जा रही है...",
-    transcribingSub: "Gemini 2.5 Flash आपकी आवाज़ से प्रोफाइल डेटा निकाल रहा है...",
+    transcribingSub:
+      "Gemini 2.5 Flash आपकी आवाज़ से प्रोफाइल डेटा निकाल रहा है...",
     transcriptSectionTitle: "आपने जो कहा (वॉइस ट्रांसक्रिप्ट)",
-    transcriptEditTip: "AI द्वारा लिखी गई आवाज़। आप इसे सीधे सुधार भी सकते हैं:",
+    transcriptEditTip:
+      "AI द्वारा लिखी गई आवाज़। आप इसे सीधे सुधार भी सकते हैं:",
     formSectionTitle: "विवरण जांचें और सुधारें",
-    formSectionSub: "नीचे दी गई जानकारी चेक करें। अनिश्चित विवरणों पर ⚠️ का निशान दिखेगा।",
+    formSectionSub:
+      "नीचे दी गई जानकारी चेक करें। अनिश्चित विवरणों पर ⚠️ का निशान दिखेगा।",
     fullName: "पूरा नाम",
     services: "आपका काम / पेशा",
     servicesHint: "लागू होने वाले सभी विकल्प चुनें:",
@@ -196,13 +216,15 @@ const DICTIONARY = {
     confirmBtn: "पुष्टि करें और JSON डेटा बनाएं",
     resetBtn: "फिर से रिकॉर्ड करें",
     finalTitle: "अंतिम इंटीग्रेशन पेलोड (Final JSON Payload)",
-    finalSub: "डेटाबेस या API इंटीग्रेशन के लिए तैयार स्ट्रक्चर्ड JSON ऑब्जेक्ट:",
+    finalSub:
+      "डेटाबेस या API इंटीग्रेशन के लिए तैयार स्ट्रक्चर्ड JSON ऑब्जेक्ट:",
     copied: "कॉपी हो गया!",
     copyJson: "JSON कॉपी करें",
     step1: "1. आवाज़ रिकॉर्ड",
     step2: "2. जांचें और सुधारें",
     step3: "3. फ़ाइनल पेलोड",
-    micPermissionError: "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया अनुमति दें या नीचे दिए गए सैंपल वॉइस नोट्स का उपयोग करें।",
+    micPermissionError:
+      "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया अनुमति दें या नीचे दिए गए सैंपल वॉइस नोट्स का उपयोग करें।",
   },
 };
 
@@ -224,7 +246,8 @@ export default function VoiceOnboarding() {
 
   // Extracted data state
   const [profile, setProfile] = useState<ExtractedProfile | null>(null);
-  const [confirmedPayload, setConfirmedPayload] = useState<ExtractedProfile | null>(null);
+  const [confirmedPayload, setConfirmedPayload] =
+    useState<ExtractedProfile | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Audio recording refs
@@ -241,7 +264,8 @@ export default function VoiceOnboarding() {
       if (audioUrl) URL.revokeObjectURL(audioUrl);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      if (audioContextRef.current) audioContextRef.current.close().catch(() => {});
+      if (audioContextRef.current)
+        audioContextRef.current.close().catch(() => {});
     };
   }, [audioUrl]);
 
@@ -275,7 +299,8 @@ export default function VoiceOnboarding() {
 
       // Setup Web Audio Analyser for live audio level meter
       try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const AudioCtx =
+          window.AudioContext || (window as any).webkitAudioContext;
         const ctx = new AudioCtx();
         const source = ctx.createMediaStreamSource(stream);
         const analyser = ctx.createAnalyser();
@@ -310,9 +335,13 @@ export default function VoiceOnboarding() {
         "audio/ogg;codecs=opus",
         "audio/wav",
       ];
-      const mimeType = mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+      const mimeType =
+        mimeTypes.find((type) => MediaRecorder.isTypeSupported(type)) || "";
 
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined,
+      );
       mediaRecorderRef.current = recorder;
 
       recorder.ondataavailable = (event) => {
@@ -372,7 +401,10 @@ export default function VoiceOnboarding() {
     if (typeof navigator !== "undefined" && navigator.vibrate) {
       navigator.vibrate([40, 60, 40]);
     }
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
@@ -403,7 +435,7 @@ export default function VoiceOnboarding() {
           console.warn("Backend request failed, extracting locally:", postErr);
           // Graceful fallback
           extractFromSample(
-            "Vanakkam sir, en peru Murugan. Naan T. Nagar Chennai-la electrician vela paakren. 8 varusham experience irukku. Tamil and English pesuven."
+            "Vanakkam sir, en peru Murugan. Naan T. Nagar Chennai-la electrician vela paakren. 8 varusham experience irukku. Tamil and English pesuven.",
           );
         } finally {
           setIsProcessing(false);
@@ -470,7 +502,9 @@ export default function VoiceOnboarding() {
     }
     // Smooth scroll down to JSON payload
     setTimeout(() => {
-      document.getElementById("final-payload-section")?.scrollIntoView({ behavior: "smooth" });
+      document
+        .getElementById("final-payload-section")
+        ?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
 
@@ -509,7 +543,9 @@ export default function VoiceOnboarding() {
                 <Sparkles size={13} />
                 {t.badge}
               </span>
-              <span className="text-xs text-muted-foreground font-mono">gemini-3.8-flash</span>
+              <span className="text-xs text-muted-foreground font-mono">
+                gemini-3.8-flash
+              </span>
             </div>
 
             {/* Language Toggle Bar */}
@@ -585,7 +621,14 @@ export default function VoiceOnboarding() {
           <div className="flex flex-col items-center justify-center text-center">
             {/* Countdown / Duration */}
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-4 py-1.5 text-xs font-bold">
-              <Clock size={13} className={isRecording ? "text-destructive animate-pulse" : "text-muted-foreground"} />
+              <Clock
+                size={13}
+                className={
+                  isRecording
+                    ? "text-destructive animate-pulse"
+                    : "text-muted-foreground"
+                }
+              />
               {isRecording ? (
                 <span className="text-destructive font-mono font-bold">
                   {60 - recordSeconds} {t.secondsLeft}
@@ -615,7 +658,10 @@ export default function VoiceOnboarding() {
                 aria-label={t.tapToRecord}
               >
                 <div className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/20 opacity-75" />
-                <Mic size={44} className="transition-transform group-hover:scale-110" />
+                <Mic
+                  size={44}
+                  className="transition-transform group-hover:scale-110"
+                />
               </button>
             ) : (
               <button
@@ -691,8 +737,12 @@ export default function VoiceOnboarding() {
           {!isRecording && (
             <div className="mt-6 border-t border-border/60 pt-5">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-muted-foreground">{t.trySample}</p>
-                <span className="text-[11px] text-muted-foreground/70">1-click test</span>
+                <p className="text-xs font-bold text-muted-foreground">
+                  {t.trySample}
+                </p>
+                <span className="text-[11px] text-muted-foreground/70">
+                  1-click test
+                </span>
               </div>
               <div className="mt-2.5 grid gap-2 sm:grid-cols-3">
                 {SAMPLE_PRESETS.map((s, idx) => (
@@ -703,8 +753,12 @@ export default function VoiceOnboarding() {
                     disabled={isProcessing}
                     className="flex flex-col items-start rounded-xl border border-border bg-card p-3 text-left transition hover:border-primary hover:bg-primary/5 active:scale-[0.98] disabled:opacity-50"
                   >
-                    <span className="text-[11px] font-extrabold text-primary">{s.langName}</span>
-                    <span className="mt-0.5 text-xs font-bold text-foreground">{s.label}</span>
+                    <span className="text-[11px] font-extrabold text-primary">
+                      {s.langName}
+                    </span>
+                    <span className="mt-0.5 text-xs font-bold text-foreground">
+                      {s.label}
+                    </span>
                     <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
                       "{s.transcript}"
                     </p>
@@ -719,8 +773,12 @@ export default function VoiceOnboarding() {
         {isProcessing && (
           <section className="rounded-2xl border border-primary/30 bg-primary/5 p-8 text-center shadow-sm animate-pulse">
             <Loader2 size={38} className="mx-auto animate-spin text-primary" />
-            <h2 className="mt-4 text-lg font-bold text-foreground">{t.transcribingTitle}</h2>
-            <p className="mt-1 text-xs text-muted-foreground">{t.transcribingSub}</p>
+            <h2 className="mt-4 text-lg font-bold text-foreground">
+              {t.transcribingTitle}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t.transcribingSub}
+            </p>
           </section>
         )}
 
@@ -738,11 +796,15 @@ export default function VoiceOnboarding() {
                   Engine: {processingEngine}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">{t.transcriptEditTip}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t.transcriptEditTip}
+              </p>
               <div className="mt-3">
                 <textarea
                   value={profile.raw_transcript}
-                  onChange={(e) => setProfile({ ...profile, raw_transcript: e.target.value })}
+                  onChange={(e) =>
+                    setProfile({ ...profile, raw_transcript: e.target.value })
+                  }
                   rows={3}
                   className="w-full rounded-xl border border-border bg-secondary/30 p-3 text-sm leading-relaxed text-foreground outline-none transition focus:border-primary focus:bg-card"
                   placeholder="Raw transcript text..."
@@ -757,7 +819,9 @@ export default function VoiceOnboarding() {
                   <h2 className="text-lg font-black tracking-tight text-foreground sm:text-xl">
                     {t.formSectionTitle}
                   </h2>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{t.formSectionSub}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t.formSectionSub}
+                  </p>
                 </div>
                 {profile.confidence_flags.length > 0 && (
                   <div className="flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 px-3 py-1 text-xs font-bold text-amber-700">
@@ -795,11 +859,16 @@ export default function VoiceOnboarding() {
                     )}
                   </div>
                   <div className="relative mt-1.5">
-                    <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <User
+                      size={16}
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
                     <input
                       type="text"
                       value={profile.full_name}
-                      onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                      onChange={(e) =>
+                        setProfile({ ...profile, full_name: e.target.value })
+                      }
                       placeholder="e.g. Murugan, Ramesh Kumar"
                       className={`h-12 w-full rounded-xl border bg-secondary/20 pl-10 pr-3 text-sm font-semibold text-foreground outline-none transition focus:border-primary ${
                         isFlagged("full_name")
@@ -822,7 +891,9 @@ export default function VoiceOnboarding() {
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{t.servicesHint}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    {t.servicesHint}
+                  </p>
                   <div
                     className={`mt-2 flex flex-wrap gap-2 rounded-[16px] p-2.5 ${
                       isFlagged("service_categories")
@@ -843,7 +914,11 @@ export default function VoiceOnboarding() {
                               : "border border-border bg-card text-foreground hover:bg-secondary"
                           }`}
                         >
-                          {selected ? <Check size={13} /> : <Wrench size={12} />}
+                          {selected ? (
+                            <Check size={13} />
+                          ) : (
+                            <Wrench size={12} />
+                          )}
                           <span>{cat}</span>
                         </button>
                       );
@@ -866,7 +941,10 @@ export default function VoiceOnboarding() {
                       )}
                     </div>
                     <div className="relative mt-1.5">
-                      <Briefcase size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <Briefcase
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
                       <input
                         type="number"
                         min="0"
@@ -875,7 +953,10 @@ export default function VoiceOnboarding() {
                         onChange={(e) =>
                           setProfile({
                             ...profile,
-                            years_experience: e.target.value === "" ? null : Number(e.target.value),
+                            years_experience:
+                              e.target.value === ""
+                                ? null
+                                : Number(e.target.value),
                           })
                         }
                         placeholder={t.experienceNull}
@@ -892,7 +973,9 @@ export default function VoiceOnboarding() {
                         <button
                           key={yr}
                           type="button"
-                          onClick={() => setProfile({ ...profile, years_experience: yr })}
+                          onClick={() =>
+                            setProfile({ ...profile, years_experience: yr })
+                          }
                           className={`rounded-full px-3 py-1 text-xs font-bold transition cursor-pointer shadow-subtle ${
                             profile.years_experience === yr
                               ? "bg-primary text-white"
@@ -918,11 +1001,19 @@ export default function VoiceOnboarding() {
                       )}
                     </div>
                     <div className="relative mt-1.5">
-                      <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <MapPin
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      />
                       <input
                         type="text"
                         value={profile.service_area}
-                        onChange={(e) => setProfile({ ...profile, service_area: e.target.value })}
+                        onChange={(e) =>
+                          setProfile({
+                            ...profile,
+                            service_area: e.target.value,
+                          })
+                        }
                         placeholder="e.g. T. Nagar Chennai, Rohini Delhi"
                         className={`h-12 w-full rounded-xl border bg-secondary/20 pl-10 pr-3 text-sm font-semibold text-foreground outline-none transition focus:border-primary ${
                           isFlagged("service_area")
@@ -953,7 +1044,9 @@ export default function VoiceOnboarding() {
                               : "border border-border bg-secondary/60 text-foreground hover:bg-secondary"
                           }`}
                         >
-                          {selected && <Check size={12} className="inline mr-1" />}
+                          {selected && (
+                            <Check size={12} className="inline mr-1" />
+                          )}
                           {lang}
                         </button>
                       );
@@ -972,7 +1065,9 @@ export default function VoiceOnboarding() {
                     onChange={(e) =>
                       setProfile({
                         ...profile,
-                        availability_note: e.target.value.trim() ? e.target.value : null,
+                        availability_note: e.target.value.trim()
+                          ? e.target.value
+                          : null,
                       })
                     }
                     placeholder="e.g. All days available, Weekends only, 9am to 6pm"
@@ -980,22 +1075,27 @@ export default function VoiceOnboarding() {
                   />
                   {/* Quick chips */}
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {["All days available", "Weekends only", "Flexible hours", "Emergency work"].map(
-                      (note) => (
-                        <button
-                          key={note}
-                          type="button"
-                          onClick={() => setProfile({ ...profile, availability_note: note })}
-                          className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
-                            profile.availability_note === note
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {note}
-                        </button>
-                      )
-                    )}
+                    {[
+                      "All days available",
+                      "Weekends only",
+                      "Flexible hours",
+                      "Emergency work",
+                    ].map((note) => (
+                      <button
+                        key={note}
+                        type="button"
+                        onClick={() =>
+                          setProfile({ ...profile, availability_note: note })
+                        }
+                        className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
+                          profile.availability_note === note
+                            ? "bg-primary text-primary-foreground"
+                            : "border border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {note}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -1071,7 +1171,10 @@ export default function VoiceOnboarding() {
             {/* Quick summary badges */}
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-muted-foreground">
               <span className="rounded-md bg-secondary px-2.5 py-1">
-                Name: <strong className="text-foreground">{confirmedPayload.full_name || "N/A"}</strong>
+                Name:{" "}
+                <strong className="text-foreground">
+                  {confirmedPayload.full_name || "N/A"}
+                </strong>
               </span>
               <span className="rounded-md bg-secondary px-2.5 py-1">
                 Categories:{" "}
@@ -1088,7 +1191,10 @@ export default function VoiceOnboarding() {
                 </strong>
               </span>
               <span className="rounded-md bg-secondary px-2.5 py-1">
-                Area: <strong className="text-foreground">{confirmedPayload.service_area || "N/A"}</strong>
+                Area:{" "}
+                <strong className="text-foreground">
+                  {confirmedPayload.service_area || "N/A"}
+                </strong>
               </span>
             </div>
 

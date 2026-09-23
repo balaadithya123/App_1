@@ -1,6 +1,10 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
-import type { ApiErrorResponse, WorkerRegistrationSuccessResponse, WorkersResponse } from "../../shared/api";
+import type {
+  ApiErrorResponse,
+  WorkerRegistrationSuccessResponse,
+  WorkersResponse,
+} from "../../shared/api";
 import { staticWorkers, type Worker } from "../../shared/workers";
 import {
   checkProfilePhotoDuplicates,
@@ -19,7 +23,10 @@ import { screenImageSilently } from "./portfolio-screen";
 export const workerRegistrationSchema = z.object({
   id: z.string().trim().optional(),
   fullName: z.string().trim().min(1, "Full name is required"),
-  phone: z.string().trim().regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
   category: z.string().trim().min(1, "Work category is required"),
   location: z.string().trim().min(1, "Location is required"),
   experience: z.string().trim().min(1, "Years of experience is required"),
@@ -30,9 +37,17 @@ export const workerRegistrationSchema = z.object({
 type WorkerRegistration = z.infer<typeof workerRegistrationSchema>;
 
 const createUrlSafeSlug = (v: string) =>
-  v.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  v
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
-export const createWorkerId = (name: string, existing: Worker[], requested?: string) => {
+export const createWorkerId = (
+  name: string,
+  existing: Worker[],
+  requested?: string,
+) => {
   const base = createUrlSafeSlug(requested || name) || "worker";
   const ids = new Set(existing.map((w) => w.id));
   if (!ids.has(base)) return base;
@@ -53,7 +68,10 @@ const createInitials = (name: string) =>
     .map((p) => p[0]?.toUpperCase())
     .join("") || "W";
 
-export const createWorker = (r: WorkerRegistration, existing: Worker[]): Worker => ({
+export const createWorker = (
+  r: WorkerRegistration,
+  existing: Worker[],
+): Worker => ({
   id: createWorkerId(r.phone, existing, r.id),
   name: r.fullName,
   phone: r.phone,
@@ -71,7 +89,10 @@ export const createWorker = (r: WorkerRegistration, existing: Worker[]): Worker 
   urgent_today: false,
 });
 
-export const getAllWorkers = async () => [...staticWorkers, ...(await readRegisteredWorkers())];
+export const getAllWorkers = async () => [
+  ...staticWorkers,
+  ...(await readRegisteredWorkers()),
+];
 
 export const handleGetWorkers: RequestHandler = async (_req, res) => {
   try {
@@ -82,21 +103,26 @@ export const handleGetWorkers: RequestHandler = async (_req, res) => {
       ? await supabase.from("workers").select("id,phone_verified").in("id", ids)
       : { data: [] };
     const verification = new Map(
-      (verificationRows ?? []).map((row) => [row.id, Boolean(row.phone_verified)])
+      (verificationRows ?? []).map((row) => [
+        row.id,
+        Boolean(row.phone_verified),
+      ]),
     );
     res.json({
       workers: workers.map((worker) => ({
         ...worker,
-        phone_verified: verification.get(worker.id) ?? worker.phone_verified ?? false,
+        phone_verified:
+          verification.get(worker.id) ?? worker.phone_verified ?? false,
       })),
     } satisfies WorkersResponse);
   } catch (error) {
     console.error("[workers] load failed:", error);
-    res
-      .status(500)
-      .json({
-        message: error instanceof Error ? error.message : "Unable to load workers right now.",
-      } satisfies ApiErrorResponse);
+    res.status(500).json({
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to load workers right now.",
+    } satisfies ApiErrorResponse);
   }
 };
 
@@ -118,7 +144,7 @@ export const handleRegisterWorker: RequestHandler = async (req, res) => {
       // 1. Phone number duplicate check
       const normPhone = result.data.phone.replace(/\D/g, "").slice(-10);
       const duplicatePhone = existingWorkers.filter(
-        (w) => w.phone.replace(/\D/g, "").slice(-10) === normPhone
+        (w) => w.phone.replace(/\D/g, "").slice(-10) === normPhone,
       );
       if (duplicatePhone.length > 0) {
         await addTrustFlag({
@@ -136,7 +162,7 @@ export const handleRegisterWorker: RequestHandler = async (req, res) => {
         (w) =>
           w.name.trim().toLowerCase() === normName &&
           w.category.trim().toLowerCase() === normCat &&
-          w.locality.trim().toLowerCase() === normLoc
+          w.locality.trim().toLowerCase() === normLoc,
       );
       if (similarProfile) {
         await addTrustFlag({
@@ -154,32 +180,42 @@ export const handleRegisterWorker: RequestHandler = async (req, res) => {
         text: `${w.name} ${w.category} ${w.locality} ${w.about || ""} ${(w.services || []).join(" ")}`,
       }));
 
-      const textSimResult = checkProfileTextSimilarity(newProfileText, existingTextProfiles, {
-        threshold: 0.6,
-      });
+      const textSimResult = checkProfileTextSimilarity(
+        newProfileText,
+        existingTextProfiles,
+        {
+          threshold: 0.6,
+        },
+      );
 
       if (textSimResult.isDuplicate) {
         await addTrustFlag({
           worker_id: worker.id,
           flag_type: "duplicate_text_shingle_detected",
-          reason: textSimResult.reason || "Near-duplicate profile text detected using word-shingle similarity check.",
+          reason:
+            textSimResult.reason ||
+            "Near-duplicate profile text detected using word-shingle similarity check.",
         });
       }
 
       // 4. Gemini profile photo check (if photoUrl provided on registration)
       if (result.data.photoUrl) {
-        const photoCheck = await checkProfilePhotoDuplicates(result.data.photoUrl);
+        const photoCheck = await checkProfilePhotoDuplicates(
+          result.data.photoUrl,
+        );
         if (photoCheck.is_stock_photo) {
           await addTrustFlag({
             worker_id: worker.id,
             flag_type: "stock_photo_detected",
-            reason: "Profile photo detected as commercial stock photo or catalog picture",
+            reason:
+              "Profile photo detected as commercial stock photo or catalog picture",
           });
         } else if (photoCheck.is_duplicate_or_copied) {
           await addTrustFlag({
             worker_id: worker.id,
             flag_type: "duplicate_photo_detected",
-            reason: "Profile photo detected as duplicate, copied, or screenshot image",
+            reason:
+              "Profile photo detected as duplicate, copied, or screenshot image",
           });
         }
       }
@@ -194,7 +230,10 @@ export const handleRegisterWorker: RequestHandler = async (req, res) => {
   } catch (error) {
     console.error("[workers] registration save failed:", error);
     return res.status(500).json({
-      message: error instanceof Error ? error.message : "Unable to save registration right now.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to save registration right now.",
     } satisfies ApiErrorResponse);
   }
 };
@@ -209,31 +248,46 @@ const getAuthenticatedWorker = async (req: Parameters<RequestHandler>[0]) => {
   return { token, user: data.user };
 };
 
-const sendAvailabilityNotifications = async (workerId: string, workerName: string) => {
+const sendAvailabilityNotifications = async (
+  workerId: string,
+  workerName: string,
+) => {
   const { data: watchers, error } = await supabase
     .from("availability_watchers")
     .select("id,requester_id,requester_email")
     .eq("worker_id", workerId)
     .is("notified_at", null);
-  if (error) throw new Error(`Unable to load availability watchers: ${error.message}`);
+  if (error)
+    throw new Error(`Unable to load availability watchers: ${error.message}`);
   if (!watchers?.length) return 0;
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) throw new Error("RESEND_API_KEY is missing in Vercel environment variables.");
+  if (!apiKey)
+    throw new Error(
+      "RESEND_API_KEY is missing in Vercel environment variables.",
+    );
   const from = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   let sent = 0;
   for (const watcher of watchers) {
     const message = `${workerName} is available again. You can now contact the worker from App_1.`;
-    const { error: notificationError } = await supabase.from("notifications").insert({
-      recipient_id: watcher.requester_id,
-      type: "worker_available",
-      title: "Worker is available again",
-      message,
-      worker_id: workerId,
-    });
-    if (notificationError) throw new Error(`Unable to create inbox notification: ${notificationError.message}`);
+    const { error: notificationError } = await supabase
+      .from("notifications")
+      .insert({
+        recipient_id: watcher.requester_id,
+        type: "worker_available",
+        title: "Worker is available again",
+        message,
+        worker_id: workerId,
+      });
+    if (notificationError)
+      throw new Error(
+        `Unable to create inbox notification: ${notificationError.message}`,
+      );
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         from,
         to: [watcher.requester_email],
@@ -249,13 +303,17 @@ const sendAvailabilityNotifications = async (workerId: string, workerName: strin
       .from("availability_watchers")
       .update({ notified_at: new Date().toISOString() })
       .eq("id", watcher.id);
-    if (markError) throw new Error(`Unable to mark watcher notified: ${markError.message}`);
+    if (markError)
+      throw new Error(`Unable to mark watcher notified: ${markError.message}`);
     sent++;
   }
   return sent;
 };
 
-export const handleUpdateWorkerAvailability: RequestHandler = async (req, res) => {
+export const handleUpdateWorkerAvailability: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     const { token, user } = await getAuthenticatedWorker(req);
     const body = z
@@ -269,10 +327,15 @@ export const handleUpdateWorkerAvailability: RequestHandler = async (req, res) =
     const functionUrl = `${process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL}/functions/v1/worker-availability-notify`;
     const response = await fetch(functionUrl, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(body),
     });
-    const result = await response.json().catch(() => ({ message: "Unable to update availability." }));
+    const result = await response
+      .json()
+      .catch(() => ({ message: "Unable to update availability." }));
     if (!response.ok) return res.status(response.status).json(result);
     if (body.available_today) {
       const phone = String(user.phone || user.user_metadata?.phone || "")
@@ -289,7 +352,8 @@ export const handleUpdateWorkerAvailability: RequestHandler = async (req, res) =
     return res.json(result);
   } catch (error) {
     const code = error instanceof Error ? error.message : "";
-    const status = code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
+    const status =
+      code === "UNAUTHORIZED" ? 401 : code === "FORBIDDEN" ? 403 : 500;
     return res.status(status).json({
       message:
         status === 500
@@ -322,7 +386,9 @@ export const handleUpdateWorkerProfile: RequestHandler = async (req, res) => {
       })
       .parse(req.body);
 
-    const phone = String(user.user.phone || user.user.user_metadata?.phone || "")
+    const phone = String(
+      user.user.phone || user.user.user_metadata?.phone || "",
+    )
       .replace(/^\+91/, "")
       .replace(/\D/g, "")
       .slice(-10);
@@ -341,15 +407,21 @@ export const handleUpdateWorkerProfile: RequestHandler = async (req, res) => {
         text: `${w.name} ${w.category} ${w.locality} ${w.about || ""} ${(w.services || []).join(" ")}`,
       }));
 
-      const textSimResult = checkProfileTextSimilarity(newProfileText, existingTextProfiles, {
-        threshold: 0.6,
-      });
+      const textSimResult = checkProfileTextSimilarity(
+        newProfileText,
+        existingTextProfiles,
+        {
+          threshold: 0.6,
+        },
+      );
 
       if (textSimResult.isDuplicate) {
         await addTrustFlag({
           worker_id: worker.id,
           flag_type: "duplicate_text_shingle_detected",
-          reason: textSimResult.reason || "Near-duplicate profile text detected on profile update.",
+          reason:
+            textSimResult.reason ||
+            "Near-duplicate profile text detected on profile update.",
         });
       }
 
@@ -359,13 +431,15 @@ export const handleUpdateWorkerProfile: RequestHandler = async (req, res) => {
           await addTrustFlag({
             worker_id: worker.id,
             flag_type: "stock_photo_detected",
-            reason: "Profile photo detected as commercial stock photo or catalog picture",
+            reason:
+              "Profile photo detected as commercial stock photo or catalog picture",
           });
         } else if (photoCheck.is_duplicate_or_copied) {
           await addTrustFlag({
             worker_id: worker.id,
             flag_type: "duplicate_photo_detected",
-            reason: "Profile photo detected as duplicate, copied, or screenshot image",
+            reason:
+              "Profile photo detected as duplicate, copied, or screenshot image",
           });
         }
       }
@@ -376,7 +450,10 @@ export const handleUpdateWorkerProfile: RequestHandler = async (req, res) => {
     return res.json({ worker });
   } catch (error) {
     return res.status(500).json({
-      message: error instanceof Error ? error.message : "Unable to update worker profile.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to update worker profile.",
     } satisfies ApiErrorResponse);
   }
 };
@@ -387,10 +464,15 @@ export const handleUpdateWorkerPhoto: RequestHandler = async (req, res) => {
     const { data: user, error } = await supabase.auth.getUser(token);
     if (error || !user.user)
       return res.status(500).json({
-        message: error instanceof Error ? error.message : "Unable to update worker photo.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to update worker photo.",
       } satisfies ApiErrorResponse);
 
-    const phone = String(user.user.phone || user.user.user_metadata?.phone || "");
+    const phone = String(
+      user.user.phone || user.user.user_metadata?.phone || "",
+    );
     const photoUrl = z.string().url().safeParse(req.body?.photoUrl);
     if (!photoUrl.success)
       return res.status(400).json({
@@ -399,7 +481,7 @@ export const handleUpdateWorkerPhoto: RequestHandler = async (req, res) => {
 
     const worker = await updateWorkerPhotoByPhone(
       phone.replace(/^\+91/, "").replace(/\D/g, "").slice(-10),
-      photoUrl.data
+      photoUrl.data,
     );
 
     // Silent background screening for profile photo using Gemini photo check & portfolio screen
@@ -409,7 +491,8 @@ export const handleUpdateWorkerPhoto: RequestHandler = async (req, res) => {
         await addTrustFlag({
           worker_id: worker.id,
           flag_type: "stock_photo_detected",
-          reason: "Profile photo detected as commercial stock photo or catalog picture",
+          reason:
+            "Profile photo detected as commercial stock photo or catalog picture",
         });
       } else if (photoCheck.is_duplicate_or_copied) {
         await addTrustFlag({
@@ -428,13 +511,18 @@ export const handleUpdateWorkerPhoto: RequestHandler = async (req, res) => {
           await addTrustFlag({
             worker_id: worker.id,
             flag_type: "stock_photo_detected",
-            reason: "Profile photo detected as commercial stock photo or catalog picture",
+            reason:
+              "Profile photo detected as commercial stock photo or catalog picture",
           });
-        } else if (!screening.checks.shows_actual_work && screening.checks.is_duplicate_style) {
+        } else if (
+          !screening.checks.shows_actual_work &&
+          screening.checks.is_duplicate_style
+        ) {
           await addTrustFlag({
             worker_id: worker.id,
             flag_type: "unverified_photo",
-            reason: "Profile photo appears to be a screenshot, meme, or non-work graphic",
+            reason:
+              "Profile photo appears to be a screenshot, meme, or non-work graphic",
           });
         }
       }
@@ -445,7 +533,10 @@ export const handleUpdateWorkerPhoto: RequestHandler = async (req, res) => {
     return res.json({ worker });
   } catch (error) {
     return res.status(500).json({
-      message: error instanceof Error ? error.message : "Unable to update worker photo.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to update worker photo.",
     } satisfies ApiErrorResponse);
   }
 };

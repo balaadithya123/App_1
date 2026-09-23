@@ -2,7 +2,10 @@ import type { RequestHandler } from "express";
 import { z } from "zod";
 import { supabase } from "../lib/supabase";
 
-const referralSchema = z.object({ workerId: z.string().trim().min(1), referralSource: z.string().trim().max(200).min(1) });
+const referralSchema = z.object({
+  workerId: z.string().trim().min(1),
+  referralSource: z.string().trim().max(200).min(1),
+});
 
 const getAuthenticatedWorker = async (req: Parameters<RequestHandler>[0]) => {
   const authorization = req.headers.authorization;
@@ -18,11 +21,17 @@ export const handleRecordWorkerReferral: RequestHandler = async (req, res) => {
   try {
     const body = referralSchema.parse(req.body);
     const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const { error } = await supabase.from("workers").update({ referral_source: body.referralSource }).eq("id", body.workerId).is("referral_source", null).gte("created_at", cutoff);
+    const { error } = await supabase
+      .from("workers")
+      .update({ referral_source: body.referralSource })
+      .eq("id", body.workerId)
+      .is("referral_source", null)
+      .gte("created_at", cutoff);
     if (error) throw error;
     return res.json({ ok: true });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unable to record referral.";
+    const message =
+      error instanceof Error ? error.message : "Unable to record referral.";
     return res.status(400).json({ message });
   }
 };
@@ -31,20 +40,42 @@ export const handleGetWorkerStats: RequestHandler = async (req, res) => {
   try {
     const user = await getAuthenticatedWorker(req);
     const metadata = user.user_metadata ?? {};
-    const phone = String(user.phone || metadata.phone || "").replace(/^\+91/, "").replace(/\D/g, "").slice(-10);
-    const metadataWorkerId = String(metadata.worker_id || metadata.workerId || "").trim();
+    const phone = String(user.phone || metadata.phone || "")
+      .replace(/^\+91/, "")
+      .replace(/\D/g, "")
+      .slice(-10);
+    const metadataWorkerId = String(
+      metadata.worker_id || metadata.workerId || "",
+    ).trim();
 
-    let worker: { id: string; referral_code: string | null; phone_verified: boolean } | null = null;
+    let worker: {
+      id: string;
+      referral_code: string | null;
+      phone_verified: boolean;
+    } | null = null;
     if (metadataWorkerId) {
-      const { data } = await supabase.from("workers").select("id,referral_code,phone_verified").eq("id", metadataWorkerId).maybeSingle();
+      const { data } = await supabase
+        .from("workers")
+        .select("id,referral_code,phone_verified")
+        .eq("id", metadataWorkerId)
+        .maybeSingle();
       worker = data;
     }
     if (!worker && phone) {
-      const { data, error } = await supabase.from("workers").select("id,referral_code,phone_verified").eq("phone", phone).maybeSingle();
+      const { data, error } = await supabase
+        .from("workers")
+        .select("id,referral_code,phone_verified")
+        .eq("phone", phone)
+        .maybeSingle();
       if (error) throw error;
       worker = data;
     }
-    if (!worker) return res.json({ profileViewsThisWeek: 0, referralCode: null, phoneVerified: false });
+    if (!worker)
+      return res.json({
+        profileViewsThisWeek: 0,
+        referralCode: null,
+        phoneVerified: false,
+      });
 
     // 1. Total views
     const { count: totalCount, error: totalError } = await supabase
@@ -57,7 +88,9 @@ export const handleGetWorkerStats: RequestHandler = async (req, res) => {
     // 2. Fixed-week views (from Monday)
     const now = new Date();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+    startOfWeek.setDate(
+      now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1),
+    );
     startOfWeek.setHours(0, 0, 0, 0);
     const startOfWeekISO = startOfWeek.toISOString();
 
@@ -69,14 +102,16 @@ export const handleGetWorkerStats: RequestHandler = async (req, res) => {
       .gte("created_at", startOfWeekISO);
     if (weeklyError) throw weeklyError;
 
-    return res.json({ 
-        profileViewsTotal: totalCount ?? 0, 
-        profileViewsThisWeek: weeklyCount ?? 0, 
-        referralCode: worker.referral_code ?? null, 
-        phoneVerified: Boolean(worker.phone_verified) 
+    return res.json({
+      profileViewsTotal: totalCount ?? 0,
+      profileViewsThisWeek: weeklyCount ?? 0,
+      referralCode: worker.referral_code ?? null,
+      phoneVerified: Boolean(worker.phone_verified),
     });
   } catch (error) {
     console.error("[worker-stats] failed:", error);
-    return res.status(500).json({ message: "Unable to load your profile reach right now." });
+    return res
+      .status(500)
+      .json({ message: "Unable to load your profile reach right now." });
   }
 };

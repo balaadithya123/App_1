@@ -1,9 +1,0 @@
-{
-	"appId": "com.balaadithya123.app1",
-	"appName": "Local Worker Discovery",
-	"webDir": "dist/spa",
-	"server": {
-		"url": "https://builderco.vercel.app/",
-		"cleartext": false
-	}
-}

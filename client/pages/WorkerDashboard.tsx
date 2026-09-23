@@ -33,7 +33,11 @@ const addDays = (date: Date, days: number) => {
   return d;
 };
 const formatDate = (value: string) =>
-  new Date(`${value}T00:00:00`).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
@@ -66,8 +70,14 @@ export default function WorkerDashboard() {
       const today = isoToday();
       const storedFrom = meta.away_from || "";
       const storedUntil = meta.away_until || "";
-      const validAwayRange = Boolean(storedFrom && storedUntil && storedUntil >= today && storedUntil >= storedFrom);
-      const activeAway = validAwayRange && storedFrom <= today && storedUntil >= today;
+      const validAwayRange = Boolean(
+        storedFrom &&
+        storedUntil &&
+        storedUntil >= today &&
+        storedUntil >= storedFrom,
+      );
+      const activeAway =
+        validAwayRange && storedFrom <= today && storedUntil >= today;
       setUser(current);
       setAwayFrom(validAwayRange ? storedFrom : "");
       setAwayUntil(validAwayRange ? storedUntil : "");
@@ -77,13 +87,22 @@ export default function WorkerDashboard() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (sessionData.session) {
         try {
-          const response = await fetch(`/api/callback-requests?_=${Date.now()}`, {
-            cache: "no-store",
-            headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
-          });
+          const response = await fetch(
+            `/api/callback-requests?_=${Date.now()}`,
+            {
+              cache: "no-store",
+              headers: {
+                Authorization: `Bearer ${sessionData.session.access_token}`,
+              },
+            },
+          );
           if (response.ok) {
             const callbackData = await response.json();
-            setCallbackCount(Array.isArray(callbackData?.requests) ? callbackData.requests.length : 0);
+            setCallbackCount(
+              Array.isArray(callbackData?.requests)
+                ? callbackData.requests.length
+                : 0,
+            );
           }
         } catch {
           setCallbackCount(0);
@@ -102,10 +121,14 @@ export default function WorkerDashboard() {
     setError("");
     setSaving(true);
     try {
-      const { data: fnData, error: fnError } = await supabase.functions.invoke("worker-availability-notify", {
-        body: changes,
-      });
-      if (fnError) throw new Error(fnError.message || "Could not save availability.");
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        "worker-availability-notify",
+        {
+          body: changes,
+        },
+      );
+      if (fnError)
+        throw new Error(fnError.message || "Could not save availability.");
       if (fnData?.message && !fnData.worker) throw new Error(fnData.message);
       setUser((current: any) =>
         current
@@ -128,7 +151,9 @@ export default function WorkerDashboard() {
     }
   };
 
-  const isAway = Boolean(awayFrom && awayUntil && awayFrom <= isoToday() && awayUntil >= isoToday());
+  const isAway = Boolean(
+    awayFrom && awayUntil && awayFrom <= isoToday() && awayUntil >= isoToday(),
+  );
   const todayIsUnavailable = isAway || !availableToday;
 
   const toggleToday = async () => {
@@ -203,7 +228,9 @@ export default function WorkerDashboard() {
   const nextAvailable = useMemo(
     () =>
       isAway
-        ? addDays(new Date(`${awayUntil}T00:00:00`), 1).toISOString().slice(0, 10)
+        ? addDays(new Date(`${awayUntil}T00:00:00`), 1)
+            .toISOString()
+            .slice(0, 10)
         : availableToday
           ? isoToday()
           : addDays(new Date(), 1).toISOString().slice(0, 10),
@@ -214,7 +241,9 @@ export default function WorkerDashboard() {
     return (
       <PageShell hideBack hideHome>
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center shadow-soft">
-          <p className="text-sm font-medium text-[#67696D]">Loading your worker portal...</p>
+          <p className="text-sm font-medium text-[#67696D]">
+            Loading your worker portal...
+          </p>
         </section>
       </PageShell>
     );
@@ -237,7 +266,11 @@ export default function WorkerDashboard() {
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-[#2C2C2C] shadow-subtle">
                 {avatar ? (
-                  <img src={avatar} alt="Profile" className="h-full w-full object-cover" />
+                  <img
+                    src={avatar}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <UserRound size={24} className="text-primary" />
                 )}
@@ -286,13 +319,19 @@ export default function WorkerDashboard() {
         <WorkerGrowthCard />
 
         {/* Public Track Record Timeline */}
-        <WorkerTrackRecordSection workerId={user?.id || "1"} workerName={name} />
+        <WorkerTrackRecordSection
+          workerId={user?.id || "1"}
+          workerName={name}
+        />
 
         {/* Work Portfolio Upload & Management */}
         <WorkerPortfolioManager />
 
         {/* Agency Affiliation & Team Joining */}
-        <WorkerAgencyAffiliation userId={user?.id} userPhone={user?.user_metadata?.phone || user?.phone} />
+        <WorkerAgencyAffiliation
+          userId={user?.id}
+          userPhone={user?.user_metadata?.phone || user?.phone}
+        />
 
         {/* Agency Assigned Projects */}
         <WorkerAssignedProjects
@@ -308,8 +347,12 @@ export default function WorkerDashboard() {
               <CalendarDays size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-[#2C2C2C]">Availability & Scheduling</h2>
-              <p className="text-xs text-[#67696D]">Control when clients see you as available.</p>
+              <h2 className="text-sm font-bold text-[#2C2C2C]">
+                Availability & Scheduling
+              </h2>
+              <p className="text-xs text-[#67696D]">
+                Control when clients see you as available.
+              </p>
             </div>
           </div>
 
@@ -333,7 +376,11 @@ export default function WorkerDashboard() {
                       : "border-[#E7ECF1] bg-white text-[#989EA7]"
                   }`}
                 >
-                  {availableToday && !isAway ? <Check size={14} /> : <X size={14} />}
+                  {availableToday && !isAway ? (
+                    <Check size={14} />
+                  ) : (
+                    <X size={14} />
+                  )}
                 </span>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-[#2C2C2C] sm:text-sm">
@@ -362,7 +409,9 @@ export default function WorkerDashboard() {
                   onClick={toggleToday}
                   disabled={saving}
                   className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
-                    availableToday ? "bg-primary" : "bg-[#E7ECF1] border border-[#E7ECF1]"
+                    availableToday
+                      ? "bg-primary"
+                      : "bg-[#E7ECF1] border border-[#E7ECF1]"
                   }`}
                 >
                   <span
@@ -378,9 +427,18 @@ export default function WorkerDashboard() {
           {/* Urgent / Same-Day Work Option */}
           <div className="mt-3 flex items-center justify-between rounded-[12px] border border-[#E7ECF1] bg-white p-3.5 shadow-subtle">
             <div className="flex items-center gap-2.5 min-w-0">
-              <Flame size={15} className={urgent && !todayIsUnavailable ? "text-primary" : "text-[#989EA7]"} />
+              <Flame
+                size={15}
+                className={
+                  urgent && !todayIsUnavailable
+                    ? "text-primary"
+                    : "text-[#989EA7]"
+                }
+              />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#2C2C2C]">Urgent / same-day jobs</p>
+                <p className="text-xs font-bold text-[#2C2C2C]">
+                  Urgent / same-day jobs
+                </p>
                 <p className="text-[11px] text-[#67696D]">
                   {todayIsUnavailable
                     ? "Enable 'Available today' first to accept emergency jobs."
@@ -395,12 +453,16 @@ export default function WorkerDashboard() {
               disabled={saving || todayIsUnavailable}
               aria-label="Toggle urgent work status"
               className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
-                urgent && !todayIsUnavailable ? "bg-primary" : "bg-[#E7ECF1] border border-[#E7ECF1]"
+                urgent && !todayIsUnavailable
+                  ? "bg-primary"
+                  : "bg-[#E7ECF1] border border-[#E7ECF1]"
               }`}
             >
               <span
                 className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
-                  urgent && !todayIsUnavailable ? "translate-x-5" : "translate-x-0.5"
+                  urgent && !todayIsUnavailable
+                    ? "translate-x-5"
+                    : "translate-x-0.5"
                 }`}
               />
             </button>
@@ -410,7 +472,9 @@ export default function WorkerDashboard() {
           <div className="mt-3 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-3.5">
             <div className="flex items-center gap-2">
               <Plane size={14} className="text-[#67696D]" />
-              <p className="text-xs font-bold text-[#2C2C2C]">Away Window / Vacation</p>
+              <p className="text-xs font-bold text-[#2C2C2C]">
+                Away Window / Vacation
+              </p>
             </div>
             <p className="mt-0.5 text-[11px] text-[#67696D]">
               Select date ranges when you will be out of town or taking leave.
@@ -443,7 +507,9 @@ export default function WorkerDashboard() {
               <button
                 type="button"
                 onClick={saveAway}
-                disabled={!awayFrom || !awayUntil || awayUntil < awayFrom || saving}
+                disabled={
+                  !awayFrom || !awayUntil || awayUntil < awayFrom || saving
+                }
                 className="inline-flex h-8 items-center rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
               >
                 Set away window
@@ -474,11 +540,16 @@ export default function WorkerDashboard() {
                 <ClipboardList size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#2C2C2C]">Commitments</strong>
+                <strong className="block text-xs font-bold text-[#2C2C2C]">
+                  Commitments
+                </strong>
                 <span className="text-[11px] text-[#67696D]">Job schedule</span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]" />
+            <ChevronRight
+              size={13}
+              className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]"
+            />
           </button>
 
           <button
@@ -497,7 +568,10 @@ export default function WorkerDashboard() {
                 <span className="text-[11px] text-[#67696D]">Direct leads</span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]" />
+            <ChevronRight
+              size={13}
+              className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]"
+            />
           </button>
 
           <button
@@ -510,11 +584,18 @@ export default function WorkerDashboard() {
                 <Edit3 size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#2C2C2C]">Profile Details</strong>
-                <span className="text-[11px] text-[#67696D]">Skills & rates</span>
+                <strong className="block text-xs font-bold text-[#2C2C2C]">
+                  Profile Details
+                </strong>
+                <span className="text-[11px] text-[#67696D]">
+                  Skills & rates
+                </span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]" />
+            <ChevronRight
+              size={13}
+              className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]"
+            />
           </button>
 
           <button
@@ -527,15 +608,21 @@ export default function WorkerDashboard() {
                 <LogOut size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-rose-700">Sign Out</strong>
-                <span className="text-[11px] text-rose-600/80">End session</span>
+                <strong className="block text-xs font-bold text-rose-700">
+                  Sign Out
+                </strong>
+                <span className="text-[11px] text-rose-600/80">
+                  End session
+                </span>
               </div>
             </div>
-            <ChevronRight size={13} className="text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-rose-600" />
+            <ChevronRight
+              size={13}
+              className="text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-rose-600"
+            />
           </button>
         </section>
       </div>
     </PageShell>
   );
 }
-

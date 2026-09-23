@@ -110,7 +110,11 @@ type ProjectAssignment = {
 type Dashboard = {
   agency: Agency;
   workers: Worker[];
-  stats: { linkedWorkers: number; whatsappClicks7d: number; callbacks7d: number };
+  stats: {
+    linkedWorkers: number;
+    whatsappClicks7d: number;
+    callbacks7d: number;
+  };
   callbacks: Callback[];
 };
 
@@ -123,7 +127,10 @@ export default function AgencyDashboard() {
   const [notAnAgency, setNotAnAgency] = useState(false);
   const [copied, setCopied] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
-  const [bannerMessage, setBannerMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [bannerMessage, setBannerMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Roster Search & Modal State
   const [workerSearch, setWorkerSearch] = useState("");
@@ -137,7 +144,8 @@ export default function AgencyDashboard() {
   // Active Project Assignments State
   const [projects, setProjects] = useState<ProjectAssignment[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<ProjectAssignment | null>(null);
+  const [projectToDelete, setProjectToDelete] =
+    useState<ProjectAssignment | null>(null);
   const [deleteProjectLoading, setDeleteProjectLoading] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
   const [newProjectLoading, setNewProjectLoading] = useState(false);
@@ -154,7 +162,9 @@ export default function AgencyDashboard() {
   const loadProjects = async (agencyId: string) => {
     try {
       setProjectsLoading(true);
-      const res = await fetch(`/api/agencies/projects?agencyId=${encodeURIComponent(agencyId || "agency-admin")}`);
+      const res = await fetch(
+        `/api/agencies/projects?agencyId=${encodeURIComponent(agencyId || "agency-admin")}`,
+      );
       if (res.ok) {
         const data = await res.json();
         setProjects(data.projects || []);
@@ -180,7 +190,10 @@ export default function AgencyDashboard() {
     }
     const role = session.user.user_metadata?.role;
     const email = String(session.user.email || "").toLowerCase();
-    const isAdmin = session.user.app_metadata?.is_admin === true || role === "admin" || email === "pgbalaadithya@gmail.com";
+    const isAdmin =
+      session.user.app_metadata?.is_admin === true ||
+      role === "admin" ||
+      email === "pgbalaadithya@gmail.com";
     setUserRole(role || "user");
     if (role !== "agency" && !isAdmin) {
       setNotAnAgency(true);
@@ -194,14 +207,22 @@ export default function AgencyDashboard() {
         cache: "no-store",
       });
       const result = await r.json().catch(() => null);
-      if (!r.ok) throw new Error(result?.message || "Unable to load agency dashboard.");
+      if (!r.ok)
+        throw new Error(result?.message || "Unable to load agency dashboard.");
       if (!result?.agency?.agency_code) {
         const { data: a } = await supabase
           .from("agencies")
-          .select("agency_code,name,location,service_locations,categories,team_size_band,phone,email,verified,description,logo_url")
+          .select(
+            "agency_code,name,location,service_locations,categories,team_size_band,phone,email,verified,description,logo_url",
+          )
           .eq("user_id", session.user.id)
           .maybeSingle();
-        if (a) result.agency = { ...result.agency, ...a, agency_code: a.agency_code || result.agency.agency_code };
+        if (a)
+          result.agency = {
+            ...result.agency,
+            ...a,
+            agency_code: a.agency_code || result.agency.agency_code,
+          };
       }
       setDashboard(result);
       if (result?.agency?.id) {
@@ -225,7 +246,10 @@ export default function AgencyDashboard() {
     setTimeout(() => setCopied(""), 2200);
   };
 
-  const updateStatus = async (id: string, status: "new" | "contacted" | "closed") => {
+  const updateStatus = async (
+    id: string,
+    status: "new" | "contacted" | "closed",
+  ) => {
     if (!supabase) return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) return;
@@ -244,7 +268,9 @@ export default function AgencyDashboard() {
           prev
             ? {
                 ...prev,
-                callbacks: prev.callbacks.map((c) => (c.id === id ? { ...c, status } : c)),
+                callbacks: prev.callbacks.map((c) =>
+                  c.id === id ? { ...c, status } : c,
+                ),
               }
             : prev,
         );
@@ -271,7 +297,9 @@ export default function AgencyDashboard() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.message || "Failed to remove worker from agency roster.");
+        throw new Error(
+          data?.message || "Failed to remove worker from agency roster.",
+        );
       }
 
       // Update local dashboard workers state
@@ -308,12 +336,17 @@ export default function AgencyDashboard() {
     if (!projectToDelete) return;
     setDeleteProjectLoading(true);
     try {
-      const res = await fetch(`/api/agencies/projects/${encodeURIComponent(projectToDelete.id)}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `/api/agencies/projects/${encodeURIComponent(projectToDelete.id)}`,
+        {
+          method: "DELETE",
+        },
+      );
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.message || "Failed to delete project assignment.");
+        throw new Error(
+          data?.message || "Failed to delete project assignment.",
+        );
       }
 
       setProjects((prev) => prev.filter((p) => p.id !== projectToDelete.id));
@@ -335,26 +368,37 @@ export default function AgencyDashboard() {
   // Handler for creating a new project assignment
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProjectForm.title.trim() || !newProjectForm.client_name.trim() || !newProjectForm.worker_id) {
+    if (
+      !newProjectForm.title.trim() ||
+      !newProjectForm.client_name.trim() ||
+      !newProjectForm.worker_id
+    ) {
       return;
     }
     setNewProjectLoading(true);
     try {
-      const assignedWorker = dashboard?.workers.find((w) => w.id === newProjectForm.worker_id);
+      const assignedWorker = dashboard?.workers.find(
+        (w) => w.id === newProjectForm.worker_id,
+      );
       const res = await fetch("/api/agencies/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...newProjectForm,
           worker_name: assignedWorker?.name || "Specialist",
-          service: newProjectForm.service || assignedWorker?.category || "General Service",
+          service:
+            newProjectForm.service ||
+            assignedWorker?.category ||
+            "General Service",
           agency_id: dashboard?.agency?.id || "agency-admin",
         }),
       });
 
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data?.message || "Unable to create project assignment.");
+        throw new Error(
+          data?.message || "Unable to create project assignment.",
+        );
       }
 
       if (data.project) {
@@ -399,8 +443,16 @@ export default function AgencyDashboard() {
       const cat = (w.category || "").toLowerCase();
       const loc = (w.locality || "").toLowerCase();
       const ph = (w.phone || "").toLowerCase();
-      const serv = Array.isArray(w.services) ? w.services.join(" ").toLowerCase() : String(w.services || "").toLowerCase();
-      return name.includes(q) || cat.includes(q) || loc.includes(q) || ph.includes(q) || serv.includes(q);
+      const serv = Array.isArray(w.services)
+        ? w.services.join(" ").toLowerCase()
+        : String(w.services || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        cat.includes(q) ||
+        loc.includes(q) ||
+        ph.includes(q) ||
+        serv.includes(q)
+      );
     });
   }, [dashboard?.workers, workerSearch]);
 
@@ -422,9 +474,12 @@ export default function AgencyDashboard() {
       <PageShell hideBack hideHome containerWidth="lg">
         <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 text-center">
           <Building2 size={36} className="mx-auto text-primary" />
-          <h1 className="mt-3 text-lg font-bold text-foreground">Agency Portal</h1>
+          <h1 className="mt-3 text-lg font-bold text-foreground">
+            Agency Portal
+          </h1>
           <p className="mt-1.5 text-xs text-muted-foreground">
-            This account is currently registered as a {userRole || "client"}. To manage a team of workers, please register an agency profile.
+            This account is currently registered as a {userRole || "client"}. To
+            manage a team of workers, please register an agency profile.
           </p>
           <div className="mt-5 flex flex-col gap-2">
             <Link
@@ -450,8 +505,12 @@ export default function AgencyDashboard() {
       <PageShell hideBack hideHome containerWidth="lg">
         <div className="mx-auto max-w-md rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center">
           <ShieldAlert size={36} className="mx-auto text-destructive" />
-          <h1 className="mt-3 text-base font-bold text-foreground">Error Loading Dashboard</h1>
-          <p className="mt-1 text-xs text-muted-foreground">{error || "Unable to retrieve agency information."}</p>
+          <h1 className="mt-3 text-base font-bold text-foreground">
+            Error Loading Dashboard
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {error || "Unable to retrieve agency information."}
+          </p>
           <button
             onClick={() => {
               setLoading(true);
@@ -490,7 +549,9 @@ export default function AgencyDashboard() {
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-lg font-bold text-foreground sm:text-xl">{dashboard.agency.name}</h1>
+                  <h1 className="text-lg font-bold text-foreground sm:text-xl">
+                    {dashboard.agency.name}
+                  </h1>
                   {dashboard.agency.verified && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 shadow-subtle">
                       <BadgeCheck size={13} /> Verified Agency
@@ -563,19 +624,37 @@ export default function AgencyDashboard() {
         {/* Overview Stats */}
         <section className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-border bg-card p-4">
-            <span className="text-[11px] font-semibold text-muted-foreground">Total Workers</span>
-            <p className="mt-1 text-2xl font-bold text-foreground">{dashboard.stats.linkedWorkers}</p>
-            <div className="mt-2 text-[11px] text-muted-foreground">Under agency code</div>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              Total Workers
+            </span>
+            <p className="mt-1 text-2xl font-bold text-foreground">
+              {dashboard.stats.linkedWorkers}
+            </p>
+            <div className="mt-2 text-[11px] text-muted-foreground">
+              Under agency code
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
-            <span className="text-[11px] font-semibold text-muted-foreground">Client Contacts (7d)</span>
-            <p className="mt-1 text-2xl font-bold text-foreground">{dashboard.stats.whatsappClicks7d}</p>
-            <div className="mt-2 text-[11px] text-muted-foreground">Direct inquiries</div>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              Client Contacts (7d)
+            </span>
+            <p className="mt-1 text-2xl font-bold text-foreground">
+              {dashboard.stats.whatsappClicks7d}
+            </p>
+            <div className="mt-2 text-[11px] text-muted-foreground">
+              Direct inquiries
+            </div>
           </div>
           <div className="rounded-xl border border-border bg-card p-4">
-            <span className="text-[11px] font-semibold text-muted-foreground">Callbacks (7d)</span>
-            <p className="mt-1 text-2xl font-bold text-foreground">{dashboard.stats.callbacks7d}</p>
-            <div className="mt-2 text-[11px] text-muted-foreground">{pending} pending resolution</div>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              Callbacks (7d)
+            </span>
+            <p className="mt-1 text-2xl font-bold text-foreground">
+              {dashboard.stats.callbacks7d}
+            </p>
+            <div className="mt-2 text-[11px] text-muted-foreground">
+              {pending} pending resolution
+            </div>
           </div>
         </section>
 
@@ -586,7 +665,9 @@ export default function AgencyDashboard() {
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 Recruit & Link Workers
               </span>
-              <h2 className="mt-0.5 text-sm font-bold text-foreground">Your Agency Invite Code</h2>
+              <h2 className="mt-0.5 text-sm font-bold text-foreground">
+                Your Agency Invite Code
+              </h2>
             </div>
             <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
               Share with workers
@@ -604,7 +685,11 @@ export default function AgencyDashboard() {
               disabled={!dashboard.agency.agency_code}
               className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary px-4 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background disabled:opacity-50 cursor-pointer"
             >
-              {copied === "code" ? <Check size={14} className="text-primary" /> : <Copy size={14} />}
+              {copied === "code" ? (
+                <Check size={14} className="text-primary" />
+              ) : (
+                <Copy size={14} />
+              )}
               <span>{copied === "code" ? "Code Copied!" : "Copy Code"}</span>
             </button>
 
@@ -614,12 +699,19 @@ export default function AgencyDashboard() {
               disabled={!shareUrl}
               className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-90 disabled:opacity-50 cursor-pointer"
             >
-              {copied === "link" ? <Check size={14} /> : <ExternalLink size={14} />}
-              <span>{copied === "link" ? "Link Copied!" : "Copy Join Link"}</span>
+              {copied === "link" ? (
+                <Check size={14} />
+              ) : (
+                <ExternalLink size={14} />
+              )}
+              <span>
+                {copied === "link" ? "Link Copied!" : "Copy Join Link"}
+              </span>
             </button>
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            Workers enter this code during registration or from their dashboard to link under your agency.
+            Workers enter this code during registration or from their dashboard
+            to link under your agency.
           </p>
         </section>
 
@@ -628,13 +720,16 @@ export default function AgencyDashboard() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">Worker Team Details</h2>
+                <h2 className="text-base font-bold text-foreground">
+                  Worker Team Details
+                </h2>
                 <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
                   {dashboard.workers.length} active
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Full profile details, direct phone contacts, skill specializations, and daily status of your workers.
+                Full profile details, direct phone contacts, skill
+                specializations, and daily status of your workers.
               </p>
             </div>
 
@@ -674,7 +769,10 @@ export default function AgencyDashboard() {
           {/* Search Filter Bar */}
           {dashboard.workers.length > 0 && (
             <div className="mt-3.5 flex items-center rounded-lg bg-secondary/40 px-3 py-1.5 focus-within:bg-secondary">
-              <Search size={14} className="mr-2 text-muted-foreground shrink-0" />
+              <Search
+                size={14}
+                className="mr-2 text-muted-foreground shrink-0"
+              />
               <input
                 value={workerSearch}
                 onChange={(e) => setWorkerSearch(e.target.value)}
@@ -716,17 +814,26 @@ export default function AgencyDashboard() {
                           <div className="flex items-center gap-3">
                             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-sm">
                               {w.photo_url ? (
-                                <img src={w.photo_url} alt={w.name} className="h-full w-full object-cover" />
+                                <img
+                                  src={w.photo_url}
+                                  alt={w.name}
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
                                 w.initials || w.name?.slice(0, 2).toUpperCase()
                               )}
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <h3 className="text-sm font-bold text-foreground">{w.name}</h3>
+                                <h3 className="text-sm font-bold text-foreground">
+                                  {w.name}
+                                </h3>
                                 {w.phone_verified && (
                                   <span title="Verified Worker">
-                                    <BadgeCheck size={14} className="text-emerald-500" />
+                                    <BadgeCheck
+                                      size={14}
+                                      className="text-emerald-500"
+                                    />
                                   </span>
                                 )}
                               </div>
@@ -777,7 +884,9 @@ export default function AgencyDashboard() {
                               <Briefcase size={10} /> Experience
                             </span>
                             <p className="mt-0.5 font-semibold text-foreground">
-                              {w.experience ? `${w.experience} yrs` : "Experienced"}
+                              {w.experience
+                                ? `${w.experience} yrs`
+                                : "Experienced"}
                             </p>
                           </div>
 
@@ -880,21 +989,32 @@ export default function AgencyDashboard() {
                     <tr className="border-b border-border text-muted-foreground">
                       <th className="pb-2.5 font-semibold">Worker</th>
                       <th className="pb-2.5 font-semibold">Contact Phone</th>
-                      <th className="pb-2.5 font-semibold">Category & Services</th>
+                      <th className="pb-2.5 font-semibold">
+                        Category & Services
+                      </th>
                       <th className="pb-2.5 font-semibold">Status</th>
                       <th className="pb-2.5 font-semibold">Experience</th>
                       <th className="pb-2.5 font-semibold">Inquiries</th>
-                      <th className="pb-2.5 font-semibold text-right">Actions</th>
+                      <th className="pb-2.5 font-semibold text-right">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {filteredWorkers.map((w) => (
-                      <tr key={w.id} className="text-foreground hover:bg-secondary/20">
+                      <tr
+                        key={w.id}
+                        className="text-foreground hover:bg-secondary/20"
+                      >
                         <td className="py-3">
                           <div className="flex items-center gap-2.5">
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-xs">
                               {w.photo_url ? (
-                                <img src={w.photo_url} alt={w.name} className="h-full w-full object-cover" />
+                                <img
+                                  src={w.photo_url}
+                                  alt={w.name}
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
                                 w.initials || w.name?.slice(0, 2).toUpperCase()
                               )}
@@ -902,15 +1022,25 @@ export default function AgencyDashboard() {
                             <div>
                               <p className="font-bold flex items-center gap-1">
                                 {w.name}
-                                {w.phone_verified && <BadgeCheck size={12} className="text-emerald-500" />}
+                                {w.phone_verified && (
+                                  <BadgeCheck
+                                    size={12}
+                                    className="text-emerald-500"
+                                  />
+                                )}
                               </p>
-                              <p className="text-[11px] text-muted-foreground">{w.locality || "—"}</p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {w.locality || "—"}
+                              </p>
                             </div>
                           </div>
                         </td>
                         <td className="py-3 font-mono font-medium">
                           {w.phone ? (
-                            <a href={`tel:+91${w.phone}`} className="hover:underline text-foreground">
+                            <a
+                              href={`tel:+91${w.phone}`}
+                              className="hover:underline text-foreground"
+                            >
                               +91 {w.phone}
                             </a>
                           ) : (
@@ -918,24 +1048,34 @@ export default function AgencyDashboard() {
                           )}
                         </td>
                         <td className="py-3">
-                          <span className="font-semibold text-foreground">{w.category || "General"}</span>
-                          {Array.isArray(w.services) && w.services.length > 0 && (
-                            <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">
-                              {w.services.join(", ")}
-                            </p>
-                          )}
+                          <span className="font-semibold text-foreground">
+                            {w.category || "General"}
+                          </span>
+                          {Array.isArray(w.services) &&
+                            w.services.length > 0 && (
+                              <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+                                {w.services.join(", ")}
+                              </p>
+                            )}
                         </td>
                         <td className="py-3">
                           {w.available_today ? (
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Available
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{" "}
+                              Available
                             </span>
                           ) : (
-                            <span className="text-[11px] text-muted-foreground">Off-duty</span>
+                            <span className="text-[11px] text-muted-foreground">
+                              Off-duty
+                            </span>
                           )}
                         </td>
-                        <td className="py-3 text-muted-foreground">{w.experience ? `${w.experience} yrs` : "—"}</td>
-                        <td className="py-3 font-semibold">{w.contact_events_count || 0}</td>
+                        <td className="py-3 text-muted-foreground">
+                          {w.experience ? `${w.experience} yrs` : "—"}
+                        </td>
+                        <td className="py-3 font-semibold">
+                          {w.contact_events_count || 0}
+                        </td>
                         <td className="py-3 text-right">
                           <div className="inline-flex items-center gap-1">
                             <button
@@ -985,13 +1125,16 @@ export default function AgencyDashboard() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">Active Project Assignments</h2>
+                <h2 className="text-base font-bold text-foreground">
+                  Active Project Assignments
+                </h2>
                 <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
                   {projects.length} assigned
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Manage ongoing client contracts, assigned team specialists, and delivery timelines.
+                Manage ongoing client contracts, assigned team specialists, and
+                delivery timelines.
               </p>
             </div>
 
@@ -1024,7 +1167,9 @@ export default function AgencyDashboard() {
                         <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wide">
                           {p.service || "Contract"}
                         </span>
-                        <h3 className="mt-1 text-sm font-bold text-foreground">{p.title}</h3>
+                        <h3 className="mt-1 text-sm font-bold text-foreground">
+                          {p.title}
+                        </h3>
                       </div>
                       <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 capitalize">
                         {p.status.replace("_", " ")}
@@ -1035,8 +1180,12 @@ export default function AgencyDashboard() {
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                       {/* Client */}
                       <div className="rounded-lg bg-secondary/30 p-2">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground">Client</span>
-                        <p className="mt-0.5 font-semibold text-foreground truncate">{p.client_name}</p>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          Client
+                        </span>
+                        <p className="mt-0.5 font-semibold text-foreground truncate">
+                          {p.client_name}
+                        </p>
                         {p.client_phone && (
                           <a
                             href={`tel:${p.client_phone}`}
@@ -1049,9 +1198,15 @@ export default function AgencyDashboard() {
 
                       {/* Assigned Specialist */}
                       <div className="rounded-lg bg-secondary/30 p-2">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground">Assigned To</span>
-                        <p className="mt-0.5 font-semibold text-foreground truncate">{p.worker_name}</p>
-                        <span className="text-[10px] text-muted-foreground">Specialist</span>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                          Assigned To
+                        </span>
+                        <p className="mt-0.5 font-semibold text-foreground truncate">
+                          {p.worker_name}
+                        </p>
+                        <span className="text-[10px] text-muted-foreground">
+                          Specialist
+                        </span>
                       </div>
 
                       {/* Location */}
@@ -1060,7 +1215,9 @@ export default function AgencyDashboard() {
                           <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
                             <MapPin size={10} /> Location
                           </span>
-                          <p className="mt-0.5 font-semibold text-foreground truncate">{p.location}</p>
+                          <p className="mt-0.5 font-semibold text-foreground truncate">
+                            {p.location}
+                          </p>
                         </div>
                       )}
 
@@ -1070,7 +1227,9 @@ export default function AgencyDashboard() {
                           <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
                             <Clock size={10} /> Target Date
                           </span>
-                          <p className="mt-0.5 font-semibold text-foreground truncate">{p.deadline}</p>
+                          <p className="mt-0.5 font-semibold text-foreground truncate">
+                            {p.deadline}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -1097,7 +1256,8 @@ export default function AgencyDashboard() {
             </div>
           ) : (
             <div className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-              No active project assignments. Click "Assign New Project" to dispatch your specialists to client sites.
+              No active project assignments. Click "Assign New Project" to
+              dispatch your specialists to client sites.
             </div>
           )}
         </section>
@@ -1106,8 +1266,12 @@ export default function AgencyDashboard() {
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
           <div className="flex items-center justify-between border-b border-border/80 pb-3">
             <div>
-              <h2 className="text-base font-bold text-foreground">Client Callback Requests</h2>
-              <p className="text-xs text-muted-foreground">Direct service leads submitted by customers for your workers.</p>
+              <h2 className="text-base font-bold text-foreground">
+                Client Callback Requests
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Direct service leads submitted by customers for your workers.
+              </p>
             </div>
             <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
               {pending} pending
@@ -1117,16 +1281,24 @@ export default function AgencyDashboard() {
           {dashboard.callbacks.length ? (
             <div className="mt-4 space-y-2.5">
               {dashboard.callbacks.map((c) => (
-                <div key={c.id} className="rounded-lg border border-border bg-secondary/30 p-3.5">
+                <div
+                  key={c.id}
+                  className="rounded-lg border border-border bg-secondary/30 p-3.5"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-xs font-bold text-foreground">{c.client_name}</p>
+                      <p className="text-xs font-bold text-foreground">
+                        {c.client_name}
+                      </p>
                       <p className="mt-0.5 text-[11px] text-muted-foreground">
                         {c.service_needed} · Preferred: {c.preferred_time}
                       </p>
                       <p className="mt-1 flex items-center gap-1 text-xs font-medium text-foreground">
                         <Phone size={12} className="text-muted-foreground" />
-                        <a href={`tel:${c.client_phone}`} className="hover:underline">
+                        <a
+                          href={`tel:${c.client_phone}`}
+                          className="hover:underline"
+                        >
                           {c.client_phone}
                         </a>
                       </p>
@@ -1178,34 +1350,45 @@ export default function AgencyDashboard() {
             </div>
           ) : (
             <div className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-              No callback requests received yet. Client inquiries will appear here.
+              No callback requests received yet. Client inquiries will appear
+              here.
             </div>
           )}
         </section>
 
         {/* Agency Profile Details */}
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <h2 className="text-base font-bold text-foreground">Agency Information</h2>
+          <h2 className="text-base font-bold text-foreground">
+            Agency Information
+          </h2>
           <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
             <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <span className="text-[11px] text-muted-foreground">Contact Phone</span>
+              <span className="text-[11px] text-muted-foreground">
+                Contact Phone
+              </span>
               <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-foreground">
                 <Phone size={13} />
                 {dashboard.agency.phone || "Not set"}
               </p>
             </div>
             <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <span className="text-[11px] text-muted-foreground">Team Size Band</span>
+              <span className="text-[11px] text-muted-foreground">
+                Team Size Band
+              </span>
               <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-foreground">
                 <Users size={13} />
                 {dashboard.agency.team_size_band || "1-5 workers"}
               </p>
             </div>
             <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <span className="text-[11px] text-muted-foreground">Specializations</span>
+              <span className="text-[11px] text-muted-foreground">
+                Specializations
+              </span>
               <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-foreground truncate">
                 <Wrench size={13} className="shrink-0" />
-                <span className="truncate">{categories.length ? categories.join(", ") : "All Trades"}</span>
+                <span className="truncate">
+                  {categories.length ? categories.join(", ") : "All Trades"}
+                </span>
               </p>
             </div>
           </div>
@@ -1237,21 +1420,30 @@ export default function AgencyDashboard() {
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-base">
                   {selectedWorker.photo_url ? (
-                    <img src={selectedWorker.photo_url} alt={selectedWorker.name} className="h-full w-full object-cover" />
+                    <img
+                      src={selectedWorker.photo_url}
+                      alt={selectedWorker.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
-                    selectedWorker.initials || selectedWorker.name?.slice(0, 2).toUpperCase()
+                    selectedWorker.initials ||
+                    selectedWorker.name?.slice(0, 2).toUpperCase()
                   )}
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="text-base font-bold text-foreground">{selectedWorker.name}</h3>
+                    <h3 className="text-base font-bold text-foreground">
+                      {selectedWorker.name}
+                    </h3>
                     {selectedWorker.phone_verified && (
                       <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                         <BadgeCheck size={11} /> Verified
                       </span>
                     )}
                   </div>
-                  <p className="text-xs font-medium text-primary">{selectedWorker.category || "Specialist"}</p>
+                  <p className="text-xs font-medium text-primary">
+                    {selectedWorker.category || "Specialist"}
+                  </p>
                 </div>
               </div>
 
@@ -1295,31 +1487,45 @@ export default function AgencyDashboard() {
               {/* Complete Information Grid */}
               <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-border bg-secondary/20 p-3.5">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Mobile Phone</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Mobile Phone
+                  </span>
                   <p className="mt-0.5 font-semibold text-foreground select-all">
-                    {selectedWorker.phone ? `+91 ${selectedWorker.phone}` : "Not listed"}
+                    {selectedWorker.phone
+                      ? `+91 ${selectedWorker.phone}`
+                      : "Not listed"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Service Locality</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Service Locality
+                  </span>
                   <p className="mt-0.5 font-semibold text-foreground">
                     {selectedWorker.locality || "All local areas"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Work Experience</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Work Experience
+                  </span>
                   <p className="mt-0.5 font-semibold text-foreground">
-                    {selectedWorker.experience ? `${selectedWorker.experience} Years` : "Experienced"}
+                    {selectedWorker.experience
+                      ? `${selectedWorker.experience} Years`
+                      : "Experienced"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Today's Availability</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Today's Availability
+                  </span>
                   <p className="mt-0.5 font-semibold">
                     {selectedWorker.available_today ? (
-                      <span className="text-emerald-500 font-bold">● Available Today</span>
+                      <span className="text-emerald-500 font-bold">
+                        ● Available Today
+                      </span>
                     ) : (
                       <span className="text-muted-foreground">Off-duty</span>
                     )}
@@ -1327,16 +1533,22 @@ export default function AgencyDashboard() {
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Customer Inquiries</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Customer Inquiries
+                  </span>
                   <p className="mt-0.5 font-semibold text-foreground">
                     {selectedWorker.contact_events_count || 0} direct leads
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Urgent Work Ready</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Urgent Work Ready
+                  </span>
                   <p className="mt-0.5 font-semibold text-foreground">
-                    {selectedWorker.urgent_today ? "Yes (Emergency jobs)" : "Standard jobs"}
+                    {selectedWorker.urgent_today
+                      ? "Yes (Emergency jobs)"
+                      : "Standard jobs"}
                   </p>
                 </div>
               </div>
@@ -1344,7 +1556,9 @@ export default function AgencyDashboard() {
               {/* Bio / About */}
               {(selectedWorker.about || selectedWorker.bio) && (
                 <div className="rounded-xl border border-border bg-secondary/10 p-3.5">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">About & Bio</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    About & Bio
+                  </span>
                   <p className="mt-1 text-xs leading-relaxed text-foreground">
                     {selectedWorker.about || selectedWorker.bio}
                   </p>
@@ -1354,7 +1568,9 @@ export default function AgencyDashboard() {
               {/* Full Services List */}
               {selectedWorker.services && (
                 <div className="rounded-xl border border-border bg-secondary/10 p-3.5">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">All Services Offered</span>
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    All Services Offered
+                  </span>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {(Array.isArray(selectedWorker.services)
                       ? selectedWorker.services
@@ -1400,8 +1616,12 @@ export default function AgencyDashboard() {
                   <FolderKanban size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">Assign Project</h3>
-                  <p className="text-[11px] text-muted-foreground">Create and dispatch an active job assignment</p>
+                  <h3 className="text-base font-bold text-foreground">
+                    Assign Project
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Create and dispatch an active job assignment
+                  </p>
                 </div>
               </div>
               <button
@@ -1413,26 +1633,40 @@ export default function AgencyDashboard() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateProject} className="mt-4 space-y-3.5 text-xs">
+            <form
+              onSubmit={handleCreateProject}
+              className="mt-4 space-y-3.5 text-xs"
+            >
               <div>
-                <label className="block text-[11px] font-semibold text-foreground">Project / Job Title *</label>
+                <label className="block text-[11px] font-semibold text-foreground">
+                  Project / Job Title *
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Commercial 3-Phase Wiring & Panel Setup"
                   value={newProjectForm.title}
-                  onChange={(e) => setNewProjectForm({ ...newProjectForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setNewProjectForm({
+                      ...newProjectForm,
+                      title: e.target.value,
+                    })
+                  }
                   className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-foreground">Assign Specialist *</label>
+                <label className="block text-[11px] font-semibold text-foreground">
+                  Assign Specialist *
+                </label>
                 <select
                   required
                   value={newProjectForm.worker_id}
                   onChange={(e) => {
-                    const sel = dashboard?.workers.find((w) => w.id === e.target.value);
+                    const sel = dashboard?.workers.find(
+                      (w) => w.id === e.target.value,
+                    );
                     setNewProjectForm({
                       ...newProjectForm,
                       worker_id: e.target.value,
@@ -1444,7 +1678,8 @@ export default function AgencyDashboard() {
                   <option value="">Select a roster specialist...</option>
                   {dashboard?.workers.map((w) => (
                     <option key={w.id} value={w.id}>
-                      {w.name} — {w.category || "Specialist"} ({w.locality || "All locations"})
+                      {w.name} — {w.category || "Specialist"} (
+                      {w.locality || "All locations"})
                     </option>
                   ))}
                 </select>
@@ -1452,24 +1687,38 @@ export default function AgencyDashboard() {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">Client Name *</label>
+                  <label className="block text-[11px] font-semibold text-foreground">
+                    Client Name *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="Client or Company Name"
                     value={newProjectForm.client_name}
-                    onChange={(e) => setNewProjectForm({ ...newProjectForm, client_name: e.target.value })}
+                    onChange={(e) =>
+                      setNewProjectForm({
+                        ...newProjectForm,
+                        client_name: e.target.value,
+                      })
+                    }
                     className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">Client Phone</label>
+                  <label className="block text-[11px] font-semibold text-foreground">
+                    Client Phone
+                  </label>
                   <input
                     type="tel"
                     placeholder="e.g. 9876543210"
                     value={newProjectForm.client_phone}
-                    onChange={(e) => setNewProjectForm({ ...newProjectForm, client_phone: e.target.value })}
+                    onChange={(e) =>
+                      setNewProjectForm({
+                        ...newProjectForm,
+                        client_phone: e.target.value,
+                      })
+                    }
                     className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
                   />
                 </div>
@@ -1477,23 +1726,37 @@ export default function AgencyDashboard() {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">Job Location</label>
+                  <label className="block text-[11px] font-semibold text-foreground">
+                    Job Location
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. Indiranagar 100ft Rd"
                     value={newProjectForm.location}
-                    onChange={(e) => setNewProjectForm({ ...newProjectForm, location: e.target.value })}
+                    onChange={(e) =>
+                      setNewProjectForm({
+                        ...newProjectForm,
+                        location: e.target.value,
+                      })
+                    }
                     className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">Target Deadline</label>
+                  <label className="block text-[11px] font-semibold text-foreground">
+                    Target Deadline
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. By end of week / 3 Days"
                     value={newProjectForm.deadline}
-                    onChange={(e) => setNewProjectForm({ ...newProjectForm, deadline: e.target.value })}
+                    onChange={(e) =>
+                      setNewProjectForm({
+                        ...newProjectForm,
+                        deadline: e.target.value,
+                      })
+                    }
                     className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
                   />
                 </div>
@@ -1509,7 +1772,12 @@ export default function AgencyDashboard() {
                 </button>
                 <button
                   type="submit"
-                  disabled={newProjectLoading || !newProjectForm.title || !newProjectForm.worker_id || !newProjectForm.client_name}
+                  disabled={
+                    newProjectLoading ||
+                    !newProjectForm.title ||
+                    !newProjectForm.worker_id ||
+                    !newProjectForm.client_name
+                  }
                   className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background hover:opacity-90 disabled:opacity-50 cursor-pointer"
                 >
                   {newProjectLoading ? "Creating..." : "Create Assignment"}

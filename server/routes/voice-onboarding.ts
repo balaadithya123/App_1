@@ -46,8 +46,9 @@ function localRuleBasedExtraction(transcript: string): ExtractedWorkerProfile {
 
   // Name extraction
   let fullName = "";
-  const nameMatch =
-    text.match(/(?:en\s+peyar|en\s+peru|en\s+per|mera\s+naam|naam\s+hai|my\s+name\s+is|i\s+am|myself|naan|main)\s+([A-Za-z\u0B80-\u0BFF\u0900-\u097F]+)/i);
+  const nameMatch = text.match(
+    /(?:en\s+peyar|en\s+peru|en\s+per|mera\s+naam|naam\s+hai|my\s+name\s+is|i\s+am|myself|naan|main)\s+([A-Za-z\u0B80-\u0BFF\u0900-\u097F]+)/i,
+  );
   if (nameMatch && nameMatch[1]) {
     fullName = nameMatch[1].trim();
     // Capitalize first letter
@@ -58,25 +59,43 @@ function localRuleBasedExtraction(transcript: string): ExtractedWorkerProfile {
 
   // Service categories mapping to fixed taxonomy
   const matchedCategories = new Set<string>();
-  if (/\b(electric|electrician|current|wiring|wire|switch|board|மின்சாரம்|इलेक्ट्रीशियन|बिजली)\b/i.test(lower)) {
+  if (
+    /\b(electric|electrician|current|wiring|wire|switch|board|மின்சாரம்|इलेक्ट्रीशियन|बिजली)\b/i.test(
+      lower,
+    )
+  ) {
     matchedCategories.add("electrician");
   }
-  if (/\b(plumb|plumber|pipe|leak|tap|drainage|குழாய்|प्लम्बर|नल)\b/i.test(lower)) {
+  if (
+    /\b(plumb|plumber|pipe|leak|tap|drainage|குழாய்|प्लम्बर|नल)\b/i.test(lower)
+  ) {
     matchedCategories.add("plumber");
   }
   if (/\b(carpenter|wood|furniture|table|door|மரவேலை|बढ़ई)\b/i.test(lower)) {
     matchedCategories.add("carpenter");
   }
-  if (/\b(paint|painter|painting|wall|putty|சுவர்\s*பெயிண்ட்|पेंटर|रंगाई)\b/i.test(lower)) {
+  if (
+    /\b(paint|painter|painting|wall|putty|சுவர்\s*பெயிண்ட்|पेंटर|रंगाई)\b/i.test(
+      lower,
+    )
+  ) {
     matchedCategories.add("painter");
   }
-  if (/\b(mason|brick|cement|building|plaster|கொத்தனார்|राजमिस्त्री)\b/i.test(lower)) {
+  if (
+    /\b(mason|brick|cement|building|plaster|கொத்தனார்|राजमिस्त्री)\b/i.test(
+      lower,
+    )
+  ) {
     matchedCategories.add("mason");
   }
   if (/\b(ac|air\s*condition|cooling|compressor|ஏசி|एसी)\b/i.test(lower)) {
     matchedCategories.add("AC repair");
   }
-  if (/\b(appliance|washing\s*machine|fridge|refrigerator|microwave|oven|tv|மிக்ஸி|उपकरण)\b/i.test(lower)) {
+  if (
+    /\b(appliance|washing\s*machine|fridge|refrigerator|microwave|oven|tv|மிக்ஸி|उपकरण)\b/i.test(
+      lower,
+    )
+  ) {
     matchedCategories.add("appliance repair");
   }
 
@@ -87,7 +106,9 @@ function localRuleBasedExtraction(transcript: string): ExtractedWorkerProfile {
   // Experience extraction
   let yearsExperience: number | null = null;
   const expMatch =
-    lower.match(/(\d+)\s*(?:years?|yrs?|varusham|varushama|saal|sal|varsham)/i) ||
+    lower.match(
+      /(\d+)\s*(?:years?|yrs?|varusham|varushama|saal|sal|varsham)/i,
+    ) ||
     lower.match(/(?:experience|anubhavam|tajarba|tajurba)\s*(\d+)/i) ||
     lower.match(/(\d+)\s*(?:\+|plus)\s*(?:years?|yrs?|saal)/i);
   if (expMatch && expMatch[1]) {
@@ -103,10 +124,40 @@ function localRuleBasedExtraction(transcript: string): ExtractedWorkerProfile {
   // Service area / locality extraction
   let serviceArea = "";
   const knownAreas = [
-    "T. Nagar", "Velachery", "Tambaram", "Anna Nagar", "Adyar", "Mylapore", "Guindy", "Porur",
-    "Chennai", "Kattur", "Trichy", "Tiruchirappalli", "Coimbatore", "Madurai", "Salem", "Tirunelveli",
-    "Delhi", "Rohini", "Dwarka", "Lajpat Nagar", "Noida", "Gurgaon", "Mumbai", "Andheri", "Bandra",
-    "Thane", "Bengaluru", "Bangalore", "Koramangala", "Indiranagar", "Whitefield", "Hyderabad", "Kolkata", "Pune"
+    "T. Nagar",
+    "Velachery",
+    "Tambaram",
+    "Anna Nagar",
+    "Adyar",
+    "Mylapore",
+    "Guindy",
+    "Porur",
+    "Chennai",
+    "Kattur",
+    "Trichy",
+    "Tiruchirappalli",
+    "Coimbatore",
+    "Madurai",
+    "Salem",
+    "Tirunelveli",
+    "Delhi",
+    "Rohini",
+    "Dwarka",
+    "Lajpat Nagar",
+    "Noida",
+    "Gurgaon",
+    "Mumbai",
+    "Andheri",
+    "Bandra",
+    "Thane",
+    "Bengaluru",
+    "Bangalore",
+    "Koramangala",
+    "Indiranagar",
+    "Whitefield",
+    "Hyderabad",
+    "Kolkata",
+    "Pune",
   ];
   for (const area of knownAreas) {
     if (lower.includes(area.toLowerCase())) {
@@ -115,7 +166,9 @@ function localRuleBasedExtraction(transcript: string): ExtractedWorkerProfile {
     }
   }
   if (!serviceArea) {
-    const locMatch = text.match(/(?:in|at|near|around|la|le|mein|area|locality)\s+([A-Za-z\u0B80-\u0BFF\u0900-\u097F\s]{3,20})/i);
+    const locMatch = text.match(
+      /(?:in|at|near|around|la|le|mein|area|locality)\s+([A-Za-z\u0B80-\u0BFF\u0900-\u097F\s]{3,20})/i,
+    );
     if (locMatch && locMatch[1]) {
       serviceArea = locMatch[1].trim();
     } else {
@@ -125,13 +178,21 @@ function localRuleBasedExtraction(transcript: string): ExtractedWorkerProfile {
 
   // Languages detection
   const languagesSpoken: string[] = [];
-  const hasTamil = /[\u0B80-\u0BFF]/i.test(text) || /\b(vanakkam|naan|peru|vela|varusham|irukku|panren|tamil)\b/i.test(lower);
-  const hasHindi = /[\u0900-\u097F]/i.test(text) || /\b(namaste|mera|naam|kaam|karta|saal|mein|hai|hindi)\b/i.test(lower);
-  const hasEnglish = /\b(hello|name|work|experience|repair|available|service|years|electrician|plumber)\b/i.test(lower);
+  const hasTamil =
+    /[\u0B80-\u0BFF]/i.test(text) ||
+    /\b(vanakkam|naan|peru|vela|varusham|irukku|panren|tamil)\b/i.test(lower);
+  const hasHindi =
+    /[\u0900-\u097F]/i.test(text) ||
+    /\b(namaste|mera|naam|kaam|karta|saal|mein|hai|hindi)\b/i.test(lower);
+  const hasEnglish =
+    /\b(hello|name|work|experience|repair|available|service|years|electrician|plumber)\b/i.test(
+      lower,
+    );
 
   if (hasTamil) languagesSpoken.push("Tamil");
   if (hasHindi) languagesSpoken.push("Hindi");
-  if (hasEnglish || languagesSpoken.length === 0) languagesSpoken.push("English");
+  if (hasEnglish || languagesSpoken.length === 0)
+    languagesSpoken.push("English");
 
   // Availability note
   let availabilityNote: string | null = null;
@@ -219,7 +280,11 @@ ${schemaDescription}`,
           ];
         }
 
-        const candidateModels = ["gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
+        const candidateModels = [
+          "gemini-3.8-flash",
+          "gemini-3.1-flash-lite",
+          "gemini-flash-latest",
+        ];
         let responseText = "";
         let usedEngine = "gemini-3.8-flash";
 
@@ -235,10 +300,16 @@ ${schemaDescription}`,
             });
 
             const timeoutPromise = new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("Gemini request timeout")), 7000)
+              setTimeout(
+                () => reject(new Error("Gemini request timeout")),
+                7000,
+              ),
             );
 
-            const response: any = await Promise.race([geminiPromise, timeoutPromise]);
+            const response: any = await Promise.race([
+              geminiPromise,
+              timeoutPromise,
+            ]);
             const textCandidate = response?.text?.trim() || "";
             if (textCandidate) {
               responseText = textCandidate;
@@ -252,30 +323,42 @@ ${schemaDescription}`,
 
         if (responseText) {
           // Strip markdown fences if present
-          responseText = responseText.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
+          responseText = responseText
+            .replace(/^```json\s*/i, "")
+            .replace(/```$/i, "")
+            .trim();
 
           const parsed = JSON.parse(responseText);
 
           // Sanitize and validate against fixed categories
           const validCategories = Array.isArray(parsed.service_categories)
             ? parsed.service_categories.filter((cat: string) =>
-                FIXED_TAXONOMY.includes(cat)
+                FIXED_TAXONOMY.includes(cat),
               )
             : [];
 
           const result: ExtractedWorkerProfile = {
-            full_name: typeof parsed.full_name === "string" ? parsed.full_name.trim() : "",
+            full_name:
+              typeof parsed.full_name === "string"
+                ? parsed.full_name.trim()
+                : "",
             service_categories: validCategories,
             years_experience:
-              typeof parsed.years_experience === "number" && !isNaN(parsed.years_experience)
+              typeof parsed.years_experience === "number" &&
+              !isNaN(parsed.years_experience)
                 ? parsed.years_experience
                 : null,
-            service_area: typeof parsed.service_area === "string" ? parsed.service_area.trim() : "",
+            service_area:
+              typeof parsed.service_area === "string"
+                ? parsed.service_area.trim()
+                : "",
             languages_spoken: Array.isArray(parsed.languages_spoken)
               ? parsed.languages_spoken
               : ["English"],
             availability_note:
-              typeof parsed.availability_note === "string" ? parsed.availability_note.trim() : null,
+              typeof parsed.availability_note === "string"
+                ? parsed.availability_note.trim()
+                : null,
             raw_transcript:
               typeof parsed.raw_transcript === "string" && parsed.raw_transcript
                 ? parsed.raw_transcript
@@ -288,7 +371,10 @@ ${schemaDescription}`,
           return res.json({ profile: result, engine: usedEngine });
         }
       } catch (geminiError: any) {
-        console.warn("[voice-onboarding] Gemini call fallback to local extractor:", geminiError?.message || "fallback");
+        console.warn(
+          "[voice-onboarding] Gemini call fallback to local extractor:",
+          geminiError?.message || "fallback",
+        );
       }
     }
 

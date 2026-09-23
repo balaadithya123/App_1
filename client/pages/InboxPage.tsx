@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
-import AddReminderSheet, { getCatalogIcon } from "@/components/AddReminderSheet";
+import AddReminderSheet, {
+  getCatalogIcon,
+} from "@/components/AddReminderSheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Clock,
@@ -44,7 +46,9 @@ export default function InboxPage() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<HomeItem[]>([]);
-  const [catalog, setCatalog] = useState<MaintenanceCatalogItem[]>(DEFAULT_MAINTENANCE_CATALOG);
+  const [catalog, setCatalog] = useState<MaintenanceCatalogItem[]>(
+    DEFAULT_MAINTENANCE_CATALOG,
+  );
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetMode, setSheetMode] = useState<"catalog" | "custom">("catalog");
   const [upcomingExpanded, setUpcomingExpanded] = useState(false);
@@ -61,7 +65,9 @@ export default function InboxPage() {
     ac_servicing: true,
     ro_filter: true,
   });
-  const [emptyDates, setEmptyDates] = useState<Record<string, { choice: string; customDate: string }>>({});
+  const [emptyDates, setEmptyDates] = useState<
+    Record<string, { choice: string; customDate: string }>
+  >({});
   const [savingEmptyCatalog, setSavingEmptyCatalog] = useState(false);
 
   useEffect(() => {
@@ -99,7 +105,8 @@ export default function InboxPage() {
     };
 
     window.addEventListener("home-items-changed", handleDataChanged);
-    return () => window.removeEventListener("home-items-changed", handleDataChanged);
+    return () =>
+      window.removeEventListener("home-items-changed", handleDataChanged);
   }, [session?.user?.id]);
 
   const showToast = (msg: string) => {
@@ -110,7 +117,8 @@ export default function InboxPage() {
   // Plain date arithmetic separation & sorting:
   // dueOrOverdue: overdue-first (highest diffDays) then soonest-due
   // upcoming: soonest-due first
-  const { dueOrOverdue, upcoming, dueOrOverdueCount } = getDueAndUpcomingHomeItems(items);
+  const { dueOrOverdue, upcoming, dueOrOverdueCount } =
+    getDueAndUpcomingHomeItems(items);
 
   const handleMarkDone = async (item: HomeItem) => {
     try {
@@ -160,19 +168,29 @@ export default function InboxPage() {
 
   // Handle first-run onboarding save from in-page catalog
   const handleSaveFirstRunCatalog = async () => {
-    const selectedKeys = Object.keys(emptySelected).filter((k) => emptySelected[k]);
+    const selectedKeys = Object.keys(emptySelected).filter(
+      (k) => emptySelected[k],
+    );
     if (selectedKeys.length === 0) return;
 
     setSavingEmptyCatalog(true);
     try {
       const todayStr = formatDateIso(new Date());
       const batch = selectedKeys.map((itemType) => {
-        const catItem = catalog.find((c) => c.item_type === itemType) || DEFAULT_MAINTENANCE_CATALOG.find((c) => c.item_type === itemType)!;
-        const dateConfig = emptyDates[itemType] || { choice: "today", customDate: todayStr };
+        const catItem =
+          catalog.find((c) => c.item_type === itemType) ||
+          DEFAULT_MAINTENANCE_CATALOG.find((c) => c.item_type === itemType)!;
+        const dateConfig = emptyDates[itemType] || {
+          choice: "today",
+          customDate: todayStr,
+        };
         let lastServiced = todayStr;
         if (dateConfig.choice === "custom") {
           lastServiced = dateConfig.customDate || todayStr;
-        } else if (dateConfig.choice === "1_3_months_ago" || dateConfig.choice === "6_plus_months_ago") {
+        } else if (
+          dateConfig.choice === "1_3_months_ago" ||
+          dateConfig.choice === "6_plus_months_ago"
+        ) {
           lastServiced = getPresetLastServicedDate(dateConfig.choice as any);
         }
 
@@ -238,7 +256,8 @@ export default function InboxPage() {
                 Inbox & Reminders
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-[#67696D] dark:text-[#A1A1AA]">
-                Track periodic servicing cycles. Find verified local specialists when due.
+                Track periodic servicing cycles. Find verified local specialists
+                when due.
               </p>
             </div>
           </div>
@@ -262,7 +281,10 @@ export default function InboxPage() {
       {/* Content Area */}
       {loading ? (
         <div className="rounded-2xl border border-[#E7ECF1] dark:border-[#222] bg-white dark:bg-[#0A0A0A] p-10 text-center text-xs text-[#67696D] dark:text-[#989EA7] shadow-soft">
-          <Clock className="mx-auto mb-2 text-[#989EA7] animate-spin" size={24} />
+          <Clock
+            className="mx-auto mb-2 text-[#989EA7] animate-spin"
+            size={24}
+          />
           Loading your maintenance schedule...
         </div>
       ) : items.length === 0 ? (
@@ -277,7 +299,8 @@ export default function InboxPage() {
               Set up your home recurring maintenance
             </h2>
             <p className="text-xs sm:text-sm text-[#67696D] dark:text-[#A1A1AA] mt-1">
-              Select what appliances & fittings you have. We'll remind you when servicing is due and connect you with matching local specialists.
+              Select what appliances & fittings you have. We'll remind you when
+              servicing is due and connect you with matching local specialists.
             </p>
           </div>
 
@@ -304,7 +327,10 @@ export default function InboxPage() {
                       id={`empty-${catItem.item_type}`}
                       checked={isSelected}
                       onCheckedChange={(c) =>
-                        setEmptySelected((prev) => ({ ...prev, [catItem.item_type]: !!c }))
+                        setEmptySelected((prev) => ({
+                          ...prev,
+                          [catItem.item_type]: !!c,
+                        }))
                       }
                       className="mt-1"
                     />
@@ -317,7 +343,9 @@ export default function InboxPage() {
                           <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F0F4F8] dark:bg-[#1C1C1C] text-[#67696D] dark:text-[#A1A1AA]">
                             {getCatalogIcon(catItem.icon_name, "h-3.5 w-3.5")}
                           </span>
-                          <span className="text-[#2C2C2C] dark:text-[#F4F4F5]">{catItem.default_label}</span>
+                          <span className="text-[#2C2C2C] dark:text-[#F4F4F5]">
+                            {catItem.default_label}
+                          </span>
                         </span>
                         <span className="text-[11px] font-medium text-[#67696D] dark:text-[#989EA7] bg-[#F6F9FC] dark:bg-[#1A1A1A] border border-[#E7ECF1] dark:border-[#262626] px-2 py-0.5 rounded-full">
                           Every {catItem.default_interval_months} mo
@@ -406,7 +434,10 @@ export default function InboxPage() {
             <button
               type="button"
               onClick={handleSaveFirstRunCatalog}
-              disabled={savingEmptyCatalog || Object.values(emptySelected).filter(Boolean).length === 0}
+              disabled={
+                savingEmptyCatalog ||
+                Object.values(emptySelected).filter(Boolean).length === 0
+              }
               className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
             >
               <Check size={14} />
@@ -441,7 +472,8 @@ export default function InboxPage() {
                   All caught up!
                 </h3>
                 <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 mt-1 max-w-sm mx-auto">
-                  None of your registered home items are due for maintenance right now. Check below for upcoming dates.
+                  None of your registered home items are due for maintenance
+                  right now. Check below for upcoming dates.
                 </p>
               </div>
             ) : (
@@ -478,7 +510,14 @@ export default function InboxPage() {
                             </div>
 
                             <p className="mt-1 text-xs text-[#67696D] dark:text-[#989EA7]">
-                              Last serviced: <span className="font-semibold">{item.last_serviced_date}</span> • Cycle: Every <span className="font-semibold">{item.interval_months} months</span>
+                              Last serviced:{" "}
+                              <span className="font-semibold">
+                                {item.last_serviced_date}
+                              </span>{" "}
+                              • Cycle: Every{" "}
+                              <span className="font-semibold">
+                                {item.interval_months} months
+                              </span>
                             </p>
                           </div>
                         </div>
@@ -513,7 +552,10 @@ export default function InboxPage() {
                           className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] active:scale-95 transition cursor-pointer"
                         >
                           <Search size={13} />
-                          <span>Find {item.category_slug.replace(/-/g, " ")} near you</span>
+                          <span>
+                            Find {item.category_slug.replace(/-/g, " ")} near
+                            you
+                          </span>
                         </Link>
 
                         <button
@@ -555,7 +597,11 @@ export default function InboxPage() {
 
               <div className="flex items-center gap-2 text-xs text-[#67696D] dark:text-[#989EA7]">
                 <span>{upcomingExpanded ? "Hide" : "Show"}</span>
-                {upcomingExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {upcomingExpanded ? (
+                  <ChevronUp size={16} />
+                ) : (
+                  <ChevronDown size={16} />
+                )}
               </div>
             </button>
 
@@ -581,7 +627,8 @@ export default function InboxPage() {
                           </span>
                         </div>
                         <p className="text-[11px] text-[#67696D] dark:text-[#989EA7] mt-0.5">
-                          Last serviced: {item.last_serviced_date} • Cycle: Every {item.interval_months} mo
+                          Last serviced: {item.last_serviced_date} • Cycle:
+                          Every {item.interval_months} mo
                         </p>
                       </div>
 
@@ -682,7 +729,9 @@ export default function InboxPage() {
                   max={60}
                   required
                   value={editInterval}
-                  onChange={(e) => setEditInterval(Math.max(1, Number(e.target.value) || 1))}
+                  onChange={(e) =>
+                    setEditInterval(Math.max(1, Number(e.target.value) || 1))
+                  }
                   className="w-full rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#181818] px-3 py-2 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>

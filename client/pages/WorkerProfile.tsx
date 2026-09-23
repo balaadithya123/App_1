@@ -17,13 +17,23 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import { Link, useParams, useSearchParams, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useParams,
+  useSearchParams,
+  useNavigate,
+} from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse, WorkerPortfolioItem } from "@shared/api";
 import { getWorkerContactHref, getWorkerWhatsAppHref } from "@/lib/contact";
 import { findWorkerById } from "@/lib/workers";
-import { getSavedWorkerIds, toggleSavedWorker, getWorkerNote, setWorkerNote } from "@/lib/favorites";
+import {
+  getSavedWorkerIds,
+  toggleSavedWorker,
+  getWorkerNote,
+  setWorkerNote,
+} from "@/lib/favorites";
 import { addRecentlyViewedWorker } from "@/lib/recently-viewed";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 import RequestCallbackForm from "@/components/RequestCallbackForm";
@@ -31,42 +41,125 @@ import TrustStripWorkerCard from "@/components/TrustStripWorkerCard";
 import WorkerTrackRecordSection from "@/components/WorkerTrackRecordSection";
 
 // Fallback high-quality proof-of-work project photos by category if worker has not uploaded custom photos yet
-const categoryFallbacks: Record<string, Array<{ image_url: string; label: string }>> = {
+const categoryFallbacks: Record<
+  string,
+  Array<{ image_url: string; label: string }>
+> = {
   Electrician: [
-    { image_url: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=700&auto=format&fit=crop&q=80", label: "Wiring & Power Panels" },
-    { image_url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=700&auto=format&fit=crop&q=80", label: "Lighting & Circuit Repairs" },
-    { image_url: "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?w=700&auto=format&fit=crop&q=80", label: "Switchboards & Fixtures" },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=700&auto=format&fit=crop&q=80",
+      label: "Wiring & Power Panels",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=700&auto=format&fit=crop&q=80",
+      label: "Lighting & Circuit Repairs",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?w=700&auto=format&fit=crop&q=80",
+      label: "Switchboards & Fixtures",
+    },
   ],
   Plumber: [
-    { image_url: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=700&auto=format&fit=crop&q=80", label: "Pipe Fitting & Leak Fixes" },
-    { image_url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=700&auto=format&fit=crop&q=80", label: "Bathroom & Tap Installations" },
-    { image_url: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=700&auto=format&fit=crop&q=80", label: "Drainage & Water Lines" },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?w=700&auto=format&fit=crop&q=80",
+      label: "Pipe Fitting & Leak Fixes",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=700&auto=format&fit=crop&q=80",
+      label: "Bathroom & Tap Installations",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=700&auto=format&fit=crop&q=80",
+      label: "Drainage & Water Lines",
+    },
   ],
   Carpenter: [
-    { image_url: "https://images.unsplash.com/photo-1533090161767-e6ffed986b88?w=700&auto=format&fit=crop&q=80", label: "Custom Furniture & Woodwork" },
-    { image_url: "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=700&auto=format&fit=crop&q=80", label: "Door & Cabinet Fitting" },
-    { image_url: "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=700&auto=format&fit=crop&q=80", label: "Wood Polishing & Repairs" },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1533090161767-e6ffed986b88?w=700&auto=format&fit=crop&q=80",
+      label: "Custom Furniture & Woodwork",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=700&auto=format&fit=crop&q=80",
+      label: "Door & Cabinet Fitting",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=700&auto=format&fit=crop&q=80",
+      label: "Wood Polishing & Repairs",
+    },
   ],
   Painter: [
-    { image_url: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=700&auto=format&fit=crop&q=80", label: "Interior Wall Finish" },
-    { image_url: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=700&auto=format&fit=crop&q=80", label: "Exterior & Waterproofing" },
-    { image_url: "https://images.unsplash.com/photo-1574359411659-15573a27fd0c?w=700&auto=format&fit=crop&q=80", label: "Texture & Stencil Design" },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=700&auto=format&fit=crop&q=80",
+      label: "Interior Wall Finish",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=700&auto=format&fit=crop&q=80",
+      label: "Exterior & Waterproofing",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1574359411659-15573a27fd0c?w=700&auto=format&fit=crop&q=80",
+      label: "Texture & Stencil Design",
+    },
   ],
   Cleaner: [
-    { image_url: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=700&auto=format&fit=crop&q=80", label: "Deep Home Cleaning" },
-    { image_url: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=700&auto=format&fit=crop&q=80", label: "Floor Scrubbing & Sanitization" },
-    { image_url: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=700&auto=format&fit=crop&q=80", label: "Kitchen & Washroom Detailing" },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=700&auto=format&fit=crop&q=80",
+      label: "Deep Home Cleaning",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=700&auto=format&fit=crop&q=80",
+      label: "Floor Scrubbing & Sanitization",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=700&auto=format&fit=crop&q=80",
+      label: "Kitchen & Washroom Detailing",
+    },
   ],
   "AC Repair": [
-    { image_url: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=700&auto=format&fit=crop&q=80", label: "AC Servicing & Gas Refill" },
-    { image_url: "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=700&auto=format&fit=crop&q=80", label: "Split & Window AC Installation" },
-    { image_url: "https://images.unsplash.com/photo-1614633833026-0820552978b6?w=700&auto=format&fit=crop&q=80", label: "Cooling Coil & Compressor Check" },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=700&auto=format&fit=crop&q=80",
+      label: "AC Servicing & Gas Refill",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=700&auto=format&fit=crop&q=80",
+      label: "Split & Window AC Installation",
+    },
+    {
+      image_url:
+        "https://images.unsplash.com/photo-1614633833026-0820552978b6?w=700&auto=format&fit=crop&q=80",
+      label: "Cooling Coil & Compressor Check",
+    },
   ],
 };
 
 const defaultGeneralFallbacks = [
-  { image_url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=700&auto=format&fit=crop&q=80", label: "Professional Service & Workmanship" },
-  { image_url: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&auto=format&fit=crop&q=80", label: "Quality Tools & Equipment" },
+  {
+    image_url:
+      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=700&auto=format&fit=crop&q=80",
+    label: "Professional Service & Workmanship",
+  },
+  {
+    image_url:
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=700&auto=format&fit=crop&q=80",
+    label: "Quality Tools & Equipment",
+  },
 ];
 
 export default function WorkerProfile() {
@@ -74,22 +167,33 @@ export default function WorkerProfile() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [availableWorkers, setAvailableWorkers] = useState<Worker[]>(staticWorkers);
-  const [portfolioPhotos, setPortfolioPhotos] = useState<WorkerPortfolioItem[]>([]);
+  const [availableWorkers, setAvailableWorkers] =
+    useState<Worker[]>(staticWorkers);
+  const [portfolioPhotos, setPortfolioPhotos] = useState<WorkerPortfolioItem[]>(
+    [],
+  );
   const [showContact, setShowContact] = useState(false);
   const [showCallback, setShowCallback] = useState(false);
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [personalNote, setPersonalNote] = useState("");
-  const [activePhoto, setActivePhoto] = useState<{ image_url: string; label?: string } | null>(null);
+  const [activePhoto, setActivePhoto] = useState<{
+    image_url: string;
+    label?: string;
+  } | null>(null);
   const [loadingWorkers, setLoadingWorkers] = useState(true);
   const [loadingError, setLoadingError] = useState(false);
 
-  const requestedWorkerId = routeParams.id || searchParams.get("worker") || searchParams.get("id");
+  const requestedWorkerId =
+    routeParams.id || searchParams.get("worker") || searchParams.get("id");
   const worker = findWorkerById(availableWorkers, requestedWorkerId);
 
   useEffect(() => {
-    setSaved(requestedWorkerId ? getSavedWorkerIds().includes(requestedWorkerId) : false);
+    setSaved(
+      requestedWorkerId
+        ? getSavedWorkerIds().includes(requestedWorkerId)
+        : false,
+    );
     if (requestedWorkerId) {
       setPersonalNote(getWorkerNote(requestedWorkerId));
     }
@@ -171,10 +275,12 @@ export default function WorkerProfile() {
       }));
     }
     const inlinePhotos = Array.isArray((worker as any).work_photos)
-      ? ((worker as any).work_photos as string[]).filter(Boolean).map((url, i) => ({
-          image_url: url,
-          label: `${worker.category} project #${i + 1}`,
-        }))
+      ? ((worker as any).work_photos as string[])
+          .filter(Boolean)
+          .map((url, i) => ({
+            image_url: url,
+            label: `${worker.category} project #${i + 1}`,
+          }))
       : [];
     if (inlinePhotos.length > 0) return inlinePhotos;
 
@@ -182,7 +288,10 @@ export default function WorkerProfile() {
     const categoryKey = Object.keys(categoryFallbacks).find(
       (c) => c.toLowerCase() === (worker.category || "").trim().toLowerCase(),
     );
-    return (categoryKey ? categoryFallbacks[categoryKey] : null) || defaultGeneralFallbacks;
+    return (
+      (categoryKey ? categoryFallbacks[categoryKey] : null) ||
+      defaultGeneralFallbacks
+    );
   }, [worker, portfolioPhotos]);
 
   // "More [category] near you" - horizontal scroll of other workers sorted by verified + rating + location match
@@ -247,7 +356,8 @@ export default function WorkerProfile() {
             Loading Specialist Profile
           </h2>
           <p className="mt-1 text-xs text-[#67696D] dark:text-[#A1A1AA] max-w-[280px]">
-            Please wait while we retrieve the verified profile and customer track records.
+            Please wait while we retrieve the verified profile and customer
+            track records.
           </p>
         </div>
       </PageShell>
@@ -261,13 +371,13 @@ export default function WorkerProfile() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/30 dark:bg-rose-950/20 text-rose-500 border border-rose-100 dark:border-rose-950/30 mb-6 shrink-0 shadow-subtle">
             {loadingError ? <AlertCircle size={28} /> : <UserX size={28} />}
           </div>
-          
+
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
             {loadingError ? "Connection Failed" : "Profile Not Found"}
           </h1>
-          
+
           <p className="mt-2.5 text-xs sm:text-sm text-[#67696D] dark:text-[#A1A1AA] max-w-md leading-relaxed">
-            {loadingError 
+            {loadingError
               ? "We encountered a temporary issue loading our directory of specialists. Check your internet connection and try again."
               : "The requested specialist profile is currently unavailable. The profile may have been unlisted, moved, or the ID is incorrect."}
           </p>
@@ -332,7 +442,9 @@ export default function WorkerProfile() {
           text: shareText,
           url: shareUrl,
         });
-        void logAnalyticsEvent("share_profile_native", worker.id, { category: worker.category });
+        void logAnalyticsEvent("share_profile_native", worker.id, {
+          category: worker.category,
+        });
       } catch (err) {
         // Fallback if the user cancelled or native share throws an error
         if (err instanceof Error && err.name !== "AbortError") {
@@ -346,13 +458,18 @@ export default function WorkerProfile() {
 
   const copyToClipboard = (url: string) => {
     if (!worker) return;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      void logAnalyticsEvent("share_profile_copy", worker.id, { category: worker.category });
-      setTimeout(() => setCopied(false), 2500);
-    }).catch(() => {
-      // fallback fail silently
-    });
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        setCopied(true);
+        void logAnalyticsEvent("share_profile_copy", worker.id, {
+          category: worker.category,
+        });
+        setTimeout(() => setCopied(false), 2500);
+      })
+      .catch(() => {
+        // fallback fail silently
+      });
   };
 
   const save = () => {
@@ -361,9 +478,11 @@ export default function WorkerProfile() {
   };
 
   // Only render rating/reviews if they exist in the data (no fabricated stats)
-  const hasRating = worker.avg_rating !== undefined || worker.rating !== undefined;
+  const hasRating =
+    worker.avg_rating !== undefined || worker.rating !== undefined;
   const ratingValue = Number(worker.avg_rating || worker.rating);
-  const hasReviewsCount = typeof worker.reviews_count === "number" && worker.reviews_count > 0;
+  const hasReviewsCount =
+    typeof worker.reviews_count === "number" && worker.reviews_count > 0;
 
   return (
     <PageShell
@@ -402,7 +521,8 @@ export default function WorkerProfile() {
                   onError={(e) => {
                     // Fallback pattern if remote photo fails
                     const target = e.currentTarget;
-                    target.src = "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=700&auto=format&fit=crop&q=80";
+                    target.src =
+                      "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=700&auto=format&fit=crop&q=80";
                   }}
                 />
                 {/* Proof of Work Badge Overlay */}
@@ -425,7 +545,10 @@ export default function WorkerProfile() {
               aria-label="Share"
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-black/80 text-[#2C2C2C] dark:text-[#F4F4F5] backdrop-blur-md shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <Share2 size={14} className="text-[#67696D] dark:text-[#A1A1AA]" />
+              <Share2
+                size={14}
+                className="text-[#67696D] dark:text-[#A1A1AA]"
+              />
             </button>
             <button
               type="button"
@@ -437,7 +560,9 @@ export default function WorkerProfile() {
               <Heart
                 size={15}
                 fill={saved ? "currentColor" : "none"}
-                className={saved ? "text-rose-500" : "text-[#67696D] dark:text-[#A1A1AA]"}
+                className={
+                  saved ? "text-rose-500" : "text-[#67696D] dark:text-[#A1A1AA]"
+                }
               />
             </button>
           </div>
@@ -457,7 +582,9 @@ export default function WorkerProfile() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span>{worker.initials || worker.name.slice(0, 2).toUpperCase()}</span>
+                <span>
+                  {worker.initials || worker.name.slice(0, 2).toUpperCase()}
+                </span>
               )}
             </div>
 
@@ -505,7 +632,8 @@ export default function WorkerProfile() {
                 <span>{ratingValue.toFixed(1)}</span>
                 {hasReviewsCount && (
                   <span className="font-normal text-[#67696D] dark:text-[#A1A1AA]">
-                    ({worker.reviews_count} {worker.reviews_count === 1 ? "review" : "reviews"})
+                    ({worker.reviews_count}{" "}
+                    {worker.reviews_count === 1 ? "review" : "reviews"})
                   </span>
                 )}
               </div>
@@ -544,14 +672,20 @@ export default function WorkerProfile() {
               placeholder="Add a note (e.g. 'Fixed geyser in May, very punctual')..."
               className="w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#121212] px-3.5 py-2 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] placeholder-[#989EA7] focus:border-primary focus:outline-none"
             />
-            <p className="text-[10px] text-[#989EA7]">Saved privately on this device.</p>
+            <p className="text-[10px] text-[#989EA7]">
+              Saved privately on this device.
+            </p>
           </section>
         )}
         {/* Short "About" bio text, if that field exists */}
         {worker.about && worker.about.trim().length > 0 && (
           <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 shadow-soft">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#A1A1AA]">About</h2>
-            <p className="mt-2 text-xs leading-relaxed text-[#2C2C2C] dark:text-[#D4D4D8]">{worker.about}</p>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#A1A1AA]">
+              About
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-[#2C2C2C] dark:text-[#D4D4D8]">
+              {worker.about}
+            </p>
           </section>
         )}
 
@@ -576,7 +710,12 @@ export default function WorkerProfile() {
         )}
 
         {/* Track Record Section (Unmoderated Public Timeline) */}
-        {worker && <WorkerTrackRecordSection workerId={worker.id} workerName={worker.name} />}
+        {worker && (
+          <WorkerTrackRecordSection
+            workerId={worker.id}
+            workerName={worker.name}
+          />
+        )}
 
         {/* 4. "MORE [CATEGORY] NEAR YOU" — Horizontal scroll on every worker profile */}
         {relatedWorkers.length > 0 && (
@@ -640,7 +779,9 @@ export default function WorkerProfile() {
             />
             {activePhoto.label && (
               <div className="p-4 border-t border-[#E7ECF1] dark:border-[#1F1F1F]">
-                <p className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5]">{activePhoto.label}</p>
+                <p className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                  {activePhoto.label}
+                </p>
               </div>
             )}
           </div>
@@ -657,8 +798,12 @@ export default function WorkerProfile() {
           <div className="w-full max-w-sm rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">Call {worker.name}</h2>
-                <p className="mt-0.5 text-xs text-[#67696D] dark:text-[#A1A1AA] select-all font-mono">+91 {worker.phone}</p>
+                <h2 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                  Call {worker.name}
+                </h2>
+                <p className="mt-0.5 text-xs text-[#67696D] dark:text-[#A1A1AA] select-all font-mono">
+                  +91 {worker.phone}
+                </p>
               </div>
               <button
                 type="button"
@@ -698,8 +843,13 @@ export default function WorkerProfile() {
           <button
             type="button"
             onClick={() => {
-              void logContactEvent(worker.id, "call", { name: worker.name, category: worker.category });
-              void logAnalyticsEvent("call_click", worker.id, { source: "sticky_bottom_bar" });
+              void logContactEvent(worker.id, "call", {
+                name: worker.name,
+                category: worker.category,
+              });
+              void logAnalyticsEvent("call_click", worker.id, {
+                source: "sticky_bottom_bar",
+              });
               setShowContact(true);
             }}
             className="flex-1 flex h-11 items-center justify-center gap-2 rounded-full border-2 border-[#2C2C2C] dark:border-[#F4F4F5] bg-transparent text-xs sm:text-sm font-bold text-[#2C2C2C] dark:text-[#F4F4F5] hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] transition cursor-pointer"
@@ -714,8 +864,13 @@ export default function WorkerProfile() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => {
-              void logContactEvent(worker.id, "whatsapp", { name: worker.name, category: worker.category });
-              void logAnalyticsEvent("whatsapp_click", worker.id, { source: "sticky_bottom_bar" });
+              void logContactEvent(worker.id, "whatsapp", {
+                name: worker.name,
+                category: worker.category,
+              });
+              void logAnalyticsEvent("whatsapp_click", worker.id, {
+                source: "sticky_bottom_bar",
+              });
             }}
             className="flex-1 flex h-11 items-center justify-center gap-2 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-xs sm:text-sm font-bold text-white shadow-subtle active:scale-[0.98] transition cursor-pointer"
           >

@@ -30,7 +30,10 @@ import type {
   ScreeningCheckResult,
   ScreeningVerdict,
 } from "@shared/api";
-import { getSamplePortfolioImages, type SamplePortfolioItem } from "@/lib/samplePortfolioImages";
+import {
+  getSamplePortfolioImages,
+  type SamplePortfolioItem,
+} from "@/lib/samplePortfolioImages";
 
 interface UploadedFileItem {
   id: string;
@@ -46,10 +49,13 @@ export default function PortfolioModeration() {
   const [screening, setScreening] = useState(false);
   const [screeningProgress, setScreeningProgress] = useState("");
   const [results, setResults] = useState<ImageScreeningResult[]>([]);
-  const [selectedResult, setSelectedResult] = useState<ImageScreeningResult | null>(null);
+  const [selectedResult, setSelectedResult] =
+    useState<ImageScreeningResult | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
-  const [filterVerdict, setFilterVerdict] = useState<"all" | "approved" | "needs_review" | "rejected">("all");
+  const [filterVerdict, setFilterVerdict] = useState<
+    "all" | "approved" | "needs_review" | "rejected"
+  >("all");
   const [moderatorNote, setModeratorNote] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -151,7 +157,9 @@ export default function PortfolioModeration() {
     }
     setError("");
     setScreening(true);
-    setScreeningProgress(`Sending ${selectedFiles.length} photo(s) to Gemini Vision...`);
+    setScreeningProgress(
+      `Sending ${selectedFiles.length} photo(s) to Gemini Vision...`,
+    );
 
     try {
       const payload = {
@@ -171,7 +179,10 @@ export default function PortfolioModeration() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => null);
-        throw new Error(data?.message || `Screening failed with HTTP status ${response.status}`);
+        throw new Error(
+          data?.message ||
+            `Screening failed with HTTP status ${response.status}`,
+        );
       }
 
       const data: PortfolioScreenResponse = await response.json();
@@ -182,14 +193,21 @@ export default function PortfolioModeration() {
         return {
           ...res,
           imageDataUrl: matchingFile?.dataUrl,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
           workerName: "Ramesh K. (Electrician)",
         };
       });
 
       setResults(enrichedResults);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error during portfolio screening.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Error during portfolio screening.",
+      );
     } finally {
       setScreening(false);
       setScreeningProgress("");
@@ -200,7 +218,7 @@ export default function PortfolioModeration() {
   const handleAdminDecision = (
     resultId: string,
     decision: ScreeningVerdict,
-    defaultNote: string
+    defaultNote: string,
   ) => {
     const note = moderatorNote.trim() || defaultNote;
     setResults((prev) =>
@@ -213,10 +231,13 @@ export default function PortfolioModeration() {
             verdict: decision,
             note,
             moderator: "Admin / QA Staff",
-            at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            at: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
           },
         };
-      })
+      }),
     );
 
     if (selectedResult && selectedResult.id === resultId) {
@@ -229,10 +250,13 @@ export default function PortfolioModeration() {
                 verdict: decision,
                 note,
                 moderator: "Admin / QA Staff",
-                at: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                at: new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
               },
             }
-          : null
+          : null,
       );
     }
     setModeratorNote("");
@@ -241,16 +265,23 @@ export default function PortfolioModeration() {
   // Statistics
   const totalScreened = results.length;
   const approvedCount = results.filter((r) => r.verdict === "approved").length;
-  const needsReviewCount = results.filter((r) => r.verdict === "needs_review").length;
+  const needsReviewCount = results.filter(
+    (r) => r.verdict === "needs_review",
+  ).length;
   const rejectedCount = results.filter((r) => r.verdict === "rejected").length;
 
   // Filtered views
   const displayResults =
     activeTab === "admin"
-      ? results.filter((r) => r.verdict === "needs_review" || r.verdict === "rejected" || r.manualOverride)
+      ? results.filter(
+          (r) =>
+            r.verdict === "needs_review" ||
+            r.verdict === "rejected" ||
+            r.manualOverride,
+        )
       : filterVerdict === "all"
-      ? results
-      : results.filter((r) => r.verdict === filterVerdict);
+        ? results
+        : results.filter((r) => r.verdict === filterVerdict);
 
   return (
     <PageShell
@@ -274,7 +305,9 @@ export default function PortfolioModeration() {
             </span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-            Automated screening for worker past work photos: filters stock photos, privacy concerns, low quality & inappropriate uploads before public listing.
+            Automated screening for worker past work photos: filters stock
+            photos, privacy concerns, low quality & inappropriate uploads before
+            public listing.
           </p>
         </div>
 
@@ -319,7 +352,9 @@ export default function PortfolioModeration() {
             Total Photos
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-foreground">{totalScreened}</span>
+            <span className="text-2xl font-black text-foreground">
+              {totalScreened}
+            </span>
             <span className="text-xs text-muted-foreground">uploaded</span>
           </div>
         </div>
@@ -328,8 +363,12 @@ export default function PortfolioModeration() {
             Approved
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{approvedCount}</span>
-            <span className="text-xs text-emerald-700/70">ready to display</span>
+            <span className="text-2xl font-black text-emerald-600">
+              {approvedCount}
+            </span>
+            <span className="text-xs text-emerald-700/70">
+              ready to display
+            </span>
           </div>
         </div>
         <div className="rounded-[16px] border border-amber-200 bg-amber-50/50 p-3.5 shadow-soft">
@@ -337,7 +376,9 @@ export default function PortfolioModeration() {
             Needs Review
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">{needsReviewCount}</span>
+            <span className="text-2xl font-black text-amber-600">
+              {needsReviewCount}
+            </span>
             <span className="text-xs text-amber-700/70">triage required</span>
           </div>
         </div>
@@ -346,7 +387,9 @@ export default function PortfolioModeration() {
             Rejected
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-black text-rose-600">{rejectedCount}</span>
+            <span className="text-2xl font-black text-rose-600">
+              {rejectedCount}
+            </span>
             <span className="text-xs text-rose-700/70">policy violation</span>
           </div>
         </div>
@@ -359,9 +402,12 @@ export default function PortfolioModeration() {
           <div className="rounded-2xl border border-border bg-card p-5 shadow-xs sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-base font-extrabold text-foreground">Upload Work Proof Photos</h2>
+                <h2 className="text-base font-extrabold text-foreground">
+                  Upload Work Proof Photos
+                </h2>
                 <p className="text-xs text-muted-foreground">
-                  Select 1 to 5 photos showing real work you finished (wiring, plumbing, tile, painting, AC).
+                  Select 1 to 5 photos showing real work you finished (wiring,
+                  plumbing, tile, painting, AC).
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -411,7 +457,8 @@ export default function PortfolioModeration() {
                 <Upload size={22} className="text-primary" />
               </div>
               <p className="mt-3 text-sm font-bold text-foreground">
-                Drop work photos here, or <span className="text-primary underline">browse</span>
+                Drop work photos here, or{" "}
+                <span className="text-primary underline">browse</span>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Up to 5 photos • JPG, PNG, WebP • Max 10MB per photo
@@ -433,7 +480,9 @@ export default function PortfolioModeration() {
                   <div className="text-xs font-bold text-foreground">
                     Selected Photos ({selectedFiles.length}/5)
                   </div>
-                  <span className="text-[11px] text-muted-foreground">Click photo thumbnail to remove</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Click photo thumbnail to remove
+                  </span>
                 </div>
 
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -448,7 +497,9 @@ export default function PortfolioModeration() {
                         className="h-28 w-full object-cover transition group-hover:scale-105"
                       />
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1.5">
-                        <p className="truncate text-[10px] font-semibold text-white">{file.name}</p>
+                        <p className="truncate text-[10px] font-semibold text-white">
+                          {file.name}
+                        </p>
                       </div>
                       <button
                         type="button"
@@ -471,7 +522,8 @@ export default function PortfolioModeration() {
                 {/* Screening Trigger Action */}
                 <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-xs text-muted-foreground">
-                    Photos are screened with Gemini 2.5 Flash against stock photos, quality, privacy & authenticity rules.
+                    Photos are screened with Gemini 2.5 Flash against stock
+                    photos, quality, privacy & authenticity rules.
                   </div>
                   <button
                     type="button"
@@ -482,12 +534,16 @@ export default function PortfolioModeration() {
                     {screening ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        <span>{screeningProgress || "Screening with Vision..."}</span>
+                        <span>
+                          {screeningProgress || "Screening with Vision..."}
+                        </span>
                       </>
                     ) : (
                       <>
                         <Sparkles size={16} />
-                        <span>Screen {selectedFiles.length} Photos with Gemini</span>
+                        <span>
+                          Screen {selectedFiles.length} Photos with Gemini
+                        </span>
                       </>
                     )}
                   </button>
@@ -501,9 +557,12 @@ export default function PortfolioModeration() {
             <div>
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-black text-foreground">Screening Results ({results.length})</h2>
+                  <h2 className="text-lg font-black text-foreground">
+                    Screening Results ({results.length})
+                  </h2>
                   <p className="text-xs text-muted-foreground">
-                    Click any card to inspect the full 6-point policy evaluation and reasons.
+                    Click any card to inspect the full 6-point policy evaluation
+                    and reasons.
                   </p>
                 </div>
 
@@ -581,8 +640,11 @@ export default function PortfolioModeration() {
                   Admin Moderation Triage Queue
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Showing photos flagged as <span className="font-bold text-amber-600">Needs Review</span> or{" "}
-                  <span className="font-bold text-red-600">Rejected</span> by Gemini Vision. Human moderators can override or confirm decisions.
+                  Showing photos flagged as{" "}
+                  <span className="font-bold text-amber-600">Needs Review</span>{" "}
+                  or <span className="font-bold text-red-600">Rejected</span> by
+                  Gemini Vision. Human moderators can override or confirm
+                  decisions.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -595,9 +657,12 @@ export default function PortfolioModeration() {
             {displayResults.length === 0 ? (
               <div className="mt-8 flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 text-center">
                 <CheckCircle2 size={40} className="text-emerald-500" />
-                <h3 className="mt-3 text-sm font-bold text-foreground">Queue is Clean!</h3>
+                <h3 className="mt-3 text-sm font-bold text-foreground">
+                  Queue is Clean!
+                </h3>
                 <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-                  There are no flagged photos awaiting review. Switch to Worker Upload View to test or screen new submissions.
+                  There are no flagged photos awaiting review. Switch to Worker
+                  Upload View to test or screen new submissions.
                 </p>
                 <button
                   type="button"
@@ -631,7 +696,10 @@ export default function PortfolioModeration() {
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          <ImageIcon size={24} className="text-muted-foreground" />
+                          <ImageIcon
+                            size={24}
+                            className="text-muted-foreground"
+                          />
                         </div>
                       )}
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover:opacity-100">
@@ -651,7 +719,9 @@ export default function PortfolioModeration() {
                               {item.suggested_category}
                             </span>
                           )}
-                          <span className="text-xs font-bold text-foreground">{item.name}</span>
+                          <span className="text-xs font-bold text-foreground">
+                            {item.name}
+                          </span>
                         </div>
                         <span className="text-[11px] text-muted-foreground">
                           {item.workerName || "Worker Submission"}
@@ -674,19 +744,39 @@ export default function PortfolioModeration() {
 
                       {/* Checks Chips */}
                       <div className="flex flex-wrap gap-1.5 text-[11px]">
-                        <CheckTag label="Stock Photo" failed={item.checks.is_stock_photo} />
-                        <CheckTag label="Duplicate/Meme" failed={item.checks.is_duplicate_style} />
-                        <CheckTag label="Actual Work" failed={!item.checks.shows_actual_work} />
-                        <CheckTag label="Quality Issue" failed={item.checks.image_quality_issue} />
-                        <CheckTag label="Inappropriate" failed={item.checks.contains_inappropriate_content} />
-                        <CheckTag label="Privacy/Faces" failed={item.checks.contains_identifiable_third_party} />
+                        <CheckTag
+                          label="Stock Photo"
+                          failed={item.checks.is_stock_photo}
+                        />
+                        <CheckTag
+                          label="Duplicate/Meme"
+                          failed={item.checks.is_duplicate_style}
+                        />
+                        <CheckTag
+                          label="Actual Work"
+                          failed={!item.checks.shows_actual_work}
+                        />
+                        <CheckTag
+                          label="Quality Issue"
+                          failed={item.checks.image_quality_issue}
+                        />
+                        <CheckTag
+                          label="Inappropriate"
+                          failed={item.checks.contains_inappropriate_content}
+                        />
+                        <CheckTag
+                          label="Privacy/Faces"
+                          failed={item.checks.contains_identifiable_third_party}
+                        />
                       </div>
 
                       {/* Manual Override Log if any */}
                       {item.manualOverride && (
                         <div className="rounded-lg border border-primary/30 bg-primary/5 p-2 text-xs text-primary">
-                          <span className="font-bold">Moderator Decision:</span> {item.manualOverride.note} (by{" "}
-                          {item.manualOverride.moderator} at {item.manualOverride.at})
+                          <span className="font-bold">Moderator Decision:</span>{" "}
+                          {item.manualOverride.note} (by{" "}
+                          {item.manualOverride.moderator} at{" "}
+                          {item.manualOverride.at})
                         </div>
                       )}
 
@@ -698,7 +788,7 @@ export default function PortfolioModeration() {
                             handleAdminDecision(
                               item.id,
                               "approved",
-                              "Approved by moderator override: verified authentic local trade work."
+                              "Approved by moderator override: verified authentic local trade work.",
                             )
                           }
                           className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
@@ -712,7 +802,7 @@ export default function PortfolioModeration() {
                             handleAdminDecision(
                               item.id,
                               "rejected",
-                              "Confirmed rejection: photo does not comply with trade portfolio standards."
+                              "Confirmed rejection: photo does not comply with trade portfolio standards.",
                             )
                           }
                           className="flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 active:scale-95 shadow-subtle cursor-pointer"
@@ -726,7 +816,7 @@ export default function PortfolioModeration() {
                             handleAdminDecision(
                               item.id,
                               "needs_review",
-                              "Notice sent to worker: Please upload a clearer, well-lit photo of the job site."
+                              "Notice sent to worker: Please upload a clearer, well-lit photo of the job site.",
                             )
                           }
                           className="flex items-center gap-1 rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs font-bold text-foreground transition hover:bg-secondary/80 active:scale-95"
@@ -765,7 +855,9 @@ export default function PortfolioModeration() {
             <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
               <div className="flex items-center gap-2">
                 <VerdictBadge verdict={selectedResult.verdict} />
-                <span className="font-extrabold text-foreground truncate max-w-xs">{selectedResult.name}</span>
+                <span className="font-extrabold text-foreground truncate max-w-xs">
+                  {selectedResult.name}
+                </span>
               </div>
               <button
                 type="button"
@@ -840,19 +932,25 @@ export default function PortfolioModeration() {
                   <CheckRow
                     label="Family-Safe Listing Content"
                     description="No inappropriate, offensive, or dangerous material"
-                    failed={selectedResult.checks.contains_inappropriate_content}
+                    failed={
+                      selectedResult.checks.contains_inappropriate_content
+                    }
                   />
                   <CheckRow
                     label="Privacy & Third-Party Faces"
                     description="No bystanders, children, or visible identity documents"
-                    failed={selectedResult.checks.contains_identifiable_third_party}
+                    failed={
+                      selectedResult.checks.contains_identifiable_third_party
+                    }
                   />
                 </div>
               </div>
 
               {/* Admin Decision Actions inside Modal */}
               <div className="rounded-xl border border-border bg-secondary/30 p-4">
-                <h4 className="text-xs font-bold text-foreground mb-2">Admin Action & Triage Note</h4>
+                <h4 className="text-xs font-bold text-foreground mb-2">
+                  Admin Action & Triage Note
+                </h4>
                 <input
                   type="text"
                   placeholder="Optional custom moderator note..."
@@ -867,7 +965,7 @@ export default function PortfolioModeration() {
                       handleAdminDecision(
                         selectedResult.id,
                         "approved",
-                        "Approved by moderator override: verified authentic local trade work."
+                        "Approved by moderator override: verified authentic local trade work.",
                       )
                     }
                     className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700"
@@ -881,7 +979,7 @@ export default function PortfolioModeration() {
                       handleAdminDecision(
                         selectedResult.id,
                         "needs_review",
-                        "Moderator requested re-upload: photo is unclear or needs closer work proof."
+                        "Moderator requested re-upload: photo is unclear or needs closer work proof.",
                       )
                     }
                     className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold text-foreground transition hover:bg-secondary"
@@ -895,7 +993,7 @@ export default function PortfolioModeration() {
                       handleAdminDecision(
                         selectedResult.id,
                         "rejected",
-                        "Photo permanently rejected per directory quality and authenticity standards."
+                        "Photo permanently rejected per directory quality and authenticity standards.",
                       )
                     }
                     className="flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 transition hover:bg-rose-100 shadow-subtle cursor-pointer"
@@ -920,7 +1018,7 @@ export default function PortfolioModeration() {
                       suggested_category: selectedResult.suggested_category,
                     },
                     null,
-                    2
+                    2,
                   )}
                 </pre>
               </details>
@@ -992,8 +1090,12 @@ function ResultCard({
         {/* Card Content */}
         <div className="p-4 space-y-2.5">
           <div className="flex items-center justify-between">
-            <h3 className="truncate text-sm font-extrabold text-foreground">{item.name}</h3>
-            <span className="text-[10px] text-muted-foreground">{item.timestamp}</span>
+            <h3 className="truncate text-sm font-extrabold text-foreground">
+              {item.name}
+            </h3>
+            <span className="text-[10px] text-muted-foreground">
+              {item.timestamp}
+            </span>
           </div>
 
           {/* Reasons summary */}
@@ -1103,7 +1205,9 @@ function CheckRow({
         )}
       </div>
       <div>
-        <div className={`font-bold ${failed ? "text-rose-700" : "text-[#2C2C2C]"}`}>
+        <div
+          className={`font-bold ${failed ? "text-rose-700" : "text-[#2C2C2C]"}`}
+        >
           {label}: {failed ? "Flagged / Failed" : "Passed"}
         </div>
         <div className="text-[11px] text-[#67696D]">{description}</div>

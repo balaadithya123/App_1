@@ -50,7 +50,11 @@ type Agency = {
 export default function AgencyProfile() {
   const routeParams = useParams<{ id?: string }>();
   const [searchParams] = useSearchParams();
-  const id = routeParams.id || searchParams.get("agency") || searchParams.get("id") || "";
+  const id =
+    routeParams.id ||
+    searchParams.get("agency") ||
+    searchParams.get("id") ||
+    "";
 
   const [agency, setAgency] = useState<Agency | null>(null);
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -74,8 +78,14 @@ export default function AgencyProfile() {
               if (mounted && d.agency) {
                 setAgency({
                   ...d.agency,
-                  categories: Array.isArray(d.agency.categories) ? d.agency.categories : [d.agency.categories].filter(Boolean),
-                  service_locations: Array.isArray(d.agency.service_locations) ? d.agency.service_locations : [d.agency.service_locations || d.agency.location].filter(Boolean),
+                  categories: Array.isArray(d.agency.categories)
+                    ? d.agency.categories
+                    : [d.agency.categories].filter(Boolean),
+                  service_locations: Array.isArray(d.agency.service_locations)
+                    ? d.agency.service_locations
+                    : [d.agency.service_locations || d.agency.location].filter(
+                        Boolean,
+                      ),
                 });
                 setLoading(false);
                 return;
@@ -97,12 +107,19 @@ export default function AgencyProfile() {
     fetch(`/api/agencies/${encodeURIComponent(id)}`, { cache: "no-store" })
       .then(async (r) => {
         const d = await r.json().catch(() => null);
-        if (!r.ok || !d?.agency) throw new Error(d?.message || "Agency profile not found.");
+        if (!r.ok || !d?.agency)
+          throw new Error(d?.message || "Agency profile not found.");
         if (mounted) {
           setAgency({
             ...d.agency,
-            categories: Array.isArray(d.agency.categories) ? d.agency.categories : [d.agency.categories].filter(Boolean),
-            service_locations: Array.isArray(d.agency.service_locations) ? d.agency.service_locations : [d.agency.service_locations || d.agency.location].filter(Boolean),
+            categories: Array.isArray(d.agency.categories)
+              ? d.agency.categories
+              : [d.agency.categories].filter(Boolean),
+            service_locations: Array.isArray(d.agency.service_locations)
+              ? d.agency.service_locations
+              : [d.agency.service_locations || d.agency.location].filter(
+                  Boolean,
+                ),
           });
           if (Array.isArray(d.workers)) {
             setWorkers(d.workers);
@@ -112,7 +129,9 @@ export default function AgencyProfile() {
       })
       .catch((e) => {
         if (mounted) {
-          setError(e instanceof Error ? e.message : "Unable to load agency profile.");
+          setError(
+            e instanceof Error ? e.message : "Unable to load agency profile.",
+          );
           setLoading(false);
         }
       });
@@ -122,11 +141,19 @@ export default function AgencyProfile() {
     };
   }, [id]);
 
-  const phone = agency?.phone ? String(agency.phone).replace(/\D/g, "").slice(-10) : "";
-  const whatsappUrl = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hello ${agency?.name}, I found your agency on LocalWorker.`)}` : "";
+  const phone = agency?.phone
+    ? String(agency.phone).replace(/\D/g, "").slice(-10)
+    : "";
+  const whatsappUrl = phone
+    ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hello ${agency?.name}, I found your agency on LocalWorker.`)}`
+    : "";
 
   return (
-    <PageShell backTo="/search?type=agencies" backLabel="Back" containerWidth="md">
+    <PageShell
+      backTo="/search?type=agencies"
+      backLabel="Back"
+      containerWidth="md"
+    >
       <div className="space-y-5">
         {loading ? (
           <div className="flex min-h-[300px] items-center justify-center">
@@ -138,7 +165,9 @@ export default function AgencyProfile() {
         ) : error || !agency ? (
           <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <Building2 size={36} className="mx-auto text-muted-foreground" />
-            <h1 className="mt-3 text-lg font-bold text-foreground">Agency Not Found</h1>
+            <h1 className="mt-3 text-lg font-bold text-foreground">
+              Agency Not Found
+            </h1>
             <p className="mt-1.5 text-xs text-muted-foreground">
               {error || "We could not find the requested agency profile."}
             </p>
@@ -156,7 +185,11 @@ export default function AgencyProfile() {
               <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-secondary font-bold text-foreground text-xl">
                   {agency.logo_url ? (
-                    <img src={agency.logo_url} alt={agency.name} className="h-full w-full object-cover" />
+                    <img
+                      src={agency.logo_url}
+                      alt={agency.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <Building2 size={30} className="text-primary" />
                   )}
@@ -164,7 +197,9 @@ export default function AgencyProfile() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">{agency.name}</h1>
+                    <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                      {agency.name}
+                    </h1>
                     {agency.verified && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
                         <BadgeCheck size={13} /> Verified Agency
@@ -176,12 +211,16 @@ export default function AgencyProfile() {
                     {agency.service_locations.length > 0 && (
                       <span className="flex items-center gap-1">
                         <MapPin size={13} className="shrink-0" />
-                        <span>Coverage: {agency.service_locations.join(", ")}</span>
+                        <span>
+                          Coverage: {agency.service_locations.join(", ")}
+                        </span>
                       </span>
                     )}
                     <span className="flex items-center gap-1">
                       <Users size={13} className="shrink-0" />
-                      <span>{agency.team_size_band || "5-10"} Team Capacity</span>
+                      <span>
+                        {agency.team_size_band || "5-10"} Team Capacity
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -224,15 +263,21 @@ export default function AgencyProfile() {
             {/* About Agency */}
             {agency.description && (
               <section className="rounded-xl border border-border bg-card p-5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">About Agency</h2>
-                <p className="mt-2 text-xs leading-relaxed text-foreground">{agency.description}</p>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  About Agency
+                </h2>
+                <p className="mt-2 text-xs leading-relaxed text-foreground">
+                  {agency.description}
+                </p>
               </section>
             )}
 
             {/* Specializations & Services */}
             {agency.categories.length > 0 && (
               <section className="rounded-xl border border-border bg-card p-5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Specializations</h2>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Specializations
+                </h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {agency.categories.map((c) => (
                     <span
@@ -254,7 +299,9 @@ export default function AgencyProfile() {
                   <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Affiliated Specialists ({workers.length})
                   </h2>
-                  <span className="text-[11px] text-muted-foreground">Verified Crew</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Verified Crew
+                  </span>
                 </div>
 
                 <div className="mt-3 divide-y divide-border/60">
@@ -267,16 +314,25 @@ export default function AgencyProfile() {
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-xs">
                           {w.photo_url ? (
-                            <img src={w.photo_url} alt={w.name} className="h-full w-full object-cover" />
+                            <img
+                              src={w.photo_url}
+                              alt={w.name}
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             w.initials || w.name?.slice(0, 2).toUpperCase()
                           )}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <h3 className="text-xs font-bold text-foreground group-hover:text-primary">{w.name}</h3>
+                            <h3 className="text-xs font-bold text-foreground group-hover:text-primary">
+                              {w.name}
+                            </h3>
                             {w.phone_verified && (
-                              <BadgeCheck size={12} className="text-emerald-500" />
+                              <BadgeCheck
+                                size={12}
+                                className="text-emerald-500"
+                              />
                             )}
                           </div>
                           <p className="text-[11px] text-muted-foreground">
@@ -291,7 +347,10 @@ export default function AgencyProfile() {
                             Available
                           </span>
                         )}
-                        <ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground" />
+                        <ChevronRight
+                          size={14}
+                          className="text-muted-foreground group-hover:text-foreground"
+                        />
                       </div>
                     </Link>
                   ))}
@@ -306,7 +365,8 @@ export default function AgencyProfile() {
                 <span>Agency Certified Service</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Work performed by this agency and its linked specialists is backed by verified management supervision and direct support.
+                Work performed by this agency and its linked specialists is
+                backed by verified management supervision and direct support.
               </p>
             </section>
 

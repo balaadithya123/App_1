@@ -22,14 +22,18 @@ const Register = lazy(() => import("./pages/Register"));
 const AgencyRegister = lazy(() => import("./pages/AgencyRegister"));
 const AgencyDashboard = lazy(() => import("./pages/AgencyDashboard"));
 const AgencyProfileEdit = lazy(() => import("./pages/AgencyProfileEdit"));
-const AgencyProfileCompleteness = lazy(() => import("./pages/AgencyProfileCompleteness"));
+const AgencyProfileCompleteness = lazy(
+  () => import("./pages/AgencyProfileCompleteness"),
+);
 const Report = lazy(() => import("./pages/Report"));
 const Login = lazy(() => import("./pages/Login"));
 const Profile = lazy(() => import("./pages/Profile"));
 const WorkerDashboard = lazy(() => import("./pages/WorkerDashboard"));
 const WorkerCommitments = lazy(() => import("./pages/WorkerCommitments"));
 const Inbox = lazy(() => import("./pages/Inbox"));
-const WorkerCallbackRequests = lazy(() => import("./pages/WorkerCallbackRequests"));
+const WorkerCallbackRequests = lazy(
+  () => import("./pages/WorkerCallbackRequests"),
+);
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ChatAssistantPage = lazy(() => import("./pages/ChatAssistantPage"));
 const VoiceOnboarding = lazy(() => import("./pages/VoiceOnboarding"));
@@ -68,7 +72,10 @@ export default function App() {
               <Route path="/saved" element={<SavedWorkers />} />
               <Route path="/my-circle" element={<SavedWorkers />} />
               <Route path="/recently-viewed" element={<RecentlyViewed />} />
-              <Route path="/profile-completeness" element={<ProfileCompleteness />} />
+              <Route
+                path="/profile-completeness"
+                element={<ProfileCompleteness />}
+              />
               <Route path="/worker" element={<WorkerProfile />} />
               <Route path="/worker/:id" element={<WorkerProfile />} />
               <Route path="/workers/:id" element={<WorkerProfile />} />
@@ -79,19 +86,43 @@ export default function App() {
               <Route path="/register-agency" element={<AgencyRegister />} />
               <Route path="/agency" element={<AgencyDashboard />} />
               <Route path="/agency/dashboard" element={<AgencyDashboard />} />
-              <Route path="/agency/profile/edit" element={<AgencyProfileEdit />} />
-              <Route path="/agency/profile-completeness" element={<AgencyProfileCompleteness />} />
+              <Route
+                path="/agency/profile/edit"
+                element={<AgencyProfileEdit />}
+              />
+              <Route
+                path="/agency/profile-completeness"
+                element={<AgencyProfileCompleteness />}
+              />
               <Route path="/join" element={<Register />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/worker-dashboard" element={<WorkerDashboard />} />
-              <Route path="/worker-commitments" element={<WorkerCommitments />} />
-              <Route path="/callback-requests" element={<WorkerCallbackRequests />} />
+              <Route
+                path="/worker-commitments"
+                element={<WorkerCommitments />}
+              />
+              <Route
+                path="/callback-requests"
+                element={<WorkerCallbackRequests />}
+              />
               <Route path="/inbox" element={<Inbox />} />
-              <Route path="/portfolio-screen" element={<PortfolioModeration />} />
-              <Route path="/portfolio-screening" element={<PortfolioModeration />} />
-              <Route path="/portfolio-moderation" element={<PortfolioModeration />} />
-              <Route path="/admin/portfolio" element={<PortfolioModeration />} />
+              <Route
+                path="/portfolio-screen"
+                element={<PortfolioModeration />}
+              />
+              <Route
+                path="/portfolio-screening"
+                element={<PortfolioModeration />}
+              />
+              <Route
+                path="/portfolio-moderation"
+                element={<PortfolioModeration />}
+              />
+              <Route
+                path="/admin/portfolio"
+                element={<PortfolioModeration />}
+              />
               <Route path="/ranking-engine" element={<SearchResults />} />
               <Route path="/ranking" element={<SearchResults />} />
               <Route path="/worker-ranking" element={<SearchResults />} />
@@ -109,7 +140,9 @@ export default function App() {
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  const globalWithRoot = window as unknown as { __reactRoot?: ReturnType<typeof createRoot> };
+  const globalWithRoot = window as unknown as {
+    __reactRoot?: ReturnType<typeof createRoot>;
+  };
   if (!globalWithRoot.__reactRoot) {
     globalWithRoot.__reactRoot = createRoot(rootElement);
   }

@@ -80,7 +80,9 @@ export default function MobileMenu() {
       .then(async (r) => (r.ok ? r.json() : null))
       .then((result) => {
         if (active && result) {
-          setUnread((result.notifications || []).filter((n: any) => !n.read_at).length);
+          setUnread(
+            (result.notifications || []).filter((n: any) => !n.read_at).length,
+          );
         }
       })
       .catch(() => {});
@@ -132,7 +134,10 @@ export default function MobileMenu() {
         className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground transition hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-ring cursor-pointer shadow-subtle"
       >
         {open ? (
-          <X size={16} className="text-foreground transition-transform duration-200 group-hover:scale-110" />
+          <X
+            size={16}
+            className="text-foreground transition-transform duration-200 group-hover:scale-110"
+          />
         ) : (
           <div className="flex flex-col items-center justify-center gap-1">
             <span className="h-0.5 w-4 rounded-full bg-foreground transition-all" />
@@ -168,15 +173,35 @@ export default function MobileMenu() {
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px] text-[#67696D] mt-0.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                  <span className="capitalize">{isWorker ? "Worker" : isAgency ? "Agency" : "Member"}</span>
+                  <span className="capitalize">
+                    {isWorker ? "Worker" : isAgency ? "Agency" : "Member"}
+                  </span>
                 </div>
               </div>
               <Link
-                to={isWorker ? "/worker-dashboard" : isAgency ? "/agency/dashboard" : "/profile"}
+                to={
+                  isWorker
+                    ? "/worker-dashboard"
+                    : isAgency
+                      ? "/agency/dashboard"
+                      : "/profile"
+                }
                 onClick={() => setOpen(false)}
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#E7ECF1] bg-white text-[#67696D] transition hover:text-primary hover:border-primary shadow-subtle"
-                aria-label={isWorker ? "Worker Dashboard" : isAgency ? "Agency Dashboard" : "Account Settings"}
-                title={isWorker ? "Worker Dashboard" : isAgency ? "Agency Dashboard" : "Profile Settings"}
+                aria-label={
+                  isWorker
+                    ? "Worker Dashboard"
+                    : isAgency
+                      ? "Agency Dashboard"
+                      : "Account Settings"
+                }
+                title={
+                  isWorker
+                    ? "Worker Dashboard"
+                    : isAgency
+                      ? "Agency Dashboard"
+                      : "Profile Settings"
+                }
               >
                 <UserRound size={14} />
               </Link>
@@ -184,8 +209,12 @@ export default function MobileMenu() {
           ) : (
             <div className="mb-3 flex items-center justify-between rounded-[14px] border border-[#E7ECF1] bg-[#F6F9FC] p-3">
               <div>
-                <div className="text-xs font-bold text-[#2C2C2C]">LocalWorker</div>
-                <div className="text-[10px] text-[#67696D]">Directory & Services</div>
+                <div className="text-xs font-bold text-[#2C2C2C]">
+                  LocalWorker
+                </div>
+                <div className="text-[10px] text-[#67696D]">
+                  Directory & Services
+                </div>
               </div>
               <Link
                 to="/login"
@@ -211,7 +240,9 @@ export default function MobileMenu() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary-100/20 text-primary">
                   <Search size={13} />
                 </div>
-                <span className="text-xs font-semibold text-[#2C2C2C]">Find Workers</span>
+                <span className="text-xs font-semibold text-[#2C2C2C]">
+                  Find Workers
+                </span>
               </Link>
 
               <Link
@@ -298,7 +329,10 @@ export default function MobileMenu() {
                         <BriefcaseBusiness size={14} className="text-primary" />
                         <span>Worker Portal</span>
                       </span>
-                      <ChevronRight size={13} className="text-[#67696D] transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                      <ChevronRight
+                        size={13}
+                        className="text-[#67696D] transition group-hover:translate-x-0.5 group-hover:text-primary"
+                      />
                     </Link>
                     <Link
                       to="/profile-completeness"
@@ -323,7 +357,10 @@ export default function MobileMenu() {
                       <Building2 size={14} className="text-primary" />
                       <span>Agency Dashboard</span>
                     </span>
-                    <ChevronRight size={13} className="text-[#67696D] transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                    <ChevronRight
+                      size={13}
+                      className="text-[#67696D] transition group-hover:translate-x-0.5 group-hover:text-primary"
+                    />
                   </Link>
                 )}
 
@@ -347,8 +384,6 @@ export default function MobileMenu() {
               </div>
             </div>
           )}
-
-
 
           {/* Section 3: Appearance Theme Toggle */}
           <div className="mb-2 border-t border-border pt-2">
@@ -380,4 +415,3 @@ export default function MobileMenu() {
     </div>
   );
 }
-
