@@ -125,8 +125,17 @@ CRITICAL INSTRUCTIONS:
 
 function fallbackPhotoCheck(photoUrlOrData: string): ProfilePhotoCheckResult {
   const lower = photoUrlOrData.toLowerCase();
-  const isStock = lower.includes("stock") || lower.includes("shutter") || lower.includes("watermark") || lower.includes("unsplash") || lower.includes("istock");
-  const isDup = lower.includes("meme") || lower.includes("screenshot") || lower.includes("wa_") || lower.includes("whatsapp");
+  const isStock =
+    lower.includes("stock") ||
+    lower.includes("shutter") ||
+    lower.includes("watermark") ||
+    lower.includes("unsplash") ||
+    lower.includes("istock");
+  const isDup =
+    lower.includes("meme") ||
+    lower.includes("screenshot") ||
+    lower.includes("wa_") ||
+    lower.includes("whatsapp");
 
   const reasons: string[] = [];
   if (isStock) reasons.push("Detected stock image markers in profile photo URL/metadata.");
@@ -193,56 +202,56 @@ export async function checkProfilePhotoDuplicates(
     const contentsParts: any[] = [];
     if (inlineData) {
       contentsParts.push({ inlineData });
-      contentsParts.push({ text: "Analyze this worker profile photo for stock photo or duplicate/copied asset markers." });
+      contentsParts.push({
+        text: "Analyze this worker profile photo for stock photo or duplicate/copied asset markers.",
+      });
     } else {
-      contentsParts.push({ text: `Analyze profile photo asset metadata/URL "${photoUrlOrData}" for stock photo or duplicate asset markers.` });
+      contentsParts.push({
+        text: `Analyze profile photo asset metadata/URL "${photoUrlOrData}" for stock photo or duplicate asset markers.`,
+      });
     }
 
-    const candidateModels = ["gemini-2.5-flash", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-flash-latest"];
     let parsed: any = null;
 
-    for (const modelName of candidateModels) {
-      try {
-        const promise = ai.models.generateContent({
-          model: modelName,
-          contents: [{ parts: contentsParts }],
-          config: {
-            systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.1,
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                is_stock_photo: { type: Type.BOOLEAN },
-                is_duplicate_or_copied: { type: Type.BOOLEAN },
-                confidence: { type: Type.NUMBER },
-                reasons: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                },
+    try {
+      const promise = ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [{ parts: contentsParts }],
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.1,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              is_stock_photo: { type: Type.BOOLEAN },
+              is_duplicate_or_copied: { type: Type.BOOLEAN },
+              confidence: { type: Type.NUMBER },
+              reasons: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
               },
-              required: ["is_stock_photo", "is_duplicate_or_copied", "confidence", "reasons"],
             },
+            required: ["is_stock_photo", "is_duplicate_or_copied", "confidence", "reasons"],
           },
-        });
+        },
+      });
 
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("Gemini photo duplicate check timeout")), 8000)
-        );
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Gemini photo duplicate check timeout")), 8000)
+      );
 
-        const response: any = await Promise.race([promise, timeoutPromise]);
-        let rawText = response.text?.trim() || "";
+      const response: any = await Promise.race([promise, timeoutPromise]);
+      let rawText = response.text?.trim() || "";
 
-        // Ensure strict clean JSON without markdown code block fences
-        rawText = rawText.replace(/^```json/i, "").replace(/^```/i, "").replace(/```$/i, "").trim();
+      // Ensure strict clean JSON without markdown code block fences
+      rawText = rawText.replace(/^```json/i, "").replace(/^```/i, "").replace(/```$/i, "").trim();
 
-        if (rawText) {
-          parsed = JSON.parse(rawText);
-          break;
-        }
-      } catch (modelErr) {
-        // Try next candidate model
+      if (rawText) {
+        parsed = JSON.parse(rawText);
       }
+    } catch (modelErr) {
+      console.warn("[duplicate-detection] Gemini gemini-2.5-flash error:", modelErr);
     }
 
     if (!parsed) {
@@ -252,7 +261,8 @@ export async function checkProfilePhotoDuplicates(
     return {
       is_stock_photo: Boolean(parsed.is_stock_photo),
       is_duplicate_or_copied: Boolean(parsed.is_duplicate_or_copied),
-      confidence: typeof parsed.confidence === "number" ? Math.min(1, Math.max(0, parsed.confidence)) : 0.8,
+      confidence:
+        typeof parsed.confidence === "number" ? Math.min(1, Math.max(0, parsed.confidence)) : 0.8,
       reasons: Array.isArray(parsed.reasons) ? parsed.reasons : [],
     };
   } catch (err) {

@@ -25,6 +25,7 @@ export const workerRegistrationSchema = z.object({
   experience: z.string().trim().min(1, "Years of experience is required"),
   services: z.string().trim().min(1, "Services offered is required"),
   about: z.string().trim().min(1, "About you is required"),
+  photoUrl: z.string().url().optional(),
 });
 type WorkerRegistration = z.infer<typeof workerRegistrationSchema>;
 
@@ -163,6 +164,24 @@ export const handleRegisterWorker: RequestHandler = async (req, res) => {
           flag_type: "duplicate_text_shingle_detected",
           reason: textSimResult.reason || "Near-duplicate profile text detected using word-shingle similarity check.",
         });
+      }
+
+      // 4. Gemini profile photo check (if photoUrl provided on registration)
+      if (result.data.photoUrl) {
+        const photoCheck = await checkProfilePhotoDuplicates(result.data.photoUrl);
+        if (photoCheck.is_stock_photo) {
+          await addTrustFlag({
+            worker_id: worker.id,
+            flag_type: "stock_photo_detected",
+            reason: "Profile photo detected as commercial stock photo or catalog picture",
+          });
+        } else if (photoCheck.is_duplicate_or_copied) {
+          await addTrustFlag({
+            worker_id: worker.id,
+            flag_type: "duplicate_photo_detected",
+            reason: "Profile photo detected as duplicate, copied, or screenshot image",
+          });
+        }
       }
     } catch (checkErr) {
       console.warn("[workers] background duplicate check note:", checkErr);
