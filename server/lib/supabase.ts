@@ -91,8 +91,7 @@ class MockQueryBuilder {
   then(resolve: (value: any) => any, reject?: (reason: any) => any) { try { const res = this.execute(); return Promise.resolve(res).then(resolve, reject); } catch (err) { return Promise.reject(err).then(resolve, reject); } }
 }
 
-const createMockSupabase = () => {
-  console.warn("[AI Studio] Supabase credentials not set — using in-memory mock database");
+export const createMockSupabase = () => {
   return {
     from(table: string) { return new MockQueryBuilder(table); },
     auth: { async getUser(token: string) { if (!token) return { data: { user: null }, error: { message: "Invalid session or token" } }; return { data: { user: { id: "00000000-0000-0000-0000-000000000001", email: "worker@example.com", phone: "9876543210", user_metadata: { role: "worker", name: "Demo Worker", phone: "9876543210" } } }, error: null }; } },
@@ -100,4 +99,8 @@ const createMockSupabase = () => {
   } as unknown as SupabaseClient;
 };
 
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, { auth: { autoRefreshToken: false, persistSession: false } });
+const isTestEnv = typeof process !== "undefined" && (process.env.VITEST === "true" || process.env.NODE_ENV === "test");
+
+export const supabase: SupabaseClient = isTestEnv
+  ? createMockSupabase()
+  : createClient(supabaseUrl, supabaseKey, { auth: { autoRefreshToken: false, persistSession: false } });
