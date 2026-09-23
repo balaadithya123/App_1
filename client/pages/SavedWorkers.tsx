@@ -232,7 +232,7 @@ export default function SavedWorkers() {
                             onClick={handleWhatsApp}
                             title={`WhatsApp ${worker.name}`}
                             aria-label={`WhatsApp ${worker.name}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white transition shadow-subtle active:scale-95 cursor-pointer"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#128C7E] hover:bg-[#075E54] text-white transition shadow-subtle active:scale-95 cursor-pointer"
                           >
                             <MessageCircle size={13} />
                           </button>
@@ -265,7 +265,7 @@ export default function SavedWorkers() {
                             e.stopPropagation();
                             void logContactEvent(worker.id, "whatsapp");
                           }}
-                          className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white transition hover:bg-[#20ba5a] cursor-pointer shadow-subtle"
+                          className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full bg-[#128C7E] px-4 text-xs font-bold text-white transition hover:bg-[#075E54] cursor-pointer shadow-subtle"
                         >
                           <MessageCircle size={14} />
                           <span>WhatsApp</span>
@@ -301,7 +301,7 @@ export default function SavedWorkers() {
               </p>
               <Link
                 to="/search"
-                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-5 text-xs font-bold text-white transition hover:bg-[#157ad4] shadow-subtle cursor-pointer"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-5 text-xs font-bold text-white transition hover:bg-[#0f766e] shadow-subtle cursor-pointer"
               >
                 <Search size={14} />
                 <span>Find Specialists</span>

@@ -29,15 +29,18 @@ import {
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import NavBar from "@/components/NavBar";
+import RateWorkerModal from "@/components/RateWorkerModal";
 import { workers as staticWorkers, type Worker } from "@/data/workers";
 import type { WorkersResponse } from "@shared/api";
 import { getSavedWorkerIds, toggleSavedWorker } from "@/lib/favorites";
+import { getComputedWorkerRating } from "@/lib/ratings";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 import { supabase } from "@/lib/supabase";
 import {
   getStandardLocation,
   setStandardLocation,
   detectGpsLocation,
+  isLocationMatch,
 } from "@/lib/location";
 
 const categoryList = [
@@ -448,8 +451,7 @@ export default function SearchResults() {
 
       const locMatched =
         !targetLocality ||
-        w.locality.toLowerCase().includes(targetLocality.toLowerCase()) ||
-        targetLocality.toLowerCase().includes(w.locality.toLowerCase());
+        isLocationMatch(w.locality, targetLocality);
 
       const availMatched = !onlyAvailableToday || Boolean(w.available_today);
       const verifiedMatched = !onlyVerified || Boolean(w.phone_verified);
@@ -639,39 +641,69 @@ export default function SearchResults() {
       containerWidth="lg"
       className="pb-24"
     >
-      {/* 1. HORIZONTAL CATEGORY SELECTOR CAROUSEL */}
-      <div className="mb-3.5">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
-          {categoryList.map((cat) => {
-            const Icon = cat.icon;
-            const isSelected =
-              (category === "All" && cat.name === "All") ||
-              category.toLowerCase() === cat.name.toLowerCase();
+      {/* 1. CATEGORY HEADER (When chosen) OR CATEGORY SELECTOR CAROUSEL (Only when "All") */}
+      {category !== "All" ? (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+                {category}s
+              </h1>
+              <span className="rounded-full bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] border border-black/10 dark:border-white/15 px-2.5 py-0.5 text-xs font-mono font-bold">
+                {matchingWorkers.length} {matchingWorkers.length === 1 ? "pro" : "pros"}
+              </span>
+            </div>
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
+              Verified {category.toLowerCase()} professionals{targetLocality ? ` near ${targetLocality}` : ""}
+            </p>
+          </div>
 
-            return (
-              <button
-                key={cat.name}
-                type="button"
-                onClick={() => handleCategoryChange(cat.name)}
-                className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-subtle ${
-                  isSelected
-                    ? "bg-primary text-white ring-2 ring-primary/30 shadow-soft"
-                    : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/50 hover:bg-[#F6F9FC] dark:hover:bg-[#141414]"
-                }`}
-              >
-                <Icon
-                  size={13}
-                  className={isSelected ? "text-white" : "text-primary"}
-                />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
+          <button
+            type="button"
+            onClick={() => handleCategoryChange("All")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#18191D] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-xs hover:border-black/25 dark:hover:border-white/25 transition cursor-pointer"
+          >
+            <span>All Categories</span>
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+            {categoryList.map((cat) => {
+              const Icon = cat.icon;
+              const isSelected =
+                (category === "All" && cat.name === "All") ||
+                category.toLowerCase() === cat.name.toLowerCase();
 
-      {/* 2. COMPACT TOOLBAR & FILTER STRIP (Decluttered - No giant boxed banner) */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2.5">
+              return (
+                <button
+                  key={cat.name}
+                  type="button"
+                  onClick={() => handleCategoryChange(cat.name)}
+                  className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${
+                    isSelected
+                      ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
+                      : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500"
+                  }`}
+                >
+                  <Icon
+                    size={13}
+                    className={
+                      isSelected
+                        ? "text-current"
+                        : "text-[#71717A] dark:text-[#A1A1AA]"
+                    }
+                  />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 2. COMPACT TOOLBAR & FILTER STRIP */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
         {/* Count and quick filters */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Active Standard Location Pill with GPS trigger */}
@@ -679,16 +711,16 @@ export default function SearchResults() {
             type="button"
             onClick={handleQuickGps}
             disabled={gpsDetecting}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               locality
-                ? "border border-primary/40 bg-primary/10 text-primary dark:text-sky-300"
-                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#67696D] dark:text-[#A1A1AA] hover:border-primary/40"
+                ? "border border-neutral-400 dark:border-neutral-600 bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA]"
+                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA] hover:border-neutral-400"
             }`}
             title="Current search location (Click to refresh via GPS)"
           >
             <MapPin
               size={12}
-              className={locality ? "text-primary" : "text-[#989EA7]"}
+              className={locality ? "text-current" : "text-[#71717A]"}
             />
             <span>
               {gpsDetecting
@@ -703,10 +735,10 @@ export default function SearchResults() {
           <button
             type="button"
             onClick={() => setOnlyAvailableToday(!onlyAvailableToday)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               onlyAvailableToday
-                ? "bg-emerald-500 text-white shadow-soft"
-                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-emerald-400"
+                ? "bg-emerald-600 text-white shadow-md"
+                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-emerald-400"
             }`}
           >
             <span
@@ -718,15 +750,15 @@ export default function SearchResults() {
           <button
             type="button"
             onClick={() => setOnlyVerified(!onlyVerified)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               onlyVerified
-                ? "bg-primary text-white shadow-soft"
-                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/40"
+                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
+                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400"
             }`}
           >
             <BadgeCheck
               size={12}
-              className={onlyVerified ? "text-white" : "text-primary"}
+              className={onlyVerified ? "text-current" : "text-[#71717A]"}
             />
             <span>Verified</span>
           </button>
@@ -734,17 +766,17 @@ export default function SearchResults() {
           <button
             type="button"
             onClick={() => setMinRating4Plus(!minRating4Plus)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-subtle ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               minRating4Plus
-                ? "bg-amber-500 text-white shadow-soft"
-                : "border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-amber-400"
+                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
+                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400"
             }`}
           >
             <Star
               size={11}
               className={
                 minRating4Plus
-                  ? "fill-white text-white"
+                  ? "fill-amber-400 text-amber-400"
                   : "fill-amber-400 text-amber-400"
               }
             />
@@ -756,7 +788,7 @@ export default function SearchResults() {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline cursor-pointer ml-1"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] underline cursor-pointer ml-1"
             >
               <RotateCcw size={11} />
               <span>Reset</span>
@@ -765,14 +797,14 @@ export default function SearchResults() {
         </div>
 
         {/* Segmented Type Switcher (All / Workers / Agencies) */}
-        <div className="inline-flex rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-0.5 text-xs shadow-subtle">
+        <div className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-0.5 text-xs shadow-sm">
           <button
             type="button"
             onClick={() => handleTypeChange("all")}
             className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
               searchType === "all"
-                ? "bg-primary text-white shadow-subtle"
-                : "text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
+                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
             }`}
           >
             All ({matchingWorkers.length + matchingAgencies.length})
@@ -782,8 +814,8 @@ export default function SearchResults() {
             onClick={() => handleTypeChange("workers")}
             className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
               searchType === "workers"
-                ? "bg-primary text-white shadow-subtle"
-                : "text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
+                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
             }`}
           >
             Pros ({matchingWorkers.length})
@@ -794,8 +826,8 @@ export default function SearchResults() {
               onClick={() => handleTypeChange("agencies")}
               className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
                 searchType === "agencies"
-                  ? "bg-primary text-white shadow-subtle"
-                  : "text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+                  ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
+                  : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
               }`}
             >
               Agencies ({matchingAgencies.length})
@@ -804,10 +836,10 @@ export default function SearchResults() {
         </div>
       </div>
 
-      {/* 3. WORKER & AGENCY LISTINGS (Starts directly under the compact header) */}
-      <section className="space-y-3.5">
+      {/* 3. WORKER & AGENCY LISTINGS — Clean Grid presentation as depicted in solutions section */}
+      <section>
         {combined.length ? (
-          <div className="space-y-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {combined.map((item, index) =>
               item.type === "agency" ? (
                 <AgencyCard
@@ -828,14 +860,14 @@ export default function SearchResults() {
           </div>
         ) : (
           /* Empty State */
-          <div className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-8 text-center shadow-soft">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100/15 text-primary mb-3.5">
+          <div className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#111215] p-8 text-center shadow-xs">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] mb-3.5">
               <SearchIcon size={24} />
             </div>
-            <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+            <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
               No Specialists Found
             </h3>
-            <p className="mt-1 text-xs text-[#67696D] dark:text-[#A1A1AA] max-w-sm mx-auto">
+            <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA] max-w-sm mx-auto">
               We couldn't find any{" "}
               {category !== "All" ? category.toLowerCase() : ""} professionals
               matching your current filters
@@ -846,14 +878,14 @@ export default function SearchResults() {
                 <button
                   type="button"
                   onClick={handleResetFilters}
-                  className="inline-flex h-9 items-center justify-center rounded-full bg-primary px-4 text-xs font-bold text-white transition hover:bg-[#157ad4] cursor-pointer shadow-subtle"
+                  className="inline-flex h-9 items-center justify-center rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] px-4 text-xs font-bold transition cursor-pointer shadow-xs"
                 >
                   Clear Filters
                 </button>
               )}
               <Link
                 to="/assistant"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-primary-100/40 bg-primary-100/10 px-4 text-xs font-bold text-primary transition hover:bg-primary-100/20"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/10 px-4 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-black/10 dark:hover:bg-white/15"
               >
                 <Sparkles size={13} />
                 <span>Ask AI Matchmaker</span>
@@ -864,11 +896,11 @@ export default function SearchResults() {
 
         {/* Excluded Candidates Section */}
         {excludedWorkers.length > 0 && (
-          <div className="mt-6 rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 shadow-subtle">
+          <div className="mt-6 rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#111215] p-4 shadow-xs">
             <button
               type="button"
               onClick={() => setShowExcluded(!showExcluded)}
-              className="flex items-center justify-between w-full text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5] cursor-pointer"
+              className="flex items-center justify-between w-full text-xs font-semibold text-[#71717A] hover:text-[#09090B] dark:hover:text-[#FAFAFA] cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
                 <AlertTriangle size={13} className="text-amber-500" />
@@ -883,21 +915,21 @@ export default function SearchResults() {
               )}
             </button>
             {showExcluded && (
-              <div className="mt-3 space-y-2 pt-2 border-t border-[#E7ECF1] dark:border-[#1F1F1F]">
+              <div className="mt-3 space-y-2 pt-2 border-t border-black/[0.08] dark:border-white/[0.08]">
                 {excludedWorkers.map((ex, idx) => (
                   <div
                     key={`${ex.worker_id}-${idx}`}
-                    className="rounded-[12px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] p-2.5 text-xs"
+                    className="rounded-xl border border-black/[0.06] dark:border-white/[0.05] bg-black/[0.02] dark:bg-white/[0.02] p-2.5 text-xs"
                   >
-                    <div className="flex items-center justify-between text-[#67696D] dark:text-[#A1A1AA]">
-                      <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                    <div className="flex items-center justify-between text-[#71717A]">
+                      <span className="font-bold text-[#09090B] dark:text-[#FAFAFA]">
                         Candidate ID: {ex.worker_id}
                       </span>
                       <span className="text-[10px] text-red-600 font-bold">
                         Filtered
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
+                    <p className="mt-1 text-xs text-[#71717A]">
                       {ex.reason}
                     </p>
                   </div>
@@ -921,74 +953,98 @@ function AgencyCard({ agency }: { agency: Agency }) {
     : "";
 
   return (
-    <article className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 transition-all hover:border-primary/40 hover:shadow-soft shadow-subtle">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3.5 min-w-0">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle">
-            {agency.logo_url ? (
-              <img
-                src={agency.logo_url}
-                alt=""
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Building2 size={22} className="text-primary" />
-            )}
-          </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <h3 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">
-                {agency.name}
-              </h3>
-              {agency.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/40 bg-primary-100/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                  <BadgeCheck size={11} className="text-primary" />
-                  Verified Agency
-                </span>
+    <article className="rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#16171B] p-4 sm:p-4.5 shadow-xs flex flex-col justify-between hover:border-black/25 dark:hover:border-white/20 transition-all group">
+      <div>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-neutral-100 dark:bg-[#1C1D22] text-[#09090B] dark:text-[#FAFAFA] shadow-xs">
+              {agency.logo_url ? (
+                <img
+                  src={agency.logo_url}
+                  alt=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Building2 size={20} className="text-current" />
               )}
             </div>
 
-            <p className="mt-0.5 text-xs font-semibold text-primary">
-              {agency.categories.join(" · ")}
-            </p>
-
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#67696D] dark:text-[#A1A1AA]">
-              <span className="inline-flex items-center gap-1 truncate max-w-[200px]">
-                <MapPin size={12} className="text-[#989EA7] shrink-0" />
-                <span className="truncate">
-                  {agency.service_locations.join(", ")}
-                </span>
-              </span>
-              <span className="text-[#989EA7]">·</span>
-              <span className="inline-flex items-center gap-1">
-                <Users size={12} className="text-primary shrink-0" />
-                <span>{agency.team_size_band} Team</span>
-              </span>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h4 className="text-base sm:text-lg font-bold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition">
+                  {agency.name}
+                </h4>
+                {agency.verified && (
+                  <BadgeCheck size={16} className="text-emerald-500 shrink-0" />
+                )}
+              </div>
+              <p className="text-xs sm:text-sm font-medium text-[#71717A] dark:text-[#A1A1AA]">
+                {agency.team_size_band} Team · Agency Hub
+              </p>
             </div>
           </div>
+
+          <span className="inline-flex items-center gap-1 rounded-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 px-2.5 py-0.5 text-xs font-mono font-bold text-[#09090B] dark:text-[#FAFAFA]">
+            Agency
+          </span>
         </div>
 
-        <div className="flex items-center gap-2 pt-2 sm:pt-0">
+        {/* Categories & Locality */}
+        <div className="mt-3 space-y-1.5 text-xs sm:text-[13px]">
+          <div className="flex items-center justify-between text-[#71717A] dark:text-[#A1A1AA]">
+            <span className="flex items-center gap-1 font-mono truncate max-w-[190px]">
+              <MapPin size={12} className="shrink-0" /> {agency.service_locations.join(", ")}
+            </span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Active Agency</span>
+          </div>
+          <p className="text-xs sm:text-[13px] text-[#52525B] dark:text-[#D4D4D8] line-clamp-2 leading-relaxed">
+            {agency.description || agency.categories.join(" · ")}
+          </p>
+        </div>
+
+        {/* Services Tags */}
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {agency.categories.map((cat, idx) => (
+            <span
+              key={idx}
+              className="rounded-md bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/5 px-2 py-0.5 text-xs text-[#52525B] dark:text-[#D4D4D8] font-medium"
+            >
+              {cat}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="mt-3.5 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between gap-2">
+        <Link
+          to={`/agency-profile?agency=${encodeURIComponent(agency.id)}`}
+          className="text-xs sm:text-sm font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline cursor-pointer"
+        >
+          View Agency
+        </Link>
+
+        <div className="flex items-center gap-1.5">
           {whatsappUrl && (
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 sm:h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white transition hover:bg-[#20ba5a] shadow-subtle cursor-pointer sm:flex-initial"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
             >
-              <MessageCircle size={14} />
+              <MessageCircle size={13} />
               <span>WhatsApp</span>
             </a>
           )}
           <Link
             to={`/agency-profile?agency=${encodeURIComponent(agency.id)}`}
-            className="inline-flex h-9 sm:h-10 flex-1 items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-4 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] transition hover:border-primary/50 hover:bg-white dark:hover:bg-[#1E1E1E] hover:text-primary shadow-subtle sm:flex-initial"
+            className="inline-flex items-center gap-1 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
           >
-            <span>View Agency</span>
-            <ArrowRight size={13} />
+            <span>Connect</span>
+            <ArrowRight size={12} />
           </Link>
         </div>
       </div>
@@ -1009,13 +1065,22 @@ function WorkerCard({
   isSaved: boolean;
   onToggleSaved: (e: React.MouseEvent) => void;
 }) {
-  const photos = Array.isArray(
-    (worker as Worker & { work_photos?: string[] }).work_photos,
-  )
-    ? (worker as Worker & { work_photos?: string[] }).work_photos!.filter(
-        Boolean,
-      )
-    : [];
+  const [isRateModalOpen, setIsRateModalOpen] = useState(false);
+  const [ratingStats, setRatingStats] = useState(() =>
+    getComputedWorkerRating(worker)
+  );
+
+  useEffect(() => {
+    const handleRatingUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ workerId: string }>;
+      if (!customEvent.detail || customEvent.detail.workerId === worker.id) {
+        setRatingStats(getComputedWorkerRating(worker));
+      }
+    };
+    window.addEventListener("worker-rating-updated", handleRatingUpdate);
+    return () =>
+      window.removeEventListener("worker-rating-updated", handleRatingUpdate);
+  }, [worker]);
 
   const phone = String(worker.phone || "").replace(/\D/g, "");
   const whatsappUrl = phone
@@ -1024,9 +1089,6 @@ function WorkerCard({
   const phoneHref = `tel:${worker.phone}`;
 
   const isAvailableToday = (worker as any).available_today !== false;
-  const acceptsUrgent = Boolean((worker as any).accepts_urgent);
-  const rating = Number(worker.avg_rating || worker.rating || 4.8);
-  const reviewsCount = Number(worker.reviews_count || 18);
 
   const services = Array.isArray(worker.services)
     ? worker.services.filter(Boolean)
@@ -1057,261 +1119,159 @@ function WorkerCard({
   };
 
   return (
-    <article className="group relative rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 transition-all hover:border-primary/50 hover:shadow-soft shadow-subtle">
-      {/* Top Header Section */}
-      <div className="flex items-start justify-between gap-3">
-        <div
-          onClick={() =>
-            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)
+    <>
+      <article
+        onClick={() => navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`);
           }
-          className="flex flex-1 items-start gap-3.5 min-w-0 cursor-pointer"
-        >
-          {/* Avatar with Status Indicator */}
-          <div className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] text-sm font-bold text-primary shadow-subtle">
-            {worker.photo_url ? (
-              <img
-                src={worker.photo_url}
-                alt={worker.name}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-base">
-                {worker.initials || worker.name.slice(0, 2).toUpperCase()}
-              </span>
-            )}
-            {isAvailableToday && (
-              <span
-                title="Available Today"
-                className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-white dark:border-[#0A0A0A] bg-emerald-500"
-              />
-            )}
-          </div>
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label={`View profile of ${worker.name}`}
+        className="rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#16171B] p-4 sm:p-4.5 shadow-xs flex flex-col justify-between hover:border-black/25 dark:hover:border-white/20 transition-all group cursor-pointer select-none"
+      >
+        <div>
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-3">
+              <div
+                className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] font-extrabold text-sm shadow-xs overflow-hidden"
+              >
+                {worker.photo_url ? (
+                  <img
+                    src={worker.photo_url}
+                    alt={worker.name}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  worker.initials || worker.name.charAt(0)
+                )}
+                {isAvailableToday && (
+                  <span
+                    title="Available Today"
+                    className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#16171B] bg-emerald-500"
+                  />
+                )}
+              </div>
 
-          {/* Details Column */}
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <h3 className="truncate text-base sm:text-lg font-bold text-[#2C2C2C] dark:text-[#F4F4F5] group-hover:text-primary transition-colors">
-                {worker.name}
-              </h3>
-              {worker.phone_verified && (
-                <span
-                  title="Verified Professional"
-                  className="inline-flex items-center gap-1 rounded-full bg-primary-100/15 border border-primary-100/30 px-2 py-0.5 text-[10px] font-bold text-primary shrink-0"
-                >
-                  <BadgeCheck size={11} className="text-primary" />
-                  <span>Verified</span>
-                </span>
-              )}
-              {rankInfo && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/50 bg-primary-100/15 px-2 py-0.5 text-[10px] font-bold text-primary">
-                  <BrainCircuit size={11} />
-                  <span>#{rankInfo.rank} AI Match</span>
-                </span>
-              )}
-            </div>
-
-            {/* Category, Experience & Rating */}
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-bold text-primary">{worker.category}</span>
-              {worker.experience && (
-                <>
-                  <span className="text-[#989EA7]">·</span>
-                  <span className="text-[#67696D] dark:text-[#A1A1AA]">
-                    {worker.experience} exp
-                  </span>
-                </>
-              )}
-              <span className="text-[#989EA7]">·</span>
-              <div className="inline-flex items-center gap-1 font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
-                <Star size={12} className="fill-amber-400 text-amber-400" />
-                <span>{rating.toFixed(1)}</span>
-                <span className="text-[10px] font-normal text-[#67696D] dark:text-[#A1A1AA]">
-                  ({reviewsCount})
-                </span>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h4
+                    className="text-base sm:text-lg font-bold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition"
+                  >
+                    {worker.name}
+                  </h4>
+                  <BadgeCheck size={16} className="text-emerald-500 shrink-0" />
+                </div>
+                <p className="text-xs sm:text-sm font-medium text-[#71717A] dark:text-[#A1A1AA]">
+                  {worker.category} · {worker.experience || "5+ yrs exp"}
+                </p>
               </div>
             </div>
 
-            {/* Locality & Badges Row */}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-              {worker.locality && (
-                <span className="inline-flex items-center gap-1 text-[#67696D] dark:text-[#A1A1AA] font-medium mr-1">
-                  <MapPin size={12} className="shrink-0 text-primary" />
-                  <span className="truncate">{worker.locality}</span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsRateModalOpen(true);
+                }}
+                title="Click to rate this professional"
+                className="group/rate flex items-center gap-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 px-2 py-0.5 text-xs sm:text-sm font-bold font-mono text-amber-700 dark:text-amber-400 transition cursor-pointer border border-amber-500/20"
+                aria-label={`Rating: ${ratingStats.rating.toFixed(1)}. Click to rate ${worker.name}`}
+              >
+                <Star size={12} className="fill-amber-400 text-amber-400 group-hover/rate:scale-110 transition-transform" />
+                <span>{ratingStats.rating.toFixed(1)}</span>
+                <span className="text-[10px] sm:text-xs font-normal opacity-80">
+                  ({ratingStats.reviewsCount})
                 </span>
-              )}
+              </button>
+              <button
+                type="button"
+                onClick={onToggleSaved}
+                className="text-[#71717A] hover:text-rose-500 transition p-1 cursor-pointer"
+                aria-label={isSaved ? `Unsave ${worker.name}` : `Save ${worker.name}`}
+              >
+                <Heart
+                  size={15}
+                  className={isSaved ? "text-rose-500 fill-rose-500" : ""}
+                />
+              </button>
+            </div>
+          </div>
 
-              {isAvailableToday ? (
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Available Today
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-2 py-0.5 text-[10px] font-semibold text-[#67696D] dark:text-[#A1A1AA]">
-                  <Clock size={10} />
-                  Busy
-                </span>
-              )}
+          {/* Meta info */}
+          <div className="mt-3 space-y-1.5 text-xs sm:text-[13px]">
+            <div className="flex items-center justify-between text-[#71717A] dark:text-[#A1A1AA]">
+              <span className="flex items-center gap-1 font-mono truncate max-w-[190px]">
+                <MapPin size={12} className="shrink-0" /> {worker.locality || "Local area"}
+              </span>
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                {isAvailableToday ? "Available Today" : "Free tomorrow"}
+              </span>
+            </div>
+            <p className="text-xs sm:text-[13px] text-[#52525B] dark:text-[#D4D4D8] line-clamp-2 leading-relaxed">
+              {worker.about || "Verified home service professional with guaranteed workmanship."}
+            </p>
+          </div>
 
-              {acceptsUrgent && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/30 bg-primary-100/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                  <Sparkles size={10} />
-                  Urgent Requests
+          {/* Services Tags */}
+          {services.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {services.slice(0, 3).map((s, idx) => (
+                <span
+                  key={idx}
+                  className="rounded-md bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/5 px-2 py-0.5 text-xs text-[#52525B] dark:text-[#D4D4D8] font-medium"
+                >
+                  {s}
+                </span>
+              ))}
+              {services.length > 3 && (
+                <span className="text-xs text-[#71717A] dark:text-[#A1A1AA] self-center">
+                  +{services.length - 3} more
                 </span>
               )}
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Top Right Quick Contact & Bookmark Buttons */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {/* Quick Call Icon Button */}
-          <button
-            type="button"
-            onClick={handleQuickCall}
-            title={`Call ${worker.name}`}
-            aria-label={`Call ${worker.name}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary hover:text-primary transition shadow-subtle active:scale-95 cursor-pointer"
-          >
-            <Phone size={13} />
-          </button>
-
-          {/* Quick WhatsApp Icon Button */}
+        {/* Actions */}
+        <div className="mt-3.5 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center gap-2">
           {whatsappUrl && (
             <button
               type="button"
               onClick={handleQuickWhatsApp}
-              title={`WhatsApp ${worker.name}`}
-              aria-label={`WhatsApp ${worker.name}`}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white transition shadow-subtle active:scale-95 cursor-pointer"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white py-2 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
             >
               <MessageCircle size={13} />
+              <span>WhatsApp</span>
             </button>
           )}
-
-          {/* Bookmark / Heart Toggle Button */}
           <button
             type="button"
-            onClick={onToggleSaved}
-            aria-label={
-              isSaved
-                ? `Remove ${worker.name} from saved`
-                : `Save ${worker.name}`
-            }
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] text-[#67696D] dark:text-[#A1A1AA] transition hover:border-primary hover:text-primary cursor-pointer shadow-subtle active:scale-95"
+            onClick={handleQuickCall}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] py-2 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
           >
-            <Heart
-              size={14}
-              className={
-                isSaved ? "text-primary fill-primary" : "text-[#989EA7]"
-              }
-            />
+            <Phone size={12} />
+            <span>Call</span>
           </button>
         </div>
-      </div>
+      </article>
 
-      {/* Services Chips List */}
-      {services.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {services.slice(0, 4).map((service, sIdx) => (
-            <span
-              key={`${service}-${sIdx}`}
-              className="inline-flex items-center rounded-full bg-[#F6F9FC] dark:bg-[#141414] border border-[#E7ECF1] dark:border-[#1F1F1F] px-2.5 py-0.5 text-[10px] font-semibold text-[#67696D] dark:text-[#A1A1AA]"
-            >
-              #{service}
-            </span>
-          ))}
-          {services.length > 4 && (
-            <span className="text-[10px] font-semibold text-[#989EA7] self-center">
-              +{services.length - 4} more
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* AI Reasoning Rank Explanation Banner */}
-      {rankInfo && (
-        <div className="mt-3 rounded-[14px] border border-primary-100/40 bg-primary-100/10 p-2.5 text-xs text-[#2C2C2C] dark:text-[#F4F4F5]">
-          <div className="flex items-start gap-2">
-            <BrainCircuit size={14} className="text-primary shrink-0 mt-0.5" />
-            <div className="min-w-0 flex-1 space-y-0.5">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-primary">
-                  Why this recommendation (#{rankInfo.rank}):
-                </span>
-                <span className="text-[10px] text-[#67696D] dark:text-[#A1A1AA] font-bold">
-                  Fit Score: {rankInfo.score}/100
-                </span>
-              </div>
-              <p className="text-[11px] text-[#67696D] dark:text-[#D4D4D8] leading-relaxed">
-                {rankInfo.reason}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Optional Work Photos Showcase */}
-      {photos.length > 0 && (
-        <div
-          onClick={() =>
-            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)
-          }
-          className="mt-3 grid grid-cols-3 gap-2 cursor-pointer"
-        >
-          {photos.slice(0, 3).map((photo, index) => (
-            <div
-              key={`${photo}-${index}`}
-              className="relative h-20 overflow-hidden rounded-[14px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] shadow-subtle"
-            >
-              <img
-                src={photo}
-                alt=""
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                className="h-full w-full object-cover"
-              />
-              {index === 2 && photos.length > 3 && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs font-bold text-white">
-                  +{photos.length - 3}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Action Buttons Row */}
-      <div className="mt-3.5 pt-3 border-t border-[#E7ECF1] dark:border-[#1F1F1F] flex items-center gap-2">
-        {whatsappUrl && (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            onClick={(e) => {
-              void logContactEvent(worker.id, "whatsapp");
-              void logAnalyticsEvent("whatsapp_click", worker.id, {
-                source: "card_bottom_action",
-              });
-            }}
-            className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full bg-[#25D366] px-4 text-xs font-bold text-white transition hover:bg-[#20ba5a] cursor-pointer shadow-subtle active:scale-[0.98]"
-          >
-            <MessageCircle size={14} />
-            <span>WhatsApp</span>
-          </a>
-        )}
-        <button
-          type="button"
-          onClick={() =>
-            navigate(`/worker?worker=${encodeURIComponent(worker.id)}`)
-          }
-          className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-4 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] transition hover:border-primary/50 hover:bg-white dark:hover:bg-[#1E1E1E] hover:text-primary cursor-pointer shadow-subtle active:scale-[0.98]"
-        >
-          <span>View Profile</span>
-          <ArrowRight size={13} />
-        </button>
-      </div>
-    </article>
+      {/* Customer Rating Modal */}
+      <RateWorkerModal
+        worker={worker}
+        isOpen={isRateModalOpen}
+        onClose={() => setIsRateModalOpen(false)}
+        onRatingSuccess={() => {
+          setRatingStats(getComputedWorkerRating(worker));
+        }}
+      />
+    </>
   );
 }

@@ -13,9 +13,9 @@ export default {
     extend: {
       colors: {
         ink: "hsl(var(--foreground))",
-        navy: "#1D90F3",
-        teal: "#38A3FF",
-        mint: "#5DB1F8",
+        navy: "#18181B",
+        teal: "#27272A",
+        mint: "#71717A",
         slate: "hsl(var(--muted-foreground))",
         line: "hsl(var(--border))",
         border: "hsl(var(--border))",
@@ -77,15 +77,16 @@ export default {
       },
       borderRadius: {
         card: "16px",
-        modal: "20px",
+        modal: "24px",
         input: "12px",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 4px)",
         sm: "calc(var(--radius) - 8px)",
       },
       boxShadow: {
-        soft: "0 2px 8px rgba(0, 0, 0, 0.04)",
-        subtle: "0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)",
+        soft: "0 2px 10px rgba(0, 0, 0, 0.03)",
+        subtle: "0 1px 2px rgba(0, 0, 0, 0.03)",
+        glow: "0 0 20px -5px rgba(0, 0, 0, 0.1)",
       },
       keyframes: {
         "accordion-down": {

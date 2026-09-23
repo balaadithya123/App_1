@@ -261,10 +261,10 @@ export default function WorkerDashboard() {
     <PageShell hideBack hideHome>
       <div className="mx-auto max-w-4xl space-y-4">
         {/* Worker Profile Header Card */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+        <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3.5 min-w-0">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-[#2C2C2C] shadow-subtle">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] shadow-sm">
                 {avatar ? (
                   <img
                     src={avatar}
@@ -272,30 +272,30 @@ export default function WorkerDashboard() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <UserRound size={24} className="text-primary" />
+                  <UserRound size={24} className="text-[#09090B] dark:text-[#FAFAFA]" />
                 )}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#67696D]">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
                     Worker Dashboard
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/50 bg-primary-100/15 px-2.5 py-0.5 text-[10px] font-semibold text-primary">
-                    <BadgeCheck size={12} className="text-primary" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2.5 py-0.5 text-[10px] font-semibold text-[#09090B] dark:text-[#FAFAFA]">
+                    <BadgeCheck size={12} className="text-emerald-500" />
                     Verified Pro
                   </span>
                 </div>
-                <h1 className="mt-0.5 truncate text-xl font-bold tracking-tight text-[#2C2C2C] sm:text-2xl">
+                <h1 className="mt-0.5 truncate text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA] sm:text-2xl">
                   {name}
                 </h1>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#67696D]">
-                  <span className="flex items-center gap-1 text-primary font-semibold">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+                  <span className="flex items-center gap-1 text-[#09090B] dark:text-[#FAFAFA] font-semibold">
                     <BriefcaseBusiness size={13} />
                     {category}
                   </span>
                   <span>·</span>
                   <span className="flex items-center gap-1">
-                    <MapPin size={13} className="text-[#989EA7]" />
+                    <MapPin size={13} className="text-[#71717A] dark:text-[#A1A1AA]" />
                     {location}
                   </span>
                 </div>
@@ -306,7 +306,7 @@ export default function WorkerDashboard() {
               <button
                 type="button"
                 onClick={() => navigate("/profile")}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E7ECF1] bg-white px-4 text-xs font-semibold text-primary transition hover:bg-[#F6F9FC] hover:border-primary/50 shadow-subtle cursor-pointer active:scale-95"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] hover:border-neutral-400 dark:hover:border-neutral-500 shadow-sm cursor-pointer active:scale-95"
               >
                 <Edit3 size={13} />
                 <span>Edit Profile</span>
@@ -341,16 +341,16 @@ export default function WorkerDashboard() {
         />
 
         {/* Availability Management Panel */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+        <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100/20 text-primary">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAFAFA] dark:bg-[#09090B] border border-[#E4E4E7] dark:border-[#27272A] text-[#09090B] dark:text-[#FAFAFA]">
               <CalendarDays size={16} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-[#2C2C2C]">
+              <h2 className="text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
                 Availability & Scheduling
               </h2>
-              <p className="text-xs text-[#67696D]">
+              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
                 Control when clients see you as available.
               </p>
             </div>
@@ -359,21 +359,21 @@ export default function WorkerDashboard() {
           {error && (
             <p
               role="alert"
-              className="mt-3 rounded-[12px] border border-rose-500/20 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600"
+              className="mt-3 rounded-[12px] border border-rose-500/20 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400"
             >
               {error}
             </p>
           )}
 
           {/* Today's Availability Switch */}
-          <div className="mt-4 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
+          <div className="mt-4 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0">
                 <span
                   className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
                     availableToday && !isAway
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
-                      : "border-[#E7ECF1] bg-white text-[#989EA7]"
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      : "border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA]"
                   }`}
                 >
                   {availableToday && !isAway ? (
@@ -383,14 +383,14 @@ export default function WorkerDashboard() {
                   )}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-[#2C2C2C] sm:text-sm">
+                  <p className="truncate text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] sm:text-sm">
                     {isAway
                       ? `Away until ${formatDate(awayUntil)}`
                       : availableToday
                         ? "Available for work today"
                         : "Currently busy today"}
                   </p>
-                  <p className="mt-0.5 text-xs text-[#67696D]">
+                  <p className="mt-0.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                     {isAway
                       ? "Your availability automatically resumes after this away window."
                       : availableToday
@@ -410,13 +410,15 @@ export default function WorkerDashboard() {
                   disabled={saving}
                   className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
                     availableToday
-                      ? "bg-primary"
-                      : "bg-[#E7ECF1] border border-[#E7ECF1]"
+                      ? "bg-black dark:bg-white"
+                      : "bg-[#E4E4E7] dark:bg-[#27272A]"
                   }`}
                 >
                   <span
-                    className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
-                      availableToday ? "translate-x-5" : "translate-x-0.5"
+                    className={`block h-5 w-5 rounded-full shadow-xs transition-transform ${
+                      availableToday
+                        ? "translate-x-5 bg-white dark:bg-black"
+                        : "translate-x-0.5 bg-white dark:bg-[#71717A]"
                     }`}
                   />
                 </button>
@@ -425,21 +427,21 @@ export default function WorkerDashboard() {
           </div>
 
           {/* Urgent / Same-Day Work Option */}
-          <div className="mt-3 flex items-center justify-between rounded-[12px] border border-[#E7ECF1] bg-white p-3.5 shadow-subtle">
+          <div className="mt-3 flex items-center justify-between rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 shadow-sm">
             <div className="flex items-center gap-2.5 min-w-0">
               <Flame
                 size={15}
                 className={
                   urgent && !todayIsUnavailable
-                    ? "text-primary"
-                    : "text-[#989EA7]"
+                    ? "text-amber-500"
+                    : "text-[#71717A] dark:text-[#A1A1AA]"
                 }
               />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#2C2C2C]">
+                <p className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
                   Urgent / same-day jobs
                 </p>
-                <p className="text-[11px] text-[#67696D]">
+                <p className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
                   {todayIsUnavailable
                     ? "Enable 'Available today' first to accept emergency jobs."
                     : "Show an urgent badge to employers needing immediate assistance."}
@@ -454,51 +456,51 @@ export default function WorkerDashboard() {
               aria-label="Toggle urgent work status"
               className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
                 urgent && !todayIsUnavailable
-                  ? "bg-primary"
-                  : "bg-[#E7ECF1] border border-[#E7ECF1]"
+                  ? "bg-black dark:bg-white"
+                  : "bg-[#E4E4E7] dark:bg-[#27272A]"
               }`}
             >
               <span
-                className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
+                className={`block h-5 w-5 rounded-full shadow-xs transition-transform ${
                   urgent && !todayIsUnavailable
-                    ? "translate-x-5"
-                    : "translate-x-0.5"
+                    ? "translate-x-5 bg-white dark:bg-black"
+                    : "translate-x-0.5 bg-white dark:bg-[#71717A]"
                 }`}
               />
             </button>
           </div>
 
           {/* Away Mode Range Box */}
-          <div className="mt-3 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-3.5">
+          <div className="mt-3 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3.5">
             <div className="flex items-center gap-2">
-              <Plane size={14} className="text-[#67696D]" />
-              <p className="text-xs font-bold text-[#2C2C2C]">
+              <Plane size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
+              <p className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
                 Away Window / Vacation
               </p>
             </div>
-            <p className="mt-0.5 text-[11px] text-[#67696D]">
+            <p className="mt-0.5 text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
               Select date ranges when you will be out of town or taking leave.
             </p>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <label className="text-[11px] font-semibold text-[#67696D]">
+              <label className="text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
                 From
                 <input
                   type="date"
                   min={tomorrow}
                   value={awayFrom}
                   onChange={(e) => setAwayFrom(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-2.5 text-xs text-[#2C2C2C] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2.5 text-xs text-[#09090B] dark:text-[#FAFAFA] outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
                 />
               </label>
-              <label className="text-[11px] font-semibold text-[#67696D]">
+              <label className="text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
                 Until
                 <input
                   type="date"
                   min={awayFrom || tomorrow}
                   value={awayUntil}
                   onChange={(e) => setAwayUntil(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-2.5 text-xs text-[#2C2C2C] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2.5 text-xs text-[#09090B] dark:text-[#FAFAFA] outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
                 />
               </label>
             </div>
@@ -510,7 +512,7 @@ export default function WorkerDashboard() {
                 disabled={
                   !awayFrom || !awayUntil || awayUntil < awayFrom || saving
                 }
-                className="inline-flex h-8 items-center rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
+                className="inline-flex h-8 items-center rounded-full bg-black text-white dark:bg-white dark:text-black px-4 text-xs font-semibold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-50 cursor-pointer"
               >
                 Set away window
               </button>
@@ -519,7 +521,7 @@ export default function WorkerDashboard() {
                   type="button"
                   onClick={clearAway}
                   disabled={saving}
-                  className="inline-flex h-8 items-center rounded-full border border-[#E7ECF1] bg-white px-4 text-xs font-semibold text-[#2C2C2C] transition hover:bg-[#F6F9FC] cursor-pointer"
+                  className="inline-flex h-8 items-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] cursor-pointer"
                 >
                   Clear
                 </button>
@@ -533,92 +535,92 @@ export default function WorkerDashboard() {
           <button
             type="button"
             onClick={() => navigate("/worker-commitments")}
-            className="group flex items-center justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 text-left transition hover:border-primary/40 hover:shadow-soft cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 text-left transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-sm cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
                 <ClipboardList size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#2C2C2C]">
+                <strong className="block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
                   Commitments
                 </strong>
-                <span className="text-[11px] text-[#67696D]">Job schedule</span>
+                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">Job schedule</span>
               </div>
             </div>
             <ChevronRight
               size={13}
-              className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]"
+              className="text-[#71717A] dark:text-[#A1A1AA] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
             />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/callback-requests")}
-            className="group flex items-center justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 text-left transition hover:border-primary/40 hover:shadow-soft cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 text-left transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-sm cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
                 <ClipboardList size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#2C2C2C]">
+                <strong className="block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
                   Callbacks {callbackCount > 0 && `(${callbackCount})`}
                 </strong>
-                <span className="text-[11px] text-[#67696D]">Direct leads</span>
+                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">Direct leads</span>
               </div>
             </div>
             <ChevronRight
               size={13}
-              className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]"
+              className="text-[#71717A] dark:text-[#A1A1AA] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
             />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/profile")}
-            className="group flex items-center justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 text-left transition hover:border-primary/40 hover:shadow-soft cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 text-left transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-sm cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
                 <Edit3 size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#2C2C2C]">
+                <strong className="block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
                   Profile Details
                 </strong>
-                <span className="text-[11px] text-[#67696D]">
+                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
                   Skills & rates
                 </span>
               </div>
             </div>
             <ChevronRight
               size={13}
-              className="text-[#989EA7] transition group-hover:translate-x-0.5 group-hover:text-[#2C2C2C]"
+              className="text-[#71717A] dark:text-[#A1A1AA] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
             />
           </button>
 
           <button
             type="button"
             onClick={logout}
-            className="group flex items-center justify-between rounded-[16px] border border-rose-500/20 bg-rose-50/50 p-3.5 text-left transition hover:bg-rose-50 hover:border-rose-500/30 cursor-pointer"
+            className="group flex items-center justify-between rounded-[16px] border border-rose-500/20 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 text-left transition hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-500/30 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-500/20 bg-rose-100/50 text-rose-600">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-500/20 bg-rose-100/50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
                 <LogOut size={15} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-rose-700">
+                <strong className="block text-xs font-bold text-rose-700 dark:text-rose-300">
                   Sign Out
                 </strong>
-                <span className="text-[11px] text-rose-600/80">
+                <span className="text-[11px] text-rose-600/80 dark:text-rose-400/80">
                   End session
                 </span>
               </div>
             </div>
             <ChevronRight
               size={13}
-              className="text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-rose-600"
+              className="text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-rose-600 dark:group-hover:text-rose-300"
             />
           </button>
         </section>

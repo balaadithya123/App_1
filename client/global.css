@@ -1,290 +1,297 @@
 /** @import must precede all other statements */
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
 @layer base {
   :root {
-    /* Explicit Color Tokens */
-    --color-primary-100: #5db1f8; /* light blue — subtle highlights, hover backgrounds */
-    --color-primary-500: #38a3ff; /* mid blue — secondary actions, links, active icons */
-    --color-primary-600: #1d90f3; /* core blue — primary buttons, active nav state, focus rings */
+    /* Explicit Color Tokens — Sleek ChatGPT / Gemini Aesthetic */
+    --color-primary-100: #f4f4f5; /* light zinc container */
+    --color-primary-500: #27272a; /* medium zinc */
+    --color-primary-600: #09090b; /* deep obsidian primary */
 
-    --color-neutral-300: #989ea7; /* placeholder text, disabled states, dividers */
-    --color-neutral-500: #67696d; /* secondary/body text */
-    --color-neutral-900: #2c2c2c; /* headings, primary text */
+    --color-neutral-300: #a1a1aa; /* placeholder text, disabled states, dividers */
+    --color-neutral-500: #71717a; /* secondary/body text */
+    --color-neutral-900: #09090b; /* headings, primary text */
 
     --color-surface: #ffffff; /* cards, sheets, modals */
-    --color-background: #f6f9fc; /* page background — light blue-gray */
-    --color-border: #e7ecf1; /* hairline borders, card outlines */
+    --color-background: #fafafa; /* page background — sleek neutral */
+    --color-border: #e4e4e7; /* crisp hairline borders */
 
     /* WhatsApp Green standard token */
-    --color-whatsapp: #25d366;
-    --color-whatsapp-hover: #20ba5a;
+    --color-whatsapp: #128C7E;
+    --color-whatsapp-hover: #075E54;
 
-    /* Theme mappings (HSL) for Tailwind compatibility */
-    --background: 210 43% 98%; /* #F6F9FC */
-    --foreground: 0 0% 17%; /* #2C2C2C */
+    /* Theme mappings (HSL) */
+    --background: 0 0% 98%; /* #FAFAFA */
+    --foreground: 240 10% 4%; /* #09090B */
 
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 0 0% 17%; /* #2C2C2C */
+    --card-foreground: 240 10% 4%; /* #09090B */
 
     --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 0 0% 17%; /* #2C2C2C */
+    --popover-foreground: 240 10% 4%; /* #09090B */
 
-    /* Primary: #1D90F3 (Core Blue) */
-    --primary: 208 90% 53%;
+    /* Primary: Deep Obsidian (#09090B) */
+    --primary: 240 10% 4%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: very soft cool neutral */
-    --secondary: 210 25% 96%;
-    --secondary-foreground: 0 0% 17%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 4%;
 
-    /* Muted: #67696D */
-    --muted: 210 25% 95%;
-    --muted-foreground: 225 3% 42%;
+    /* Muted */
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
 
-    --accent: 208 90% 53%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 10% 4%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 25% 93%; /* #E7ECF1 */
-    --input: 210 25% 93%; /* #E7ECF1 */
-    --ring: 208 90% 53%; /* #1D90F3 */
+    --border: 240 6% 90%; /* #E4E4E7 */
+    --input: 240 6% 90%; /* #E4E4E7 */
+    --ring: 240 10% 4%;
     --radius: 1rem; /* 16px base card radius */
   }
 
   .dark {
-    --color-primary-100: #1a365d; /* dark blue highlight container */
-    --color-primary-500: #38a3ff; /* mid blue */
-    --color-primary-600: #1d90f3; /* core blue */
+    --color-primary-100: #27272a; /* dark zinc container */
+    --color-primary-500: #e4e4e7; /* light zinc */
+    --color-primary-600: #fafafa; /* crisp off-white primary */
 
     --color-neutral-300: #71717a; /* placeholders & subtle dividers */
     --color-neutral-500: #a1a1aa; /* secondary text */
-    --color-neutral-900: #f4f4f5; /* primary text */
+    --color-neutral-900: #fafafa; /* primary text */
 
-    --color-surface: #0a0a0a; /* card surface: deep pitch dark */
-    --color-background: #000000; /* page background: pure black */
-    --color-border: #1f1f1f; /* hairline border */
+    --color-surface: #141416; /* card surface: deep obsidian */
+    --color-background: #09090b; /* page background: sleek dark */
+    --color-border: #27272a; /* hairline border */
 
     /* WhatsApp Green standard token */
-    --color-whatsapp: #25d366;
-    --color-whatsapp-hover: #20ba5a;
+    --color-whatsapp: #128C7E;
+    --color-whatsapp-hover: #075E54;
 
-    /* Theme mappings (HSL) for pure black OLED dark mode */
-    --background: 0 0% 0%; /* #000000 Pure Black */
-    --foreground: 0 0% 96%; /* #F4F4F5 */
+    /* Theme mappings (HSL) for Gemini/ChatGPT Dark mode */
+    --background: 240 10% 4%; /* #09090B */
+    --foreground: 0 0% 98%; /* #FAFAFA */
 
-    --card: 0 0% 4%; /* #0A0A0A */
-    --card-foreground: 0 0% 96%; /* #F4F4F5 */
+    --card: 240 7% 8%; /* #141416 */
+    --card-foreground: 0 0% 98%; /* #FAFAFA */
 
-    --popover: 0 0% 4%; /* #0A0A0A */
-    --popover-foreground: 0 0% 96%; /* #F4F4F5 */
+    --popover: 240 7% 8%; /* #141416 */
+    --popover-foreground: 0 0% 98%; /* #FAFAFA */
 
-    --primary: 208 90% 53%; /* #1D90F3 */
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 98%; /* #FAFAFA */
+    --primary-foreground: 240 10% 4%; /* #09090B */
 
-    --secondary: 0 0% 9%; /* #171717 */
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 240 4% 16%; /* #27272A */
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 9%; /* #171717 */
+    --muted: 240 4% 16%; /* #27272A */
     --muted-foreground: 240 5% 65%; /* #A1A1AA */
 
-    --accent: 208 90% 53%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14%; /* #242424 */
-    --input: 0 0% 14%; /* #242424 */
-    --ring: 208 90% 53%;
+    --border: 240 4% 16%; /* #27272A */
+    --input: 240 4% 16%; /* #27272A */
+    --ring: 0 0% 98%;
 
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 208 90% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 9%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 208 90% 53%;
+    --sidebar-background: 240 10% 4%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 10% 4%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 16%;
+    --sidebar-ring: 0 0% 98%;
   }
 
   * {
-    @apply border-border;
-  }
-
-  html,
-  body,
-  #root {
-    min-height: 100%;
+    border-color: var(--border);
+    font-feature-settings:
+      "cv02", "cv03", "cv04", "cv11", "ss01", "ss02";
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-neutral-900);
     font-family:
-      "Manrope",
+      "Plus Jakarta Sans",
+      "Inter",
       -apple-system,
       BlinkMacSystemFont,
       "Segoe UI",
       Roboto,
+      Helvetica,
+      Arial,
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    letter-spacing: -0.015em;
   }
 
-  :where(input, textarea, select) {
-    color-scheme: light;
+  /* Resend-inspired subtle dot matrix & atmospheric glow */
+  .resend-grid-bg {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  .dark .resend-grid-bg {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 
-  html.dark :where(input, textarea, select) {
-    color-scheme: dark;
+  /* Resend-inspired sleek top light cone */
+  .resend-spotlight {
+    background: radial-gradient(ellipse 60% 30% at 50% -5%, rgba(0, 0, 0, 0.03), transparent 70%);
+  }
+  .dark .resend-spotlight {
+    background: radial-gradient(ellipse 60% 30% at 50% -5%, rgba(255, 255, 255, 0.06), transparent 70%);
   }
 
-  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+  /* Resend-style card surface & inner highlight */
+  .resend-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .dark .resend-card {
+    background-color: #0d0d10;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  }
+  .resend-card:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+  .dark .resend-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
   }
 
-  pre,
-  code {
-    overflow-x: auto;
-    white-space: pre;
+  /* Resend-style obsidian button with top specular highlight */
+  .resend-btn-primary {
+    background-color: #09090b;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  .dark .resend-btn-primary {
+    background-color: #fafafa;
+    color: #09090b;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.8), 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  /* Responsive container baseline */
+  .app-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .app-container {
+      max-width: 640px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .app-container {
+      max-width: 768px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .app-container {
+      max-width: 1024px;
+    }
   }
 
   /* Smooth focus ring outline standard */
   :focus-visible {
-    outline: 2px solid #1d90f3;
+    outline: 2px solid currentColor;
     outline-offset: 2px;
   }
 }
 
-/* Typography scale utilities based on design brief */
-.font-title-1 {
-  font-size: 36px;
-  line-height: 50px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #2c2c2c;
+/* Custom scrollbar suppression for horizontal swipe containers */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.font-heading-1 {
-  font-size: 24px;
-  line-height: 36px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: #2c2c2c;
-}
-
-.font-heading-2 {
-  font-size: 21px;
-  line-height: 30px;
-  font-weight: 700;
-  color: #2c2c2c;
-}
-
-.font-body-1 {
-  font-size: 15px;
-  line-height: 24px;
-  font-weight: 500;
-  color: #2c2c2c;
-}
-
-.font-body-2 {
-  font-size: 14px;
-  line-height: 21px;
-  font-weight: 400;
-  color: #67696d;
-}
-
-.font-body-meta {
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 400;
-  color: #67696d;
-}
-
-/* Dark mode typography */
-html.dark .font-title-1,
-html.dark .font-heading-1,
-html.dark .font-heading-2,
-html.dark .font-body-1 {
-  color: #f4f4f5;
-}
-
-html.dark .font-body-2,
-html.dark .font-body-meta {
-  color: #a1a1aa;
-}
-
-/* Soft shadows */
-.shadow-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.shadow-soft {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.shadow-subtle {
+/* 3D Claymorphic and Soft Neumorphic Utilities */
+.clay-card {
+  background: #ffffff;
+  border-radius: 28px;
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.02);
+    0 20px 45px -15px rgba(15, 23, 42, 0.08),
+    0 4px 12px -2px rgba(15, 23, 42, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
-
-/* Pure Black Dark Mode Overrides for hardcoded utility classes */
-html.dark {
-  color-scheme: dark;
-  background-color: #000000;
-  color: #f4f4f5;
-}
-
-html.dark body {
-  background-color: #000000;
-  color: #f4f4f5;
-}
-
-html.dark header,
-html.dark [role="banner"],
-html.dark .bg-white\/95,
-html.dark .bg-white\/90,
-html.dark .bg-white\/80 {
-  background-color: rgba(0, 0, 0, 0.95) !important;
-  border-color: #1f1f1f !important;
-}
-
-html.dark .bg-\[\#F6F9FC\] {
-  background-color: #0c0c0c !important;
-}
-
-html.dark .bg-white {
-  background-color: #050505 !important;
-}
-
-html.dark .border-\[\#E7ECF1\] {
-  border-color: #1f1f1f !important;
-}
-
-html.dark .text-\[\#2C2C2C\] {
-  color: #f4f4f5 !important;
-}
-
-html.dark .text-\[\#67696D\] {
-  color: #a1a1aa !important;
-}
-
-html.dark .text-\[\#989EA7\] {
-  color: #71717a !important;
-}
-
-html.dark .shadow-card,
-html.dark .shadow-soft,
-html.dark .shadow-subtle {
+.dark .clay-card {
+  background: #111215;
+  border-radius: 28px;
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
+    0 20px 45px -15px rgba(0, 0, 0, 0.5),
+    0 4px 12px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+.clay-tile {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow:
+    0 14px 28px -6px rgba(15, 23, 42, 0.1),
+    0 6px 12px -3px rgba(15, 23, 42, 0.05),
+    inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.dark .clay-tile {
+  background: #18191D;
+  box-shadow:
+    0 14px 28px -6px rgba(0, 0, 0, 0.4),
+    0 6px 12px -3px rgba(0, 0, 0, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clay-blue {
+  background: linear-gradient(180deg, #2563EB 0%, #1D4ED8 100%);
+  border-radius: 28px;
+  box-shadow:
+    0 25px 50px -12px rgba(37, 99, 235, 0.45),
+    0 8px 20px -4px rgba(37, 99, 235, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.animate-float-slow {
+  animation: gentleFloat 5s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: gentleFloat 6s ease-in-out 1.5s infinite;
+}
+

@@ -513,7 +513,7 @@ export default function AdminDashboard() {
                         className={`rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer transition shadow-subtle ${
                           agency.verified
                             ? "border border-[#E7ECF1] bg-white text-[#67696D] hover:bg-[#F6F9FC]"
-                            : "bg-primary text-white hover:bg-[#157ad4]"
+                            : "bg-primary text-white hover:bg-[#0f766e]"
                         }`}
                       >
                         {agency.verified
@@ -719,7 +719,7 @@ export default function AdminDashboard() {
                         className={`rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer transition shadow-subtle ${
                           w.phone_verified
                             ? "border border-[#E7ECF1] bg-white text-[#67696D] hover:bg-[#F6F9FC]"
-                            : "bg-primary text-white hover:bg-[#157ad4]"
+                            : "bg-primary text-white hover:bg-[#0f766e]"
                         }`}
                       >
                         {w.phone_verified
@@ -835,7 +835,7 @@ export default function AdminDashboard() {
                       onClick={() =>
                         updateCallbackStatus(callback.id, "closed")
                       }
-                      className="rounded-full bg-primary px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#157ad4] shadow-subtle transition cursor-pointer"
+                      className="rounded-full bg-primary px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#0f766e] shadow-subtle transition cursor-pointer"
                     >
                       Resolved
                     </button>

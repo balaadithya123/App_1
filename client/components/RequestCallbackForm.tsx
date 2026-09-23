@@ -176,7 +176,7 @@ export default function RequestCallbackForm({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 w-full items-center justify-center rounded-full bg-primary text-xs font-bold text-white transition hover:bg-[#157ad4] shadow-subtle cursor-pointer active:scale-95"
+              className="inline-flex h-10 w-full items-center justify-center rounded-full bg-primary text-xs font-bold text-white transition hover:bg-[#0f766e] shadow-subtle cursor-pointer active:scale-95"
             >
               Done
             </button>
@@ -280,7 +280,7 @@ export default function RequestCallbackForm({
             <button
               type="submit"
               disabled={saving}
-              className="flex h-10 w-full items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-subtle transition hover:bg-[#157ad4] disabled:opacity-60 cursor-pointer active:scale-95"
+              className="flex h-10 w-full items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-subtle transition hover:bg-[#0f766e] disabled:opacity-60 cursor-pointer active:scale-95"
             >
               {saving ? "Sending Request..." : "Submit Callback Request"}
             </button>

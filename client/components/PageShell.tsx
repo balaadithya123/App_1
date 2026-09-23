@@ -35,10 +35,10 @@ interface PageShellProps {
 }
 
 const maxWidthMap = {
-  sm: "max-w-xl", // ~576px
-  md: "max-w-3xl", // ~768px (default)
-  lg: "max-w-5xl", // ~1024px
-  xl: "max-w-7xl", // ~1280px
+  sm: "max-w-xl",
+  md: "max-w-3xl",
+  lg: "max-w-5xl",
+  xl: "max-w-7xl",
   full: "max-w-full",
 };
 
@@ -117,11 +117,11 @@ export default function PageShell({
 
   const brand = (
     <div className="flex items-center gap-2 group">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white font-bold text-sm shadow-subtle">
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-extrabold text-sm shadow-sm transition-transform group-hover:scale-105">
         L
       </span>
-      <span className="text-base font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
-        Local<span className="text-primary">Worker</span>
+      <span className="text-base font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+        LocalWorker
       </span>
     </div>
   );
@@ -134,11 +134,11 @@ export default function PageShell({
       : "px-4 py-6 sm:px-6 sm:py-8 lg:px-8";
 
   return (
-    <div className="min-h-screen bg-[#F6F9FC] dark:bg-black text-[#2C2C2C] dark:text-[#F4F4F5] flex flex-col selection:bg-primary-100/25 selection:text-primary">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
       {/* Sticky Top Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E7ECF1] dark:border-[#1F1F1F] bg-white/95 dark:bg-black/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA]/80 dark:bg-[#09090B]/80 backdrop-blur-xl">
         <div
-          className={`mx-auto flex h-14 items-center justify-between px-4 sm:px-6 lg:px-8 ${maxWidthClass}`}
+          className={`mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-8 ${maxWidthClass}`}
         >
           {/* Brand Logo */}
           <div className="flex items-center gap-6">
@@ -149,33 +149,33 @@ export default function PageShell({
                 type="button"
                 onClick={() => navigate(homePath)}
                 aria-label="Go to homepage"
-                className="text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl"
+                className="text-left cursor-pointer focus-visible:outline-none rounded-xl"
               >
                 {brand}
               </button>
             )}
 
             {/* Desktop Quick Nav Links */}
-            <nav className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA]">
+            <nav className="hidden md:flex items-center gap-1 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA]">
               {isWorker ? (
                 <>
                   <Link
                     to="/worker-dashboard"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <LayoutDashboard size={14} />
                     <span>Dashboard</span>
                   </Link>
                   <Link
                     to="/worker-commitments"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Briefcase size={14} />
                     <span>Commitments</span>
                   </Link>
                   <Link
                     to="/callback-requests"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Bell size={14} />
                     <span>Callbacks</span>
@@ -185,21 +185,21 @@ export default function PageShell({
                 <>
                   <Link
                     to="/agency"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Building2 size={14} />
                     <span>Dashboard</span>
                   </Link>
                   <Link
                     to="/inbox"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <MessageSquare size={14} />
                     <span>Inbox</span>
                   </Link>
                   <Link
                     to="/agency/profile/edit"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <UserRound size={14} />
                     <span>Agency Profile</span>
@@ -209,28 +209,28 @@ export default function PageShell({
                 <>
                   <Link
                     to="/search?type=workers"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Search size={14} />
                     <span>Workers</span>
                   </Link>
                   <Link
                     to="/search?type=agencies"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Building2 size={14} />
                     <span>Agencies</span>
                   </Link>
                   <Link
                     to="/saved"
-                    className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Heart size={14} />
                     <span>Saved</span>
                   </Link>
                   <Link
                     to="/inbox"
-                    className="relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 transition hover:bg-primary-100/15 hover:text-primary dark:hover:bg-white/10 dark:hover:text-[#F4F4F5]"
+                    className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Clock size={14} />
                     <span>Inbox</span>
@@ -248,12 +248,20 @@ export default function PageShell({
           {/* Actions & Menu */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            {!loggedIn && (
+              <Link
+                to="/login"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/15 bg-black text-white dark:bg-white dark:text-black px-3.5 py-1.5 text-xs font-bold transition hover:opacity-90 shadow-xs"
+              >
+                Sign In
+              </Link>
+            )}
             {loggedIn && (
               <Link
                 to={portalPath}
                 aria-label={portalLabel}
                 title={portalLabel}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] text-[#2C2C2C] dark:text-[#F4F4F5] transition hover:border-primary hover:text-primary shadow-subtle"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 shadow-sm"
               >
                 <UserRound size={16} />
               </Link>
@@ -272,7 +280,7 @@ export default function PageShell({
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] px-3.5 py-1.5 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle transition-all hover:border-primary hover:text-primary hover:bg-primary-100/10 focus-visible:ring-2 focus-visible:ring-primary cursor-pointer active:scale-95"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-sm transition-all hover:border-neutral-400 dark:hover:border-neutral-500 cursor-pointer active:scale-95"
                 >
                   <ArrowLeft
                     size={14}
@@ -281,7 +289,7 @@ export default function PageShell({
                   <span>{backLabel}</span>
                 </button>
                 {headerTitle && (
-                  <h1 className="text-base sm:text-lg font-bold text-[#2C2C2C] dark:text-[#F4F4F5] tracking-tight truncate">
+                  <h1 className="text-base sm:text-lg font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight truncate">
                     {headerTitle}
                   </h1>
                 )}

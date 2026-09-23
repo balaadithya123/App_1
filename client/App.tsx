@@ -38,6 +38,7 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ChatAssistantPage = lazy(() => import("./pages/ChatAssistantPage"));
 const VoiceOnboarding = lazy(() => import("./pages/VoiceOnboarding"));
 const PortfolioModeration = lazy(() => import("./pages/PortfolioModeration"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 
 const queryClient = new QueryClient();
 
@@ -63,7 +64,14 @@ export default function App() {
         <BrowserRouter>
           <Suspense fallback={<RouteLoadingFallback />}>
             <Routes>
-              <Route path="/" element={<Index />} />
+              {/* Direct Landing Page as Root Entry */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/home" element={<Index />} />
+              <Route path="/app" element={<Index />} />
+              <Route path="/explore" element={<Index />} />
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/overview" element={<LandingPage />} />
+              <Route path="/about" element={<LandingPage />} />
               <Route path="/voice-onboarding" element={<VoiceOnboarding />} />
               <Route path="/voice" element={<VoiceOnboarding />} />
               <Route path="/search" element={<SearchResults />} />

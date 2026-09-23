@@ -130,22 +130,22 @@ export default function WorkerPortfolioManager() {
   };
 
   return (
-    <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+    <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
             <Camera size={16} />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[#2C2C2C]">
+              <h2 className="text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
                 Work Portfolio
               </h2>
-              <span className="rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-2 py-0.5 text-[10px] font-semibold text-[#67696D]">
+              <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2 py-0.5 text-[10px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
                 {photos.length} / 10 photos
               </span>
             </div>
-            <p className="text-xs text-[#67696D]">
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
               Upload photos of your completed work to showcase your trade skills
               to clients.
             </p>
@@ -166,13 +166,13 @@ export default function WorkerPortfolioManager() {
             />
             <label
               htmlFor="portfolio-file-upload"
-              className={`inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white shadow-subtle transition hover:bg-[#157ad4] cursor-pointer active:scale-95 ${
+              className={`inline-flex items-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-xs font-semibold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition cursor-pointer active:scale-95 ${
                 uploading ? "opacity-60 cursor-not-allowed" : ""
               }`}
             >
               {uploading ? (
                 <>
-                  <Loader2 size={13} className="animate-spin" />
+                  <Loader2 size={13} className="animate-spin text-current" />
                   <span>Saving photos...</span>
                 </>
               ) : (
@@ -187,30 +187,30 @@ export default function WorkerPortfolioManager() {
       </div>
 
       {error && (
-        <p className="mt-3 rounded-[12px] border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">
+        <p className="mt-3 rounded-[12px] border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400">
           {error}
         </p>
       )}
 
       {success && (
-        <p className="mt-3 flex items-center gap-1.5 rounded-[12px] border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600">
+        <p className="mt-3 flex items-center gap-1.5 rounded-[12px] border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
           <CheckCircle2 size={14} />
           {success}
         </p>
       )}
 
       {loading ? (
-        <div className="mt-4 flex items-center justify-center p-8 text-xs text-[#67696D]">
-          <Loader2 size={16} className="mr-2 animate-spin" />
+        <div className="mt-4 flex items-center justify-center p-8 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+          <Loader2 size={16} className="mr-2 animate-spin text-current" />
           Loading work portfolio...
         </div>
       ) : photos.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center justify-center rounded-[16px] border border-dashed border-[#E7ECF1] bg-[#F6F9FC] p-8 text-center">
-          <ImageIcon size={28} className="text-[#989EA7] mb-2" />
-          <p className="text-xs font-bold text-[#2C2C2C]">
+        <div className="mt-4 flex flex-col items-center justify-center rounded-[16px] border border-dashed border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-8 text-center">
+          <ImageIcon size={28} className="text-[#71717A] dark:text-[#A1A1AA] mb-2" />
+          <p className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
             No work photos uploaded yet
           </p>
-          <p className="mt-1 text-[11px] text-[#67696D] max-w-xs">
+          <p className="mt-1 text-[11px] text-[#71717A] dark:text-[#A1A1AA] max-w-xs">
             Adding 3–5 pictures of your finished jobs builds trust and helps
             customers choose your service.
           </p>
@@ -220,7 +220,7 @@ export default function WorkerPortfolioManager() {
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="group relative aspect-square overflow-hidden rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC]"
+              className="group relative aspect-square overflow-hidden rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B]"
             >
               <img
                 src={photo.image_url}
@@ -232,7 +232,7 @@ export default function WorkerPortfolioManager() {
               <button
                 type="button"
                 onClick={() => handleDelete(photo.id)}
-                className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition-opacity hover:bg-destructive group-hover:opacity-100 cursor-pointer"
+                className="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition-opacity hover:bg-rose-600 group-hover:opacity-100 cursor-pointer"
                 title="Delete photo"
                 aria-label="Delete work photo"
               >

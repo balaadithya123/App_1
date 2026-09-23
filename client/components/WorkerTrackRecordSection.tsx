@@ -71,9 +71,9 @@ export default function WorkerTrackRecordSection({
 
   if (loading) {
     return (
-      <section className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 shadow-soft">
-        <div className="flex items-center gap-2 text-xs text-[#67696D] dark:text-[#A1A1AA]">
-          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-sm">
+        <div className="flex items-center gap-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
           <span>Loading Track Record timeline...</span>
         </div>
       </section>
@@ -88,15 +88,15 @@ export default function WorkerTrackRecordSection({
   };
 
   return (
-    <section className="rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 sm:p-6 shadow-soft space-y-4">
+    <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm space-y-4">
       {/* Photo Modal */}
       {activePhotoModal && (
         <div
           onClick={() => setActivePhotoModal(null)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in cursor-pointer"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in cursor-pointer"
         >
           <div
-            className="relative max-w-lg max-h-[85vh] overflow-hidden rounded-20 border border-white/20 bg-black p-1 shadow-2xl"
+            className="relative max-w-lg max-h-[85vh] overflow-hidden rounded-[20px] border border-[#27272A] bg-black p-1 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -109,28 +109,28 @@ export default function WorkerTrackRecordSection({
             <img
               src={activePhotoModal}
               alt="Job proof thumbnail"
-              className="max-h-[80vh] w-auto max-w-full rounded-16 object-contain"
+              className="max-h-[80vh] w-auto max-w-full rounded-[16px] object-contain"
             />
           </div>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E7ECF1] dark:border-[#1F1F1F] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E4E4E7] dark:border-[#27272A] pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-primary-100/40 bg-primary-100/15 text-primary shadow-subtle shrink-0">
-            <ShieldCheck size={20} className="text-primary" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] shadow-xs shrink-0">
+            <ShieldCheck size={20} className="text-emerald-500" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
                 Track Record
               </h2>
-              <span className="rounded-full bg-primary-100/20 border border-primary-100/40 px-2 py-0.5 text-[10px] font-bold text-primary">
+              <span className="rounded-full bg-[#FAFAFA] dark:bg-[#09090B] border border-[#E4E4E7] dark:border-[#27272A] px-2 py-0.5 text-[10px] font-bold text-[#09090B] dark:text-[#FAFAFA]">
                 Public Timeline
               </span>
             </div>
-            <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
               Unmoderated, chronological confirmation timeline logged directly
               by customers.
             </p>
@@ -154,7 +154,7 @@ export default function WorkerTrackRecordSection({
             </p>
           </div>
         ) : (
-          <div className="rounded-[14px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#141414] px-3 py-2 text-xs text-[#67696D] dark:text-[#A1A1AA]">
+          <div className="rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3 py-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
             No track record responses yet
           </div>
         )}
@@ -163,13 +163,13 @@ export default function WorkerTrackRecordSection({
       {/* Progress Bar Visual if records exist */}
       {summary.total > 0 && (
         <div className="space-y-1.5">
-          <div className="flex justify-between text-[11px] font-semibold text-[#67696D] dark:text-[#A1A1AA]">
+          <div className="flex justify-between text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
             <span>Attendance Score</span>
-            <span className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+            <span className="font-bold text-[#09090B] dark:text-[#FAFAFA]">
               {summary.showed_up_percentage}%
             </span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#E7ECF1] dark:bg-[#1F1F1F]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#E4E4E7] dark:bg-[#27272A]">
             <div
               className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
               style={{ width: `${summary.showed_up_percentage}%` }}
@@ -184,7 +184,7 @@ export default function WorkerTrackRecordSection({
           entries.map((entry) => (
             <div
               key={entry.id}
-              className="flex items-start gap-3 rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#121212] p-3.5 transition-colors hover:border-primary/40"
+              className="flex items-start gap-3 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3.5 transition-colors hover:border-neutral-400 dark:hover:border-neutral-500"
             >
               <div className="shrink-0 pt-0.5">
                 {entry.showed_up ? (
@@ -207,7 +207,7 @@ export default function WorkerTrackRecordSection({
                       ? "Confirmed Showed Up"
                       : "Marked Did Not Show Up"}
                   </span>
-                  <span className="text-[11px] font-medium text-[#989EA7] dark:text-[#71717A] flex items-center gap-1">
+                  <span className="text-[11px] font-medium text-[#71717A] dark:text-[#A1A1AA] flex items-center gap-1">
                     <Clock size={11} />
                     <span>{formatRelativeTime(entry.created_at)}</span>
                   </span>
@@ -215,7 +215,7 @@ export default function WorkerTrackRecordSection({
 
                 {/* Optional Note */}
                 {entry.note && (
-                  <p className="mt-1 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] italic bg-white dark:bg-[#181818] rounded-xl border border-[#E7ECF1] dark:border-[#222222] p-2.5">
+                  <p className="mt-1 text-xs text-[#09090B] dark:text-[#FAFAFA] italic bg-white dark:bg-[#141416] rounded-xl border border-[#E4E4E7] dark:border-[#27272A] p-2.5">
                     "{entry.note}"
                   </p>
                 )}
@@ -228,7 +228,7 @@ export default function WorkerTrackRecordSection({
                       onClick={() =>
                         setActivePhotoModal(entry.photo_url || null)
                       }
-                      className="group flex items-center gap-1.5 rounded-xl border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#181818] p-1 pr-2.5 text-[11px] font-semibold text-[#67696D] dark:text-[#A1A1AA] hover:border-primary hover:text-primary transition cursor-pointer"
+                      className="group flex items-center gap-1.5 rounded-xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-1 pr-2.5 text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA] hover:border-neutral-400 dark:hover:border-neutral-500 hover:text-[#09090B] dark:hover:text-white transition cursor-pointer"
                     >
                       <img
                         src={entry.photo_url}
@@ -246,16 +246,16 @@ export default function WorkerTrackRecordSection({
             </div>
           ))
         ) : (
-          <div className="rounded-[16px] border border-dashed border-[#E7ECF1] dark:border-[#222222] p-6 text-center">
+          <div className="rounded-[16px] border border-dashed border-[#E4E4E7] dark:border-[#27272A] p-6 text-center">
             <Sparkles
               size={24}
-              className="mx-auto text-primary mb-2 opacity-60"
+              className="mx-auto text-[#71717A] dark:text-[#A1A1AA] mb-2 opacity-60"
             />
-            <p className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5]">
+            <p className="text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
               No confirmed track records yet for{" "}
               {workerName || "this specialist"}
             </p>
-            <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
+            <p className="mt-1 text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
               Contact this worker via Call or WhatsApp. You'll receive a quick
               follow-up prompt to verify attendance!
             </p>

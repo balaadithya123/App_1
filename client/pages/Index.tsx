@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   MapPin,
   ChevronDown,
@@ -13,6 +13,9 @@ import {
   Navigation,
   X,
   Sparkles,
+  Heart,
+  UserRound,
+  ArrowRight,
 } from "lucide-react";
 import type { Worker } from "@shared/workers";
 import type { WorkersResponse } from "@shared/api";
@@ -24,17 +27,18 @@ import {
   getStandardLocation,
   setStandardLocation,
   detectGpsLocation,
+  isLocationMatch,
+  autoDetectLocationIfGranted,
 } from "@/lib/location";
 import { supabase } from "@/lib/supabase";
 
-// Existing service categories supported by the app
 const categories = [
-  { name: "Electrician", icon: Zap },
-  { name: "Plumber", icon: Wrench },
-  { name: "Carpenter", icon: Hammer },
-  { name: "Painter", icon: Paintbrush },
-  { name: "Cleaner", icon: Brush },
-  { name: "All Services", icon: ChevronRight },
+  { name: "Electrician", icon: Zap, countText: "Wiring, Switchboard & Fan" },
+  { name: "Plumber", icon: Wrench, countText: "Pipes, Leakage & Motor" },
+  { name: "Carpenter", icon: Hammer, countText: "Furniture & Door Repair" },
+  { name: "Painter", icon: Paintbrush, countText: "Interior & Exterior Wall" },
+  { name: "Cleaner", icon: Brush, countText: "Deep Clean & Kitchen" },
+  { name: "All Services", icon: ChevronRight, countText: "Browse all trades" },
 ];
 
 export default function Index() {
@@ -42,7 +46,6 @@ export default function Index() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Redirect workers and agencies to their dashboards as their primary homepage
   useEffect(() => {
     if (!supabase) return;
     void supabase.auth.getSession().then(({ data }) => {
@@ -65,10 +68,7 @@ export default function Index() {
     return () => listener.subscription.unsubscribe();
   }, [navigate]);
 
-  // Search input state for inline header input
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Location state & location picker toggle
   const [location, setLocation] = useState(() => getStandardLocation());
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [customLocationInput, setCustomLocationInput] = useState("");
@@ -76,7 +76,6 @@ export default function Index() {
   const [postNeedOpen, setPostNeedOpen] = useState(false);
   const locationPickerRef = useRef<HTMLDivElement>(null);
 
-  // Sync standard location updates across tabs / components
   useEffect(() => {
     const handleLocationChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ location: string }>;
@@ -91,25 +90,29 @@ export default function Index() {
       window.removeEventListener("user-location-changed", handleLocationChange);
   }, []);
 
-  // If no location saved yet in storage, attempt initial GPS detection
   useEffect(() => {
-    try {
-      const saved =
-        localStorage.getItem("user_selected_location") ||
-        localStorage.getItem("user_registered_location");
-      if (!saved && navigator.geolocation) {
-        void detectGpsLocation(true).then((details) => {
-          if (details) {
-            const locName =
-              details.locality || details.city || details.formatted;
-            if (locName) setLocation(locName);
-          }
-        });
+    if (typeof window !== "undefined" && navigator.geolocation) {
+      const userHasCustomSaved = localStorage.getItem("user_selected_location");
+      if (!userHasCustomSaved) {
+        setGpsLoading(true);
+        void detectGpsLocation(true)
+          .then((details) => {
+            if (details) {
+              const detected =
+                details.locality || details.city || details.formatted;
+              if (detected && detected !== "Local Area") {
+                setLocation(detected);
+                setStandardLocation(detected);
+              }
+            }
+          })
+          .finally(() => {
+            setGpsLoading(false);
+          });
       }
-    } catch {}
+    }
   }, []);
 
-  // Fetch existing workers data
   useEffect(() => {
     let mounted = true;
     const fetchWorkers = async () => {
@@ -136,7 +139,6 @@ export default function Index() {
     };
   }, []);
 
-  // Close location picker on outside click
   useEffect(() => {
     if (!showLocationPicker) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -151,7 +153,6 @@ export default function Index() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showLocationPicker]);
 
-  // Handle GPS reverse geocode using existing API
   const handleGps = async () => {
     if (!navigator.geolocation) return;
     setGpsLoading(true);
@@ -166,7 +167,7 @@ export default function Index() {
         }
       }
     } catch {
-      // ignore fallback
+      // fallback
     } finally {
       setGpsLoading(false);
     }
@@ -181,43 +182,34 @@ export default function Index() {
     setShowLocationPicker(false);
   };
 
-  // 1. "VERIFIED PROS NEAR YOU" — trust strip
-  // Sorted primarily by worker's location matching user's selected area (header indicator)
-  // Within that, ordered by verified status, then rating
-  const verifiedPros = useMemo(() => {
-    const selectedLoc = location.trim().toLowerCase();
+  const { displayPros, isExactLocationMatch } = useMemo(() => {
+    const target = location.trim();
+    const sorted = [...workers].sort((a, b) => {
+      const aVer = a.phone_verified ? 1 : 0;
+      const bVer = b.phone_verified ? 1 : 0;
+      if (bVer !== aVer) return bVer - aVer;
 
-    const isLocMatch = (w: Worker) => {
-      if (!selectedLoc) return false;
-      const workerLoc = (w.locality || "").trim().toLowerCase();
-      if (!workerLoc) return false;
-      return workerLoc.includes(selectedLoc) || selectedLoc.includes(workerLoc);
-    };
+      const aRating = Number(a.avg_rating || a.rating || 4.8);
+      const bRating = Number(b.avg_rating || b.rating || 4.8);
+      if (bRating !== aRating) return bRating - aRating;
 
-    return [...workers]
-      .sort((a, b) => {
-        // Priority 1: Worker's locality matches header's location indicator
-        const aMatch = isLocMatch(a) ? 1 : 0;
-        const bMatch = isLocMatch(b) ? 1 : 0;
-        if (bMatch !== aMatch) return bMatch - aMatch;
+      if (b.available_today && !a.available_today) return 1;
+      if (!b.available_today && a.available_today) return -1;
 
-        // Priority 2: Verified phone / trust status
-        const aVer = a.phone_verified ? 1 : 0;
-        const bVer = b.phone_verified ? 1 : 0;
-        if (bVer !== aVer) return bVer - aVer;
+      return 0;
+    });
 
-        // Priority 3: Star rating (fallback to existing default 4.8)
-        const aRating = Number(a.avg_rating || a.rating || 4.8);
-        const bRating = Number(b.avg_rating || b.rating || 4.8);
-        if (bRating !== aRating) return bRating - aRating;
+    if (!target) {
+      return { displayPros: sorted.slice(0, 6), isExactLocationMatch: true };
+    }
 
-        // Priority 4: Availability today
-        if (b.available_today && !a.available_today) return 1;
-        if (!b.available_today && a.available_today) return -1;
+    const matched = sorted.filter((w) => isLocationMatch(w.locality, target));
+    if (matched.length > 0) {
+      return { displayPros: matched.slice(0, 6), isExactLocationMatch: true };
+    }
 
-        return 0;
-      })
-      .slice(0, 6);
+    // Fallback to top verified pros if exact locality has no registered workers yet
+    return { displayPros: sorted.slice(0, 6), isExactLocationMatch: false };
   }, [workers, location]);
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
@@ -237,10 +229,6 @@ export default function Index() {
     navigate(`/search${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
-  const handleOpenSearch = () => {
-    handleSearchSubmit();
-  };
-
   const handleCategoryClick = (categoryName: string) => {
     void logAnalyticsEvent("category_tile_clicked", null, {
       category: categoryName,
@@ -257,12 +245,32 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F9FC] dark:bg-black text-[#2C2C2C] dark:text-[#F4F4F5] flex flex-col selection:bg-primary-100/25 selection:text-primary pb-24">
-      {/* 1. TOP BAR (Compact, single-row: Left location chip, Right inline search input) */}
-      <header className="sticky top-0 z-30 w-full border-b border-[#E7ECF1] dark:border-[#1F1F1F] bg-white/95 dark:bg-black/95 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-lg items-center gap-2 px-4 sm:px-6">
-          {/* Left: Tappable Location Chip showing current/selected area (e.g. "Coimbatore ▾") */}
-          <div className="relative shrink-0" ref={locationPickerRef}>
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800 pb-24 font-sans relative resend-spotlight">
+      {/* Background Micro Dot Grid Texture */}
+      <div className="absolute inset-0 resend-grid-bg pointer-events-none opacity-40" />
+
+      {/* TOP HEADER — Sleek Resend-Style Translucent Header */}
+      <header className="sticky top-0 z-30 w-full border-b border-black/[0.06] dark:border-white/[0.08] bg-[#FAFAFA]/80 dark:bg-[#09090B]/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 md:h-16 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6 relative">
+          {/* App Logo & Name */}
+          <Link
+            to="/home"
+            className="flex items-center gap-2.5 shrink-0 group"
+            aria-label="LocalWorker Home"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-extrabold text-sm shadow-sm transition-transform group-hover:scale-105 border border-white/10 dark:border-black/10">
+              L
+            </span>
+            <span className="text-base font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+              LocalWorker
+            </span>
+          </Link>
+
+          {/* Location Chip */}
+          <div
+            className="relative shrink-0 md:order-none"
+            ref={locationPickerRef}
+          >
             <button
               type="button"
               onClick={() => {
@@ -270,51 +278,51 @@ export default function Index() {
                 setShowLocationPicker((prev) => !prev);
               }}
               aria-label="Select location area"
-              className="inline-flex h-9 items-center gap-1 rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#0c0c0c] px-2.5 sm:px-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] transition-all hover:border-primary/40 hover:bg-black/5 dark:hover:bg-white/10 active:scale-95 cursor-pointer max-w-[125px] sm:max-w-[155px] shadow-subtle"
+              className="inline-flex h-8 md:h-9 items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] px-2.5 sm:px-3.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition-all hover:border-black/25 dark:hover:border-white/25 active:scale-95 cursor-pointer max-w-[130px] sm:max-w-[170px] shadow-xs"
             >
-              <MapPin size={13} className="text-primary shrink-0" />
-              <span className="truncate">{location || "Coimbatore"}</span>
+              <MapPin size={12} className="text-[#71717A] dark:text-[#A1A1AA] shrink-0" />
+              <span className="truncate">{location || "Select Area"}</span>
               <ChevronDown
                 size={12}
-                className={`text-[#67696D] dark:text-[#A1A1AA] shrink-0 transition-transform duration-200 ${
-                  showLocationPicker ? "rotate-180 text-primary" : ""
+                className={`text-[#71717A] dark:text-[#A1A1AA] shrink-0 transition-transform duration-200 ${
+                  showLocationPicker ? "rotate-180" : ""
                 }`}
               />
             </button>
 
-            {/* Existing Location Selector Popover */}
+            {/* Location Selector Popover */}
             {showLocationPicker && (
-              <div className="absolute left-0 top-11 z-50 w-72 rounded-[16px] border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#0A0A0A] p-3.5 shadow-soft animate-in fade-in zoom-in-95 duration-150">
-                <div className="flex items-center justify-between pb-2 border-b border-[#E7ECF1] dark:border-[#1F1F1F] mb-2.5">
-                  <span className="text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <div className="absolute right-0 md:left-0 md:right-auto top-10 md:top-11 z-50 w-72 sm:w-80 rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] p-4 shadow-xl dark:shadow-[0_10px_30px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.08] mb-3">
+                  <span className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight">
                     Choose Area
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowLocationPicker(false)}
-                    className="text-[#989EA7] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5] cursor-pointer"
+                    className="text-[#71717A] hover:text-[#09090B] dark:hover:text-[#FAFAFA] cursor-pointer"
                   >
                     <X size={14} />
                   </button>
                 </div>
 
-                {/* GPS Auto-Detect Button */}
+                {/* GPS Auto-Detect */}
                 <button
                   type="button"
                   onClick={handleGps}
                   disabled={gpsLoading}
-                  className="flex w-full items-center justify-center gap-2 rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] py-2 text-xs font-semibold text-primary transition hover:border-primary/40 hover:bg-primary-100/10 cursor-pointer disabled:opacity-60 mb-2.5"
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-black/[0.08] dark:border-white/[0.08] bg-[#F4F4F5] dark:bg-[#18181B] py-2 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#E4E4E7] dark:hover:bg-[#27272A] cursor-pointer disabled:opacity-60 mb-3 font-mono"
                 >
                   <Navigation
                     size={13}
                     className={
-                      gpsLoading ? "animate-spin text-primary" : "text-primary"
+                      gpsLoading ? "animate-spin text-current" : "text-current"
                     }
                   />
                   <span>
                     {gpsLoading
-                      ? "Detecting location..."
-                      : "Use Current Location (GPS)"}
+                      ? "Detecting GPS..."
+                      : "Detect Current Location (GPS)"}
                   </span>
                 </button>
 
@@ -324,19 +332,19 @@ export default function Index() {
                     e.preventDefault();
                     handleApplyLocation(customLocationInput);
                   }}
-                  className="space-y-2"
+                  className="space-y-2.5"
                 >
-                  <div className="flex items-center rounded-[12px] border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] px-3 py-1.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#0A0A0A] focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                  <div className="flex items-center rounded-[12px] border border-black/[0.08] dark:border-white/[0.08] bg-[#FAFAFA] dark:bg-[#141416] px-3 py-2 focus-within:border-black/30 dark:focus-within:border-white/30 transition-all">
                     <MapPin
                       size={14}
-                      className="text-[#989EA7] dark:text-[#71717A] mr-2 shrink-0"
+                      className="text-[#71717A] dark:text-[#A1A1AA] mr-2 shrink-0"
                     />
                     <input
                       type="text"
                       value={customLocationInput}
                       onChange={(e) => setCustomLocationInput(e.target.value)}
-                      placeholder="e.g. RS Puram, Gandhipuram"
-                      className="w-full bg-transparent text-xs text-[#2C2C2C] dark:text-[#F4F4F5] outline-none placeholder:text-[#989EA7] dark:placeholder:text-[#71717A]"
+                      placeholder="e.g. RS Puram, Gandhipuram, Chennai"
+                      className="w-full bg-transparent text-xs text-[#09090B] dark:text-[#FAFAFA] outline-none placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A]"
                       autoFocus
                     />
                   </div>
@@ -344,7 +352,7 @@ export default function Index() {
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       type="submit"
-                      className="flex-1 rounded-full bg-primary py-1.5 text-xs font-semibold text-white transition hover:bg-[#157ad4] cursor-pointer shadow-subtle"
+                      className="flex-1 rounded-full bg-black text-white dark:bg-white dark:text-black py-2 text-xs font-semibold transition hover:bg-neutral-800 dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
                     >
                       Apply
                     </button>
@@ -352,7 +360,7 @@ export default function Index() {
                       <button
                         type="button"
                         onClick={() => handleApplyLocation("")}
-                        className="rounded-full border border-[#E7ECF1] dark:border-[#222222] px-3 py-1.5 text-xs font-medium text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-white cursor-pointer"
+                        className="rounded-full border border-black/[0.08] dark:border-white/[0.08] px-3 py-2 text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white cursor-pointer"
                       >
                         Clear
                       </button>
@@ -363,145 +371,228 @@ export default function Index() {
             )}
           </div>
 
-          {/* Right: Inline Search Input with rounded Clarity input styling */}
-          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-0">
+          {/* Desktop Search Bar (Single clean input) */}
+          <form
+            onSubmit={handleSearchSubmit}
+            className="hidden md:flex flex-1 max-w-md min-w-0"
+          >
             <div className="relative flex items-center w-full">
               <Search
-                size={14}
-                className="absolute left-3 text-[#989EA7] dark:text-[#71717A] pointer-events-none shrink-0"
+                size={15}
+                className="absolute left-3.5 text-[#71717A] dark:text-[#A1A1AA] pointer-events-none"
               />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for a service or worker"
-                className="h-9 w-full rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#0c0c0c] pl-8.5 pr-8 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] placeholder:text-[#989EA7] dark:placeholder:text-[#71717A] outline-none transition-all focus:border-primary focus:bg-white dark:focus:bg-[#141414] focus:ring-2 focus:ring-primary/20 shadow-subtle"
+                placeholder="Search services, pros or skills (e.g. Electrician)"
+                className="h-10 w-full rounded-full border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] pl-10 pr-9 text-xs sm:text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] outline-none transition-all focus:border-black/30 dark:focus:border-white/30 shadow-xs"
               />
-              <button
-                type="submit"
-                aria-label="Search"
-                title="Search"
-                className="absolute right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white transition hover:bg-[#157ad4] active:scale-95 cursor-pointer shadow-subtle"
-              >
-                <Search size={12} />
-              </button>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 text-[#71717A] hover:text-[#09090B] dark:hover:text-white cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
           </form>
-        </div>
-      </header>
 
-      {/* MAIN CONTENT (Mobile-first, compact, clean layout) */}
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-5 sm:px-6 space-y-7">
-        {/* Prominent "Post a Need" Hero Action Card */}
-        <section className="rounded-[20px] border border-primary/20 bg-gradient-to-br from-primary-100/15 via-white to-[#F6F9FC] dark:from-primary-950/20 dark:via-[#0A0A0A] dark:to-black p-4.5 sm:p-5 shadow-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
-          <div className="space-y-1">
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary-100/30 dark:bg-primary-950/50 px-2.5 py-0.5 text-[10px] font-bold text-primary">
-              <Sparkles size={11} />
-              <span>Instant Matching</span>
-            </span>
-            <h2 className="text-sm sm:text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5] tracking-tight">
-              Have a specific repair or job?
-            </h2>
-            <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">
-              Post what you need and get matched directly with nearby verified
-              pros.
-            </p>
-          </div>
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 shrink-0 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA]">
+            <Link
+              to="/saved"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#09090B] dark:hover:text-white"
+            >
+              <Heart size={14} />
+              <span>My Circle</span>
+            </Link>
+            <Link
+              to="/profile"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-black/5 dark:hover:bg-white/10 hover:text-[#09090B] dark:hover:text-white"
+            >
+              <UserRound size={14} />
+              <span>Profile</span>
+            </Link>
+          </nav>
+
+          {/* Quick Post Need Action (Desktop) */}
           <button
             type="button"
             onClick={() => setPostNeedOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-soft hover:bg-[#157ad4] active:scale-[0.98] transition-all cursor-pointer shrink-0 w-full sm:w-auto"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-xs font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-[0.98] transition-all cursor-pointer shrink-0 border border-white/10 dark:border-black/10"
           >
-            <Sparkles size={15} />
+            <Sparkles size={13} />
             <span>Post a Need</span>
           </button>
-        </section>
+        </div>
+      </header>
 
-        {/* 2. "VERIFIED PROS NEAR YOU" — trust strip */}
+      {/* MAIN CONTENT */}
+      <main className="mx-auto w-full max-w-lg md:max-w-4xl flex-1 px-4 pt-5 sm:px-6 space-y-7 relative">
+
+        {/* 1. "VERIFIED PROS NEAR YOU" — Strictly Location-Filtered with GPS check */}
         <section aria-labelledby="verified-pros-heading">
-          <div className="flex items-center justify-between mb-3 px-0.5">
-            <h2
-              id="verified-pros-heading"
-              className="text-sm sm:text-base font-bold text-[#2C2C2C] tracking-tight"
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-0.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2
+                id="verified-pros-heading"
+                className="text-sm sm:text-base font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight"
+              >
+                Verified pros near you
+              </h2>
+              {location && (
+                <button
+                  type="button"
+                  onClick={handleGps}
+                  disabled={gpsLoading}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] px-2.5 py-0.5 text-[10px] font-mono font-medium text-[#09090B] dark:text-[#FAFAFA] hover:border-black/20 dark:hover:border-white/20 transition cursor-pointer shadow-xs"
+                  title="Click to refresh via GPS"
+                >
+                  <MapPin
+                    size={10}
+                    className={gpsLoading ? "animate-spin text-[#71717A]" : "text-[#71717A]"}
+                  />
+                  <span className="truncate max-w-[120px]">{location}</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleGps}
+                disabled={gpsLoading}
+                className="inline-flex items-center gap-1 rounded-full border border-black/[0.08] dark:border-white/[0.08] bg-[#F4F4F5] dark:bg-[#18181B] px-2 py-0.5 text-[10px] font-mono text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white transition cursor-pointer shadow-xs"
+                title="Detect exact location via GPS"
+              >
+                <Navigation size={10} className={gpsLoading ? "animate-spin" : ""} />
+                <span>{gpsLoading ? "Checking GPS..." : "Check GPS"}</span>
+              </button>
+            </div>
+
+            <Link
+              to={
+                location
+                  ? `/search?location=${encodeURIComponent(location)}`
+                  : "/search"
+              }
+              className="text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:opacity-80 inline-flex items-center gap-0.5 font-mono"
             >
-              Verified pros near you
-            </h2>
-            <button
-              type="button"
-              onClick={handleOpenSearch}
-              className="text-xs font-semibold text-primary hover:underline cursor-pointer"
-            >
-              View all
-            </button>
+              <span>View all</span>
+              <ChevronRight size={13} />
+            </Link>
           </div>
 
+          {!isExactLocationMatch && location && displayPros.length > 0 && (
+            <div className="mb-3 flex items-center justify-between rounded-[14px] border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+              <span>
+                No pros found strictly inside <strong>{location}</strong> yet. Showing top verified professionals nearby:
+              </span>
+              <button
+                type="button"
+                onClick={handleGps}
+                disabled={gpsLoading}
+                className="ml-2 shrink-0 font-mono text-[11px] font-bold text-[#09090B] dark:text-white underline cursor-pointer"
+              >
+                Re-check GPS
+              </button>
+            </div>
+          )}
+
           {loading ? (
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto pb-2 scrollbar-none snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="w-[200px] shrink-0 rounded-[16px] border border-[#E7ECF1] bg-white p-3.5 shadow-subtle animate-pulse space-y-3"
+                  className="w-[230px] sm:w-[250px] md:w-full shrink-0 rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#16171B] p-3.5 shadow-sm animate-pulse space-y-2.5"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="h-12 w-12 rounded-full bg-[#E7ECF1]" />
-                    <div className="h-5 w-14 rounded-full bg-[#E7ECF1]" />
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-10 w-10 rounded-xl bg-[#F4F4F5] dark:bg-[#18181B]" />
+                      <div className="space-y-1">
+                        <div className="h-3.5 w-24 rounded bg-[#F4F4F5] dark:bg-[#18181B]" />
+                        <div className="h-2.5 w-16 rounded bg-[#F4F4F5] dark:bg-[#18181B]" />
+                      </div>
+                    </div>
+                    <div className="h-5 w-12 rounded bg-[#F4F4F5] dark:bg-[#18181B]" />
                   </div>
-                  <div className="h-4 w-28 rounded bg-[#E7ECF1]" />
-                  <div className="h-3 w-20 rounded bg-[#E7ECF1]" />
-                  <div className="h-3 w-16 rounded bg-[#E7ECF1]" />
+                  <div className="h-2.5 w-full rounded bg-[#F4F4F5] dark:bg-[#18181B]" />
+                  <div className="flex gap-2 pt-2 border-t border-black/[0.06] dark:border-white/[0.08]">
+                    <div className="h-6 w-12 rounded bg-[#F4F4F5] dark:bg-[#18181B]" />
+                    <div className="h-6 flex-1 rounded bg-[#F4F4F5] dark:bg-[#18181B]" />
+                  </div>
                 </div>
               ))}
             </div>
-          ) : verifiedPros.length > 0 ? (
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
-              {verifiedPros.map((worker) => (
+          ) : displayPros.length > 0 ? (
+            <div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-none snap-x snap-mandatory md:snap-none -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0 md:[&>article]:w-full md:[&>article]:max-w-none">
+              {displayPros.map((worker) => (
                 <TrustStripWorkerCard key={worker.id} worker={worker} />
               ))}
             </div>
           ) : (
-            <div className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 text-center shadow-subtle">
-              <p className="text-xs font-medium text-[#67696D]">
-                No verified professionals found in this area yet.
+            <div className="rounded-[18px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] p-6 text-center shadow-xs">
+              <p className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA]">
+                No verified professionals found near{" "}
+                <span className="font-semibold text-[#09090B] dark:text-white">
+                  {location || "your area"}
+                </span>
+                .
               </p>
-              <button
-                type="button"
-                onClick={handleOpenSearch}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-white shadow-subtle hover:bg-[#157ad4] cursor-pointer"
-              >
-                <span>Browse all workers</span>
-              </button>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleGps}
+                  disabled={gpsLoading}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#F4F4F5] dark:hover:bg-[#18181B] cursor-pointer shadow-xs font-mono"
+                >
+                  <Navigation
+                    size={12}
+                    className={gpsLoading ? "animate-spin" : ""}
+                  />
+                  <span>Check GPS</span>
+                </button>
+                <Link
+                  to="/search"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-4 py-1.5 text-xs font-semibold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200"
+                >
+                  <span>Browse all workers</span>
+                </Link>
+              </div>
             </div>
           )}
         </section>
 
-        {/* 3. CATEGORY GRID (2-column grid of rounded icon tiles — existing categories only) */}
+        {/* 2. CATEGORIES */}
         <section aria-labelledby="categories-heading">
-          <div className="mb-3 px-0.5">
-            <h2
-              id="categories-heading"
-              className="text-sm sm:text-base font-bold text-[#2C2C2C] tracking-tight"
-            >
-              Explore by category
-            </h2>
+          <div className="flex items-center justify-between mb-3 px-0.5">
+            <div>
+              <h2
+                id="categories-heading"
+                className="text-sm sm:text-base font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight"
+              >
+                Explore by category
+              </h2>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {categories.map(({ name, icon: Icon }) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {categories.map(({ name, icon: Icon, countText }) => (
               <button
                 key={name}
                 type="button"
                 onClick={() => handleCategoryClick(name)}
-                className="group flex items-center gap-3 rounded-[16px] border border-[#E7ECF1] bg-white p-4 text-left shadow-subtle transition-all hover:border-primary/50 hover:shadow-soft active:scale-[0.98] cursor-pointer"
+                className="group flex items-center gap-3.5 rounded-[18px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#0D0D10] p-4 text-left shadow-xs transition-all hover:border-black/25 dark:hover:border-white/20 hover:shadow-sm active:scale-[0.98] cursor-pointer"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100/15 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F4F4F5] dark:bg-[#18181B] text-[#09090B] dark:text-[#FAFAFA] transition-all group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black group-hover:scale-105 border border-black/[0.04] dark:border-white/[0.06]">
                   <Icon size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="block truncate text-xs sm:text-sm font-bold text-[#2C2C2C] group-hover:text-primary transition-colors">
+                  <span className="block truncate text-xs sm:text-sm font-bold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition-colors tracking-tight">
                     {name}
                   </span>
-                  <span className="text-[10px] text-[#67696D]">
-                    {name === "All Services" ? "Browse all" : "Find pros"}
+                  <span className="text-[10px] sm:text-[11px] text-[#71717A] dark:text-[#A1A1AA] line-clamp-1 mt-0.5">
+                    {countText}
                   </span>
                 </div>
               </button>
@@ -510,21 +601,21 @@ export default function Index() {
         </section>
       </main>
 
-      {/* 4. BOTTOM NAVIGATION (Icon-only rounded nav bar per existing Clarity nav styling) */}
+      {/* BOTTOM NAVIGATION (Mobile floating island) */}
       <NavBar />
 
-      {/* Floating Action Button (FAB) for Post a Need */}
+      {/* Floating Action Button for Post a Need (Mobile) */}
       <button
         type="button"
         onClick={() => setPostNeedOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-xs font-bold text-white shadow-soft hover:bg-[#157ad4] active:scale-95 transition-all cursor-pointer border border-white/20"
+        className="sm:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black px-4 py-2.5 text-xs font-bold shadow-lg hover:bg-neutral-800 dark:hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer border border-white/20"
         title="Post a Need"
       >
         <Sparkles size={15} />
         <span>Post a Need</span>
       </button>
 
-      {/* Post a Need Modal / Bottom Sheet */}
+      {/* Post a Need Modal */}
       <PostNeedModal
         isOpen={postNeedOpen}
         onClose={() => setPostNeedOpen(false)}

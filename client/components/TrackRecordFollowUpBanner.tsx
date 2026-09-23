@@ -292,7 +292,7 @@ export default function TrackRecordFollowUpBanner() {
                 type="button"
                 disabled={submitting}
                 onClick={handleSubmit}
-                className="flex-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary hover:bg-[#157ad4] text-white text-xs font-bold transition shadow-subtle cursor-pointer disabled:opacity-50 active:scale-95"
+                className="flex-1 inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary hover:bg-[#0f766e] text-white text-xs font-bold transition shadow-subtle cursor-pointer disabled:opacity-50 active:scale-95"
               >
                 <Send size={13} />
                 <span>{submitting ? "Submitting..." : "Submit Record"}</span>

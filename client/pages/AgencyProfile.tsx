@@ -243,7 +243,7 @@ export default function AgencyProfile() {
                     href={whatsappUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                    className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#128C7E] text-xs font-semibold text-white transition hover:bg-[#075E54]"
                   >
                     <MessageCircle size={14} />
                     <span>WhatsApp Agency</span>

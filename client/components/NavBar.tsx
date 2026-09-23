@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
   Search,
@@ -9,14 +9,17 @@ import {
   Building2,
   LayoutDashboard,
   MessageSquare,
-  type LucideIcon,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getStandardLocation } from "@/lib/location";
 
 export default function NavBar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+  const [islandSearchQuery, setIslandSearchQuery] = useState("");
 
   // Suppress bottom navigation island on auth and onboarding pages
   const hiddenPaths = [
@@ -46,21 +49,36 @@ export default function NavBar() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Sync search query if user is on /search
+  useEffect(() => {
+    if (location.pathname === "/search") {
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q") || params.get("service") || "";
+      setIslandSearchQuery(q);
+    }
+  }, [location.pathname, location.search]);
+
   const loggedIn = !!session;
   const userRole = session?.user?.user_metadata?.role;
   const isWorker = userRole === "worker";
   const isAgency = userRole === "agency";
 
-  let tabs: Array<{
-    name: string;
-    path: string;
-    icon: LucideIcon;
-    isActive: boolean;
-  }> = [];
+  const handleIslandSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const currentLoc = getStandardLocation();
+    const params = new URLSearchParams();
+    if (islandSearchQuery.trim()) {
+      params.set("q", islandSearchQuery.trim());
+      params.set("service", islandSearchQuery.trim());
+    }
+    if (currentLoc && currentLoc !== "Local Area") {
+      params.set("location", currentLoc);
+    }
+    navigate(`/search${params.toString() ? `?${params.toString()}` : ""}`);
+  };
 
   if (isWorker) {
-    // For workers, their home is always their dashboard; search workers is not a main take
-    tabs = [
+    const workerTabs = [
       {
         name: "Dashboard",
         path: "/worker-dashboard",
@@ -88,9 +106,35 @@ export default function NavBar() {
         isActive: location.pathname === "/profile",
       },
     ];
-  } else if (isAgency) {
-    // For agencies, their home is always their dashboard; search workers is not a main take
-    tabs = [
+
+    return (
+      <nav
+        aria-label="Worker Bottom Navigation"
+        className="md:hidden fixed bottom-4 inset-x-0 mx-auto w-fit z-40 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#141416]/90 backdrop-blur-xl px-3 py-1.5 shadow-xl flex items-center gap-2"
+      >
+        {workerTabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.name}
+              to={tab.path}
+              aria-label={tab.name}
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all cursor-pointer ${
+                tab.isActive
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+                  : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+              }`}
+            >
+              <Icon size={18} strokeWidth={tab.isActive ? 2.2 : 2} />
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
+
+  if (isAgency) {
+    const agencyTabs = [
       {
         name: "Agency Dashboard",
         path: "/agency",
@@ -115,61 +159,127 @@ export default function NavBar() {
           location.pathname === "/profile",
       },
     ];
-  } else {
-    // For public visitors / customers
-    tabs = [
-      {
-        name: "Home",
-        path: "/",
-        icon: Home,
-        isActive: location.pathname === "/",
-      },
-      {
-        name: "Search Workers",
-        path: "/search",
-        icon: Search,
-        isActive: location.pathname.startsWith("/search"),
-      },
-      {
-        name: "My Circle",
-        path: "/saved",
-        icon: Heart,
-        isActive:
-          location.pathname === "/saved" || location.pathname === "/my-circle",
-      },
-      {
-        name: "Profile",
-        path: loggedIn ? "/profile" : "/login",
-        icon: UserRound,
-        isActive:
-          location.pathname === "/profile" || location.pathname === "/login",
-      },
-    ];
+
+    return (
+      <nav
+        aria-label="Agency Bottom Navigation"
+        className="md:hidden fixed bottom-4 inset-x-0 mx-auto w-fit z-40 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#141416]/90 backdrop-blur-xl px-3 py-1.5 shadow-xl flex items-center gap-2"
+      >
+        {agencyTabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.name}
+              to={tab.path}
+              aria-label={tab.name}
+              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all cursor-pointer ${
+                tab.isActive
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+                  : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+              }`}
+            >
+              <Icon size={18} strokeWidth={tab.isActive ? 2.2 : 2} />
+            </Link>
+          );
+        })}
+      </nav>
+    );
   }
 
+  // Customer / Visitor Bottom Island with Integrated Search Box
   return (
     <nav
-      aria-label="Bottom Navigation"
-      className="fixed bottom-4 inset-x-0 mx-auto w-fit z-40 rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-white/95 dark:bg-black/90 backdrop-blur-md px-3 py-1.5 shadow-soft flex items-center gap-2 sm:gap-3"
+      aria-label="Customer Bottom Navigation"
+      className="md:hidden fixed bottom-4 inset-x-0 mx-auto w-[94%] max-w-[380px] z-40 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#141416]/90 backdrop-blur-xl px-2 py-1.5 shadow-xl flex items-center justify-between gap-1.5"
     >
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        return (
-          <Link
-            key={tab.name}
-            to={tab.path}
-            aria-label={tab.name}
-            title={tab.name}
-            className={`flex h-10 w-10 items-center justify-center rounded-full transition-all cursor-pointer ${
-              tab.isActive
-                ? "bg-primary text-white shadow-subtle"
-                : "text-[#989EA7] hover:text-[#2C2C2C] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
-            }`}
-          >
-            <Icon size={18} strokeWidth={tab.isActive ? 2.2 : 2} />
-          </Link>
-        );
-      })}
+      {/* 1. Home Button */}
+      <Link
+        to="/home"
+        aria-label="Home"
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
+          location.pathname === "/home" || location.pathname === "/app"
+            ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+            : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+        }`}
+      >
+        <Home size={17} strokeWidth={location.pathname === "/home" || location.pathname === "/app" ? 2.2 : 2} />
+      </Link>
+
+      {/* 2. Integrated Search Box in the Island */}
+      <form onSubmit={handleIslandSearch} className="flex-1 min-w-0">
+        <div className="relative flex items-center w-full">
+          <Search
+            size={13}
+            className="absolute left-2.5 text-[#71717A] dark:text-[#A1A1AA] shrink-0 pointer-events-none"
+          />
+          <input
+            type="text"
+            value={islandSearchQuery}
+            onChange={(e) => setIslandSearchQuery(e.target.value)}
+            placeholder="Search pros & services..."
+            className="h-8.5 w-full rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] pl-7.5 pr-7 text-xs text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition-all"
+          />
+          {islandSearchQuery ? (
+            <button
+              type="button"
+              onClick={() => setIslandSearchQuery("")}
+              className="absolute right-2 text-[#71717A] hover:text-[#09090B] dark:hover:text-white cursor-pointer"
+            >
+              <X size={12} />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              aria-label="Search"
+              className="absolute right-1 flex h-6.5 w-6.5 items-center justify-center rounded-full bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all cursor-pointer"
+            >
+              <Search size={11} />
+            </button>
+          )}
+        </div>
+      </form>
+
+      {/* 3. My Circle Button */}
+      <Link
+        to="/saved"
+        aria-label="My Circle"
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
+          location.pathname === "/saved" || location.pathname === "/my-circle"
+            ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+            : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+        }`}
+      >
+        <Heart
+          size={17}
+          strokeWidth={
+            location.pathname === "/saved" ||
+            location.pathname === "/my-circle"
+              ? 2.2
+              : 2
+          }
+        />
+      </Link>
+
+      {/* 4. Profile Button */}
+      <Link
+        to={loggedIn ? "/profile" : "/login"}
+        aria-label="Profile"
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
+          location.pathname === "/profile" || location.pathname === "/login"
+            ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+            : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+        }`}
+      >
+        <UserRound
+          size={17}
+          strokeWidth={
+            location.pathname === "/profile" ||
+            location.pathname === "/login"
+              ? 2.2
+              : 2
+          }
+        />
+      </Link>
     </nav>
   );
 }

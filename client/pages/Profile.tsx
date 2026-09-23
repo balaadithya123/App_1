@@ -366,7 +366,7 @@ export default function Profile() {
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               <Link
                 to="/login"
-                className="flex items-center justify-center gap-1.5 rounded-full bg-primary py-2.5 px-4 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-full bg-primary py-2.5 px-4 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition cursor-pointer"
               >
                 <LogIn size={14} /> Sign In
               </Link>
@@ -493,7 +493,7 @@ export default function Profile() {
                   )}
                 </div>
                 <label
-                  className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white dark:border-black bg-primary text-white shadow-subtle hover:bg-[#157ad4] transition"
+                  className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white dark:border-black bg-primary text-white shadow-subtle hover:bg-[#0f766e] transition"
                   aria-label="Upload profile photo"
                 >
                   <ImagePlus size={14} />
@@ -682,7 +682,7 @@ export default function Profile() {
                     type="button"
                     onClick={verifyContact}
                     disabled={saving}
-                    className="mt-2.5 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-60 cursor-pointer"
+                    className="mt-2.5 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition disabled:opacity-60 cursor-pointer"
                   >
                     <Check size={15} />
                     Verify & Save
@@ -694,7 +694,7 @@ export default function Profile() {
                     type="button"
                     onClick={saveProfile}
                     disabled={saving}
-                    className="flex h-10 flex-1 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-60 cursor-pointer"
+                    className="flex h-10 flex-1 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition disabled:opacity-60 cursor-pointer"
                   >
                     {saving ? "Saving..." : "Save changes"}
                   </button>

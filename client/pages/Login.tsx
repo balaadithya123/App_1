@@ -67,15 +67,15 @@ export default function Login() {
   return (
     <PageShell backTo="/" backLabel="Home">
       <div className="mx-auto max-w-[460px] pb-12">
-        <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-8">
-          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-[14px] bg-primary text-white shadow-subtle">
-            <UserRound size={24} />
+        <section className="rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 shadow-sm sm:p-8">
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-[14px] bg-black text-white dark:bg-white dark:text-black shadow-sm">
+            <UserRound size={22} />
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
+          <h1 className="text-2xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
             Welcome back
           </h1>
-          <p className="mt-1.5 text-xs text-[#67696D] dark:text-[#A1A1AA]">
+          <p className="mt-1.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
             Sign in to manage your worker profile, bookmarks, and requests.
           </p>
 
@@ -83,7 +83,7 @@ export default function Login() {
             <div>
               <label
                 htmlFor="login-email"
-                className="mb-1.5 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]"
+                className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]"
               >
                 Email Address
               </label>
@@ -94,14 +94,14 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="h-11 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3.5 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] placeholder:text-[#989EA7] dark:placeholder:text-[#71717A] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition shadow-subtle"
+                className="h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3.5 text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] focus:border-neutral-400 dark:focus:border-neutral-500 focus:outline-none transition shadow-sm"
               />
             </div>
 
             <div>
               <label
                 htmlFor="login-password"
-                className="mb-1.5 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]"
+                className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]"
               >
                 Password
               </label>
@@ -113,12 +113,12 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Your account password"
-                  className="h-11 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3.5 pr-11 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] placeholder:text-[#989EA7] dark:placeholder:text-[#71717A] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition shadow-subtle"
+                  className="h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3.5 pr-11 text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] focus:border-neutral-400 dark:focus:border-neutral-500 focus:outline-none transition shadow-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-[#989EA7] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+                  className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-[#71717A] hover:text-[#09090B] dark:hover:text-[#FAFAFA] cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -126,12 +126,12 @@ export default function Login() {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA] cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded accent-primary"
+                  className="h-4 w-4 rounded accent-black dark:accent-white"
                 />
                 Remember me
               </label>
@@ -149,12 +149,12 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-60 cursor-pointer"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer active:scale-[0.99]"
             >
               {loading ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Signing in...
+                  <Loader2 size={16} className="animate-spin text-current" />
+                  <span>Signing in...</span>
                 </>
               ) : (
                 "Sign In"
@@ -162,20 +162,20 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="mt-6 border-t border-[#E7ECF1] dark:border-[#1F1F1F] pt-5 text-center">
-            <p className="text-xs text-[#67696D] dark:text-[#A1A1AA]">
+          <div className="mt-6 border-t border-[#E4E4E7] dark:border-[#27272A] pt-5 text-center">
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
               Don't have an account yet?
             </p>
             <div className="mt-3 flex items-center justify-center gap-2">
               <Link
                 to="/join"
-                className="inline-flex rounded-full border border-primary px-5 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-white transition shadow-subtle"
+                className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-2 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500 transition shadow-sm"
               >
                 Join as Worker
               </Link>
               <Link
                 to="/register-agency"
-                className="inline-flex rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] px-5 py-2 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary transition shadow-subtle"
+                className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-2 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500 transition shadow-sm"
               >
                 Join as Agency
               </Link>

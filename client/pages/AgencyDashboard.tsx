@@ -473,7 +473,7 @@ export default function AgencyDashboard() {
     return (
       <PageShell hideBack hideHome containerWidth="lg">
         <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 text-center">
-          <Building2 size={36} className="mx-auto text-primary" />
+          <Building2 size={36} className="mx-auto text-foreground" />
           <h1 className="mt-3 text-lg font-bold text-foreground">
             Agency Portal
           </h1>
@@ -484,13 +484,13 @@ export default function AgencyDashboard() {
           <div className="mt-5 flex flex-col gap-2">
             <Link
               to="/agency/register"
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground"
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-4 text-xs font-semibold text-background hover:bg-neutral-800 dark:hover:bg-neutral-200 transition"
             >
               Register Agency Profile
             </Link>
             <Link
               to="/"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-secondary px-4 text-xs font-semibold text-foreground"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-secondary px-4 text-xs font-semibold text-foreground hover:bg-secondary/80 transition"
             >
               Return to Home
             </Link>
@@ -544,7 +544,7 @@ export default function AgencyDashboard() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <Building2 size={24} className="text-primary" />
+                  <Building2 size={24} className="text-foreground" />
                 )}
               </div>
               <div>
@@ -553,7 +553,7 @@ export default function AgencyDashboard() {
                     {dashboard.agency.name}
                   </h1>
                   {dashboard.agency.verified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 shadow-subtle">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 shadow-sm">
                       <BadgeCheck size={13} /> Verified Agency
                     </span>
                   )}
@@ -579,14 +579,14 @@ export default function AgencyDashboard() {
             <div className="flex flex-wrap items-center gap-2">
               <Link
                 to={`/agency/${dashboard.agency.id}`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E7ECF1] bg-white px-3.5 text-xs font-semibold text-[#2C2C2C] shadow-subtle transition hover:bg-[#F6F9FC]"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-sm transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
               >
                 <ExternalLink size={13} />
                 <span>Public Page</span>
               </Link>
               <Link
                 to="/agency/edit"
-                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-semibold text-white shadow-subtle transition hover:bg-[#157ad4]"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-4 text-xs font-semibold shadow-sm transition hover:bg-neutral-800 dark:hover:bg-neutral-200"
               >
                 <span>Edit Profile</span>
               </Link>
@@ -683,10 +683,10 @@ export default function AgencyDashboard() {
               type="button"
               onClick={() => copy("code", dashboard.agency.agency_code || "")}
               disabled={!dashboard.agency.agency_code}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary px-4 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background disabled:opacity-50 cursor-pointer"
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] disabled:opacity-50 cursor-pointer shadow-xs"
             >
               {copied === "code" ? (
-                <Check size={14} className="text-primary" />
+                <Check size={14} className="text-emerald-500" />
               ) : (
                 <Copy size={14} />
               )}
@@ -697,7 +697,7 @@ export default function AgencyDashboard() {
               type="button"
               onClick={() => copy("link", shareUrl)}
               disabled={!shareUrl}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-90 disabled:opacity-50 cursor-pointer"
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-black text-white dark:bg-white dark:text-black px-4 text-xs font-semibold shadow-xs transition hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 cursor-pointer"
             >
               {copied === "link" ? (
                 <Check size={14} />
@@ -837,7 +837,7 @@ export default function AgencyDashboard() {
                                   </span>
                                 )}
                               </div>
-                              <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                              <span className="inline-block rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-foreground">
                                 {w.category || "General Specialist"}
                               </span>
                             </div>
@@ -845,12 +845,12 @@ export default function AgencyDashboard() {
 
                           {/* Availability Badge */}
                           {w.available_today ? (
-                            <span className="flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                            <span className="flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               Available
                             </span>
                           ) : (
-                            <span className="rounded-full bg-[#F6F9FC] border border-[#E7ECF1] px-2 py-0.5 text-[10px] font-medium text-[#67696D]">
+                            <span className="rounded-full bg-secondary border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                               Off-duty
                             </span>
                           )}
@@ -926,7 +926,7 @@ export default function AgencyDashboard() {
                         {w.phone && (
                           <a
                             href={`tel:+91${w.phone}`}
-                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-secondary px-2 text-xs font-semibold text-foreground transition hover:bg-foreground hover:text-background"
+                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
                             title="Call worker"
                           >
                             <Phone size={12} />
@@ -941,7 +941,7 @@ export default function AgencyDashboard() {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-emerald-600 px-2 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-[#128C7E] px-2 text-xs font-semibold text-white transition hover:bg-[#075E54]"
                             title="WhatsApp worker"
                           >
                             <MessageCircle size={12} />
@@ -952,7 +952,7 @@ export default function AgencyDashboard() {
                         <button
                           type="button"
                           onClick={() => setSelectedWorker(w)}
-                          className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-card px-2 text-xs font-semibold text-foreground transition hover:bg-secondary cursor-pointer"
+                          className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] cursor-pointer"
                           title="View all worker details"
                         >
                           <Eye size={12} />
@@ -962,7 +962,7 @@ export default function AgencyDashboard() {
                         <button
                           type="button"
                           onClick={() => setWorkerToRemove(w)}
-                          className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-destructive/30 bg-destructive/5 px-2 text-xs font-medium text-destructive transition hover:bg-destructive hover:text-destructive-foreground cursor-pointer"
+                          className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-destructive/30 bg-destructive/5 px-2 text-xs font-medium text-destructive transition hover:bg-destructive hover:text-white cursor-pointer"
                           title={`Remove ${w.name} from agency roster`}
                         >
                           <UserMinus size={13} />
@@ -971,7 +971,7 @@ export default function AgencyDashboard() {
 
                         <Link
                           to={`/worker?worker=${w.id}`}
-                          className="inline-flex h-8 items-center justify-center rounded-lg border border-border bg-card px-2 text-muted-foreground transition hover:text-foreground"
+                          className="inline-flex h-8 items-center justify-center rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-[#71717A] dark:text-[#A1A1AA] transition hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
                           title="Public Profile"
                         >
                           <ExternalLink size={12} />
@@ -1164,14 +1164,14 @@ export default function AgencyDashboard() {
                     {/* Top: Project Title & Status */}
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="inline-block rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wide">
+                        <span className="inline-block rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold text-foreground uppercase tracking-wide">
                           {p.service || "Contract"}
                         </span>
                         <h3 className="mt-1 text-sm font-bold text-foreground">
                           {p.title}
                         </h3>
                       </div>
-                      <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 capitalize">
+                      <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 capitalize">
                         {p.status.replace("_", " ")}
                       </span>
                     </div>
@@ -1441,7 +1441,7 @@ export default function AgencyDashboard() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs font-medium text-primary">
+                  <p className="text-xs font-semibold text-foreground">
                     {selectedWorker.category || "Specialist"}
                   </p>
                 </div>
@@ -1476,7 +1476,7 @@ export default function AgencyDashboard() {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 font-semibold text-white hover:bg-emerald-700 transition"
+                    className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#128C7E] font-semibold text-white hover:bg-[#075E54] transition"
                   >
                     <MessageCircle size={13} />
                     <span>WhatsApp</span>
@@ -1612,7 +1612,7 @@ export default function AgencyDashboard() {
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-border pb-3.5">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
                   <FolderKanban size={16} />
                 </div>
                 <div>

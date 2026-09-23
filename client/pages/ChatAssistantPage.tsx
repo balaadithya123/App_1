@@ -352,7 +352,7 @@ export default function ChatAssistantPage() {
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border bg-secondary py-1.5 text-[11px] font-bold text-foreground hover:bg-secondary/80 transition"
+                              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-[#128C7E] hover:bg-[#075E54] text-white py-1.5 text-[11px] font-bold shadow-xs transition"
                             >
                               <MessageSquare size={11} />
                               <span>WhatsApp</span>

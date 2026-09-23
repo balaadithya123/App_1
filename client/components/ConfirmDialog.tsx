@@ -66,17 +66,17 @@ export default function ConfirmDialog({
 
   const getConfirmButtonClasses = () => {
     if (variant === "danger") {
-      return "bg-rose-600 text-white hover:bg-rose-700 shadow-subtle";
+      return "bg-rose-600 text-white hover:bg-rose-700 shadow-sm";
     }
     if (variant === "warning") {
-      return "bg-amber-600 text-white hover:bg-amber-700 shadow-subtle";
+      return "bg-amber-600 text-white hover:bg-amber-700 shadow-sm";
     }
-    return "bg-primary text-white hover:bg-[#157ad4] shadow-subtle";
+    return "bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-sm";
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs transition-opacity duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
@@ -87,14 +87,14 @@ export default function ConfirmDialog({
         }
       }}
     >
-      <div className="relative w-full max-w-md rounded-[20px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-xl transition-all scale-100">
+      <div className="relative w-full max-w-md rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-xl transition-all scale-100">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
           disabled={loading}
           aria-label="Close dialog"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-[#989EA7] transition hover:bg-[#F6F9FC] hover:text-[#2C2C2C] disabled:opacity-50 cursor-pointer"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-[#71717A] dark:text-[#A1A1AA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white disabled:opacity-50 cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -111,13 +111,13 @@ export default function ConfirmDialog({
           <div className="min-w-0 flex-1 pr-4">
             <h2
               id="confirm-dialog-title"
-              className="text-base font-bold tracking-tight text-[#2C2C2C] sm:text-lg"
+              className="text-base font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA] sm:text-lg"
             >
               {title}
             </h2>
             <div
               id="confirm-dialog-description"
-              className="mt-1 text-xs sm:text-sm text-[#67696D] leading-relaxed"
+              className="mt-1 text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] leading-relaxed"
             >
               {description}
             </div>
@@ -126,15 +126,15 @@ export default function ConfirmDialog({
 
         {/* Optional Item Details Card */}
         {itemDetails && (
-          <div className="mt-4 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-3.5 text-xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#67696D]">
+          <div className="mt-4 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3.5 text-xs">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
               {itemDetails.label}
             </div>
-            <div className="mt-0.5 text-sm font-bold text-[#2C2C2C]">
+            <div className="mt-0.5 text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
               {itemDetails.value}
             </div>
             {itemDetails.subValue && (
-              <div className="mt-0.5 text-xs text-[#67696D]">
+              <div className="mt-0.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                 {itemDetails.subValue}
               </div>
             )}
@@ -147,7 +147,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-[#E7ECF1] bg-white px-5 text-xs sm:text-sm font-semibold text-[#2C2C2C] transition hover:bg-[#F6F9FC] disabled:opacity-50 cursor-pointer"
+            className="inline-flex h-10 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 text-xs sm:text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 disabled:opacity-50 cursor-pointer"
           >
             {cancelText}
           </button>
@@ -159,7 +159,7 @@ export default function ConfirmDialog({
           >
             {loading ? (
               <>
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin text-current" />
                 <span>Processing...</span>
               </>
             ) : (

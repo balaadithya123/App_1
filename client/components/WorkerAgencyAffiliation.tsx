@@ -310,25 +310,25 @@ export default function WorkerAgencyAffiliation({
 
   if (loading) {
     return (
-      <div className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 animate-pulse shadow-soft">
-        <div className="h-5 w-40 bg-[#F6F9FC] rounded-full mb-2" />
-        <div className="h-4 w-60 bg-[#F6F9FC] rounded-full" />
+      <div className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 animate-pulse shadow-sm">
+        <div className="h-5 w-40 bg-[#FAFAFA] dark:bg-[#09090B] rounded-full mb-2" />
+        <div className="h-4 w-60 bg-[#FAFAFA] dark:bg-[#09090B] rounded-full" />
       </div>
     );
   }
 
   return (
-    <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
-      <div className="flex items-center justify-between gap-4 border-b border-[#E7ECF1] pb-4 mb-4">
+    <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
+      <div className="flex items-center justify-between gap-4 border-b border-[#E4E4E7] dark:border-[#27272A] pb-4 mb-4">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
             <Building2 size={16} />
           </span>
           <div>
-            <h2 className="text-sm font-bold text-[#2C2C2C]">
+            <h2 className="text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
               Agency Affiliation
             </h2>
-            <p className="text-xs text-[#67696D]">
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
               Work independently or join a licensed agency team for bulk
               contracts.
             </p>
@@ -336,26 +336,26 @@ export default function WorkerAgencyAffiliation({
         </div>
 
         {agency ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600">
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
             <ShieldCheck size={12} />
             <span>Agency Member</span>
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-2.5 py-0.5 text-[11px] font-semibold text-[#67696D]">
+          <span className="inline-flex items-center gap-1 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2.5 py-0.5 text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
             Independent Pro
           </span>
         )}
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-destructive/30 bg-destructive/10 p-3 text-xs font-medium text-destructive">
+        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 p-3 text-xs font-medium text-rose-600 dark:text-rose-400">
           <AlertCircle size={14} className="shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-700">
+        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 p-3 text-xs font-medium text-emerald-700 dark:text-emerald-300">
           <CheckCircle2 size={14} className="shrink-0" />
           <span>{success}</span>
         </div>
@@ -363,24 +363,24 @@ export default function WorkerAgencyAffiliation({
 
       {agency ? (
         <div className="space-y-3">
-          <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
+          <div className="rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-[#2C2C2C]">
+                  <h3 className="text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
                     {agency.name}
                   </h3>
                   {agency.verified && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-primary">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                       <ShieldCheck size={11} />
                       Verified Agency
                     </span>
                   )}
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#67696D]">
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                   <span>
                     Code:{" "}
-                    <strong className="font-mono text-[#2C2C2C]">
+                    <strong className="font-mono text-[#09090B] dark:text-[#FAFAFA]">
                       {agency.agency_code || "AGN-..."}
                     </strong>
                   </span>
@@ -394,7 +394,7 @@ export default function WorkerAgencyAffiliation({
               <div className="flex items-center gap-2">
                 <Link
                   to={`/agency-profile?id=${agency.id}`}
-                  className="inline-flex h-8 items-center gap-1 rounded-full border border-[#E7ECF1] bg-white px-3 text-xs font-semibold text-[#2C2C2C] hover:bg-[#F6F9FC] shadow-subtle transition"
+                  className="inline-flex h-8 items-center gap-1 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] shadow-sm transition"
                 >
                   <span>View Profile</span>
                   <ArrowRight size={12} />
@@ -404,7 +404,7 @@ export default function WorkerAgencyAffiliation({
                     type="button"
                     onClick={() => setShowLeaveConfirm(true)}
                     disabled={submitting}
-                    className="inline-flex h-8 items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-3 text-xs font-semibold text-destructive hover:bg-destructive/20 transition cursor-pointer"
+                    className="inline-flex h-8 items-center gap-1 rounded-full border border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 px-3 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition cursor-pointer"
                     title="Unlink from Agency"
                   >
                     <Unlink size={12} />
@@ -438,11 +438,11 @@ export default function WorkerAgencyAffiliation({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4">
-            <h3 className="text-xs font-bold text-[#2C2C2C] mb-1">
+          <div className="rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-4">
+            <h3 className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] mb-1">
               Have an Agency Joining Code?
             </h3>
-            <p className="text-xs text-[#67696D] mb-3">
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mb-3">
               If your contractor or agency gave you a 4–6 character invite code
               (e.g. <code>AGN-ADMN</code> or <code>AGN-7K2P</code>), enter it
               below to join their verified roster.
@@ -460,18 +460,18 @@ export default function WorkerAgencyAffiliation({
                     setAgencyCodeInput(e.target.value.toUpperCase())
                   }
                   placeholder="e.g. AGN-ADMN"
-                  className="h-10 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 font-mono text-sm uppercase tracking-wider text-[#2C2C2C] placeholder:text-[#989EA7] outline-hidden focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="h-10 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3 font-mono text-sm uppercase tracking-wider text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#71717A] dark:placeholder:text-[#A1A1AA] outline-hidden focus:border-neutral-400 dark:focus:border-neutral-500 focus:ring-2 focus:ring-black/10 dark:focus:ring-white/10"
                   required
                 />
               </div>
               <button
                 type="submit"
                 disabled={submitting || !agencyCodeInput.trim()}
-                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-primary px-5 text-xs font-semibold text-white hover:bg-[#157ad4] shadow-subtle transition disabled:opacity-50 cursor-pointer active:scale-95"
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-5 text-xs font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-sm transition disabled:opacity-50 cursor-pointer active:scale-95"
               >
                 {submitting ? (
                   <>
-                    <Loader2 size={13} className="animate-spin" />
+                    <Loader2 size={13} className="animate-spin text-current" />
                     <span>Verifying...</span>
                   </>
                 ) : (
@@ -484,11 +484,11 @@ export default function WorkerAgencyAffiliation({
             </form>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-[#67696D] px-1">
+          <div className="flex items-center justify-between text-xs text-[#71717A] dark:text-[#A1A1AA] px-1">
             <span>Looking for agencies to collaborate with?</span>
             <Link
               to="/search?type=agencies"
-              className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
+              className="text-[#09090B] dark:text-[#FAFAFA] hover:underline font-semibold inline-flex items-center gap-1"
             >
               <span>Browse registered agencies</span>
               <ArrowRight size={11} />

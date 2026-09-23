@@ -33,7 +33,7 @@ const categories = [
 ];
 const experienceBands = ["<1", "1–3", "3–5", "5+"];
 const inputClass =
-  "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3.5 text-sm text-[#2C2C2C] focus:border-primary focus:bg-white focus:outline-none transition placeholder:text-[#989EA7]";
+  "h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3.5 text-sm text-[#09090B] dark:text-[#FAFAFA] focus:border-neutral-400 dark:focus:border-neutral-500 focus:outline-none transition placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A]";
 const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 export default function Register() {
@@ -416,16 +416,16 @@ export default function Register() {
   if (!role) {
     return (
       <PageShell backTo="/" backLabel="Back">
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white px-5 py-8 text-center shadow-soft sm:px-8 sm:py-10">
-          <h1 className="text-3xl font-bold text-[#2C2C2C] sm:text-4xl">
+        <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-8 text-center shadow-sm sm:px-8 sm:py-10">
+          <h1 className="text-3xl font-bold text-[#09090B] dark:text-[#FAFAFA] sm:text-4xl">
             Register
           </h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-[#67696D]">
+          <p className="mx-auto mt-2 max-w-xl text-sm text-[#71717A] dark:text-[#A1A1AA]">
             Choose how you want to use Local Worker Discovery.
           </p>
           <div className="mx-auto mt-8 grid max-w-5xl gap-5 sm:grid-cols-3">
             <Card
-              icon={<HardHat size={36} className="text-primary" />}
+              icon={<HardHat size={36} className="text-[#09090B] dark:text-[#FAFAFA]" />}
               title="Register as Worker"
               text="Create a profile so nearby people can find your skills and services."
               actionLabel="Continue →"
@@ -436,7 +436,7 @@ export default function Register() {
               }}
             />
             <Card
-              icon={<Building2 size={36} className="text-primary" />}
+              icon={<Building2 size={36} className="text-[#09090B] dark:text-[#FAFAFA]" />}
               title="Register as Employer"
               text="Create a lightweight client account to track requests later."
               onClick={() => {
@@ -445,17 +445,17 @@ export default function Register() {
               }}
             />
             <Card
-              icon={<Users size={36} className="text-primary" />}
+              icon={<Users size={36} className="text-[#09090B] dark:text-[#FAFAFA]" />}
               title="Register as Agency"
               text="Create an agency profile and manage a team of local workers."
               onClick={() => navigate("/register-agency")}
             />
           </div>
-          <p className="mt-8 text-sm text-[#67696D]">
+          <p className="mt-8 text-sm text-[#71717A] dark:text-[#A1A1AA]">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="font-bold text-primary hover:underline"
+              className="font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline"
             >
               Login
             </Link>
@@ -484,21 +484,21 @@ export default function Register() {
         />
 
         {/* Voice Auto-fill Bar directly inside form */}
-        <div className="mt-6 rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft transition-colors">
+        <div className="mt-6 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-sm transition-colors">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-sm font-bold text-[#2C2C2C]">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
                 <Mic
                   size={16}
                   className={
                     isVoiceRecording
                       ? "animate-pulse text-rose-500"
-                      : "text-primary"
+                      : "text-current"
                   }
                 />
                 <span>Quick voice fill</span>
               </div>
-              <p className="mt-0.5 text-xs text-[#67696D]">
+              <p className="mt-0.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                 Speak your name, trade, location, and years of experience to
                 automatically fill the fields below.
               </p>
@@ -509,7 +509,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={stopVoiceFill}
-                  className="inline-flex h-9 items-center gap-2 rounded-full bg-rose-600 px-4 text-xs font-bold text-white transition hover:bg-rose-700 shadow-subtle cursor-pointer"
+                  className="inline-flex h-9 items-center gap-2 rounded-full bg-rose-600 px-4 text-xs font-bold text-white transition hover:bg-rose-700 shadow-sm cursor-pointer"
                 >
                   <Square size={13} className="fill-white" />
                   <span>Stop & Fill</span>
@@ -519,7 +519,7 @@ export default function Register() {
                   type="button"
                   onClick={startVoiceFill}
                   disabled={isVoiceProcessing}
-                  className="inline-flex h-9 items-center gap-2 rounded-full border border-primary/40 bg-primary-100/15 px-4 text-xs font-bold text-primary transition hover:bg-primary-100/30 disabled:opacity-50 shadow-subtle cursor-pointer"
+                  className="inline-flex h-9 items-center gap-2 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-4 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 disabled:opacity-50 shadow-sm cursor-pointer"
                 >
                   {isVoiceProcessing ? (
                     <>
@@ -538,7 +538,7 @@ export default function Register() {
           </div>
 
           {isVoiceRecording && (
-            <div className="mt-3 flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-3.5 py-1.5 text-xs font-medium text-rose-700">
+            <div className="mt-3 flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 px-3.5 py-1.5 text-xs font-medium text-rose-700 dark:text-rose-400">
               <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
               <span>
                 Listening... Speak naturally in English, Tamil, or Hindi.
@@ -547,14 +547,14 @@ export default function Register() {
           )}
 
           {voiceSuccess && (
-            <div className="mt-3 flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 text-xs font-medium text-emerald-700">
+            <div className="mt-3 flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-3.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
               <CheckCircle2 size={15} className="shrink-0" />
               <span>{voiceSuccess}</span>
             </div>
           )}
 
           {voiceError && (
-            <div className="mt-3 flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-3.5 py-1.5 text-xs font-medium text-rose-700">
+            <div className="mt-3 flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 px-3.5 py-1.5 text-xs font-medium text-rose-700 dark:text-rose-400">
               <AlertCircle size={15} className="shrink-0" />
               <span>{voiceError}</span>
             </div>
@@ -563,7 +563,7 @@ export default function Register() {
 
         <form
           onSubmit={handleWorker}
-          className="mt-6 space-y-4 rounded-[16px] border border-[#E7ECF1] bg-white p-6 shadow-soft sm:p-8"
+          className="mt-6 space-y-4 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 shadow-sm sm:p-8"
         >
           <Field
             name="email"
@@ -588,7 +588,7 @@ export default function Register() {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
               Name
             </label>
             <input
@@ -602,7 +602,7 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
               Primary Service Category
             </label>
             <select
@@ -634,7 +634,7 @@ export default function Register() {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
               Years of Experience
             </label>
             <select
@@ -654,29 +654,29 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
               Agency Affiliation
             </label>
             <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-4 py-3 text-sm font-semibold text-[#2C2C2C] cursor-pointer">
+              <label className="flex items-center gap-2 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-4 py-3 text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] cursor-pointer">
                 <input
                   type="radio"
                   name="affiliation"
                   value="independent"
                   checked={affiliation === "independent"}
                   onChange={() => setAffiliation("independent")}
-                  className="accent-primary"
+                  className="accent-black dark:accent-white"
                 />{" "}
                 Join as independent
               </label>
-              <label className="flex items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-4 py-3 text-sm font-semibold text-[#2C2C2C] cursor-pointer">
+              <label className="flex items-center gap-2 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-4 py-3 text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] cursor-pointer">
                 <input
                   type="radio"
                   name="affiliation"
                   value="agency"
                   checked={affiliation === "agency"}
                   onChange={() => setAffiliation("agency")}
-                  className="accent-primary"
+                  className="accent-black dark:accent-white"
                 />{" "}
                 Enter agency code
               </label>
@@ -708,7 +708,7 @@ export default function Register() {
           {error && (
             <p
               role="alert"
-              className="text-center text-xs font-semibold text-rose-600"
+              className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400"
             >
               {error}
             </p>
@@ -717,7 +717,7 @@ export default function Register() {
           {success && (
             <p
               role="status"
-              className="rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-center text-xs font-semibold text-emerald-700"
+              className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-4 py-2 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300"
             >
               {success}
             </p>
@@ -725,11 +725,11 @@ export default function Register() {
 
           <button
             disabled={busy}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-white hover:bg-[#157ad4] shadow-subtle transition disabled:opacity-70 cursor-pointer"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-70 cursor-pointer"
           >
             {busy ? (
               <>
-                <Loader2 size={17} className="animate-spin" /> Processing...
+                <Loader2 size={17} className="animate-spin text-current" /> Processing...
               </>
             ) : otpSent ? (
               "Verify Phone & Register"
@@ -750,7 +750,7 @@ export default function Register() {
       />
       <form
         onSubmit={handleEmployer}
-        className="mt-6 space-y-4 rounded-[16px] border border-[#E7ECF1] bg-white p-6 shadow-soft sm:p-8"
+        className="mt-6 space-y-4 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 shadow-sm sm:p-8"
       >
         <Field
           name="email"
@@ -796,7 +796,7 @@ export default function Register() {
         {error && (
           <p
             role="alert"
-            className="text-center text-xs font-semibold text-rose-600"
+            className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400"
           >
             {error}
           </p>
@@ -804,18 +804,18 @@ export default function Register() {
         {success && (
           <p
             role="status"
-            className="rounded-full bg-emerald-50 border border-emerald-200 px-4 py-2 text-center text-xs font-semibold text-emerald-700"
+            className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-4 py-2 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300"
           >
             {success}
           </p>
         )}
         <button
           disabled={busy}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-bold text-white hover:bg-[#157ad4] shadow-subtle transition disabled:opacity-70 cursor-pointer"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-70 cursor-pointer"
         >
           {busy ? (
             <>
-              <Loader2 size={17} className="animate-spin" /> Processing...
+              <Loader2 size={17} className="animate-spin text-current" /> Processing...
             </>
           ) : otpSent ? (
             "Verify Phone & Register"
@@ -844,18 +844,18 @@ function Card({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-6 text-left shadow-soft hover:border-primary/40 transition">
+    <div className="flex flex-col justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-left shadow-sm hover:border-neutral-400 dark:hover:border-neutral-600 transition">
       <div>
         <div className="mb-4 inline-flex">{icon}</div>
-        <h2 className="text-lg font-bold text-[#2C2C2C]">{title}</h2>
-        <p className="mt-1.5 text-xs text-[#67696D] leading-relaxed">{text}</p>
+        <h2 className="text-lg font-bold text-[#09090B] dark:text-[#FAFAFA]">{title}</h2>
+        <p className="mt-1.5 text-xs text-[#71717A] dark:text-[#A1A1AA] leading-relaxed">{text}</p>
       </div>
       <div className="mt-5 space-y-3">
         {children}
         <button
           type="button"
           onClick={onClick}
-          className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-[#157ad4] transition cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline transition cursor-pointer"
         >
           {actionLabel}
         </button>
@@ -866,9 +866,9 @@ function Card({
 
 function Header({ title, text }: { title: string; text: string }) {
   return (
-    <section className="rounded-[16px] border border-[#E7ECF1] bg-white px-6 py-6 shadow-soft sm:px-8 sm:py-8">
-      <h1 className="text-2xl font-bold text-[#2C2C2C] sm:text-3xl">{title}</h1>
-      <p className="mt-1 text-xs text-[#67696D]">{text}</p>
+    <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-6 py-6 shadow-sm sm:px-8 sm:py-8">
+      <h1 className="text-2xl font-bold text-[#09090B] dark:text-[#FAFAFA] sm:text-3xl">{title}</h1>
+      <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA]">{text}</p>
     </section>
   );
 }
@@ -890,10 +890,10 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold text-[#2C2C2C]">
+      <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
         {label}
         {!required && (
-          <span className="ml-1 font-normal text-[#989EA7]">(optional)</span>
+          <span className="ml-1 font-normal text-[#71717A] dark:text-[#A1A1AA]">(optional)</span>
         )}
       </label>
       <input

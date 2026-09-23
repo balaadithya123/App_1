@@ -148,3 +148,137 @@ export async function detectGpsLocation(
     );
   });
 }
+
+const CITY_ALIASES: Record<string, string[]> = {
+  bengaluru: ["bangalore"],
+  bangalore: ["bengaluru"],
+  chennai: ["madras"],
+  madras: ["chennai"],
+  mumbai: ["bombay"],
+  bombay: ["mumbai"],
+  kolkata: ["calcutta"],
+  calcutta: ["kolkata"],
+  kochi: ["cochin"],
+  cochin: ["kochi"],
+  gurugram: ["gurgaon"],
+  gurgaon: ["gurugram"],
+  puducherry: ["pondicherry"],
+  pondicherry: ["puducherry"],
+  thiruvananthapuram: ["trivandrum"],
+  trivandrum: ["thiruvananthapuram"],
+  trichy: ["tiruchirappalli"],
+  tiruchirappalli: ["trichy"],
+  coimbatore: ["kovai"],
+  kovai: ["coimbatore"],
+};
+
+/**
+ * Checks if geolocation permission is granted and auto-detects user's GPS location.
+ */
+export async function autoDetectLocationIfGranted(): Promise<LocationDetails | null> {
+  if (typeof window === "undefined" || !navigator.geolocation) return null;
+  try {
+    if (navigator.permissions && navigator.permissions.query) {
+      const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+      if (status.state === "granted") {
+        return await detectGpsLocation(true);
+      }
+    }
+  } catch {}
+  return null;
+}
+
+const normalizeLoc = (loc: string) =>
+  loc
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * Intelligent locality & city matcher with stop-word boundary filters and city aliases.
+ * Prevents false positive substring matches across distinct cities.
+ */
+export function isLocationMatch(
+  workerLocality?: string,
+  targetLocality?: string,
+): boolean {
+  if (!targetLocality || !targetLocality.trim()) return true;
+  if (!workerLocality || !workerLocality.trim()) return false;
+
+  const wNorm = normalizeLoc(workerLocality);
+  const tNorm = normalizeLoc(targetLocality);
+
+  if (!wNorm || !tNorm) return false;
+  if (wNorm === tNorm) return true;
+  if (wNorm.includes(tNorm) || tNorm.includes(wNorm)) return true;
+
+  const stopWords = new Set([
+    "near",
+    "opposite",
+    "road",
+    "street",
+    "nagar",
+    "colony",
+    "layout",
+    "tamil",
+    "nadu",
+    "india",
+    "area",
+    "main",
+    "cross",
+    "district",
+    "zone",
+    "city",
+  ]);
+
+  const wWords = wNorm
+    .split(" ")
+    .filter((w) => w.length >= 3 && !stopWords.has(w));
+  const tWords = tNorm
+    .split(" ")
+    .filter((w) => w.length >= 3 && !stopWords.has(w));
+
+  // Direct word overlap
+  if (tWords.some((tw) => wWords.some((ww) => ww === tw))) return true;
+
+  // City alias / synonym overlap
+  for (const tw of tWords) {
+    const aliases = CITY_ALIASES[tw] || [];
+    if (aliases.some((al) => wWords.includes(al) || wNorm.includes(al))) {
+      return true;
+    }
+  }
+
+  for (const ww of wWords) {
+    const aliases = CITY_ALIASES[ww] || [];
+    if (aliases.some((al) => tWords.includes(al) || tNorm.includes(al))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Calculates Haversine distance in KM between two geographic coordinates
+ */
+export function calculateDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const R = 6371; // Radius of the Earth in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+

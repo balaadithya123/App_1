@@ -385,7 +385,7 @@ export default function WorkerProfile() {
           <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <Link
               to="/search"
-              className="flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-primary px-6 text-xs font-bold text-white hover:bg-[#157ad4] shadow-subtle transition-all duration-200 active:scale-[0.98]"
+              className="flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-primary px-6 text-xs font-bold text-white hover:bg-[#0f766e] shadow-subtle transition-all duration-200 active:scale-[0.98]"
             >
               <ArrowLeft size={14} />
               <span>Back to search</span>
@@ -817,7 +817,7 @@ export default function WorkerProfile() {
             <a
               href={contactHref}
               onClick={() => setShowContact(false)}
-              className="mt-5 flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-primary text-xs font-bold text-white transition hover:bg-[#157ad4] shadow-subtle active:scale-[0.98]"
+              className="mt-5 flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-primary text-xs font-bold text-white transition hover:bg-[#0f766e] shadow-subtle active:scale-[0.98]"
             >
               <Phone size={14} />
               <span>Call Now</span>
@@ -858,7 +858,7 @@ export default function WorkerProfile() {
             <span>Call</span>
           </button>
 
-          {/* WhatsApp button: Solid standard WhatsApp green */}
+          {/* WhatsApp button: Solid refined WhatsApp teal-green */}
           <a
             href={whatsappHref}
             target="_blank"
@@ -872,7 +872,7 @@ export default function WorkerProfile() {
                 source: "sticky_bottom_bar",
               });
             }}
-            className="flex-1 flex h-11 items-center justify-center gap-2 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-xs sm:text-sm font-bold text-white shadow-subtle active:scale-[0.98] transition cursor-pointer"
+            className="flex-1 flex h-11 items-center justify-center gap-2 rounded-full bg-[#128C7E] hover:bg-[#075E54] text-xs sm:text-sm font-bold text-white shadow-subtle active:scale-[0.98] transition cursor-pointer"
           >
             <MessageCircle size={16} />
             <span>WhatsApp</span>

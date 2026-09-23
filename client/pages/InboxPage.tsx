@@ -269,7 +269,7 @@ export default function InboxPage() {
                 setSheetMode("catalog");
                 setSheetOpen(true);
               }}
-              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] active:scale-95 transition cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] active:scale-95 transition cursor-pointer"
             >
               <Plus size={14} />
               <span>Add Reminder</span>
@@ -438,7 +438,7 @@ export default function InboxPage() {
                 savingEmptyCatalog ||
                 Object.values(emptySelected).filter(Boolean).length === 0
               }
-              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition disabled:opacity-50 cursor-pointer"
             >
               <Check size={14} />
               <span>
@@ -549,7 +549,7 @@ export default function InboxPage() {
                       <div className="mt-4 pt-3 border-t border-[#E7ECF1] dark:border-[#222] flex flex-wrap items-center justify-between gap-2.5">
                         <Link
                           to={browseHref}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] active:scale-95 transition cursor-pointer"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] active:scale-95 transition cursor-pointer"
                         >
                           <Search size={13} />
                           <span>
@@ -760,7 +760,7 @@ export default function InboxPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] cursor-pointer"
+                  className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] cursor-pointer"
                 >
                   Save Changes
                 </button>

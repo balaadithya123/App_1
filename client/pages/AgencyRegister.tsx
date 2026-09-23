@@ -15,7 +15,7 @@ const categoryOptions = [
   "Other",
 ];
 const inputClass =
-  "h-11 w-full rounded-[12px] border border-[#E7ECF1] bg-white px-3 text-sm text-[#2C2C2C] placeholder:text-[#989EA7] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition";
+  "h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3 text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition";
 const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 export default function AgencyRegister() {
@@ -172,14 +172,16 @@ export default function AgencyRegister() {
 
   return (
     <PageShell backTo="/register" backLabel="Back">
-      <section className="rounded-[16px] border border-[#E7ECF1] bg-white px-5 py-7 sm:px-8 sm:py-8 shadow-soft">
+      <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-7 sm:px-8 sm:py-8 shadow-sm">
         <div className="flex items-center gap-3">
-          <Building2 size={32} className="text-primary" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-black text-white dark:bg-white dark:text-black shadow-sm">
+            <Building2 size={24} />
+          </div>
           <div>
-            <h1 className="text-[26px] sm:text-[30px] font-bold leading-tight tracking-tight text-[#2C2C2C]">
+            <h1 className="text-[26px] sm:text-[30px] font-bold leading-tight tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
               Register as an Agency
             </h1>
-            <p className="mt-2 text-sm text-[#67696D]">
+            <p className="mt-2 text-sm text-[#71717A] dark:text-[#A1A1AA]">
               Create an agency profile to get listed in the directory and manage
               local service bookings.
             </p>
@@ -189,7 +191,7 @@ export default function AgencyRegister() {
 
       <form
         onSubmit={submit}
-        className="mt-6 space-y-5 rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft sm:p-7"
+        className="mt-6 space-y-5 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-sm sm:p-7"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
@@ -228,14 +230,14 @@ export default function AgencyRegister() {
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+          <label className="mb-2 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
             Service Categories
           </label>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {categoryOptions.map((c) => (
               <label
                 key={c}
-                className="flex cursor-pointer items-center gap-2 rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-2.5 text-sm text-[#2C2C2C] hover:border-primary/50 transition"
+                className="flex cursor-pointer items-center gap-2 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3 py-2.5 text-sm text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500 transition"
               >
                 <input
                   type="checkbox"
@@ -245,7 +247,7 @@ export default function AgencyRegister() {
                       v.includes(c) ? v.filter((x) => x !== c) : [...v, c],
                     )
                   }
-                  className="rounded text-primary focus:ring-primary"
+                  className="rounded accent-black dark:accent-white"
                 />
                 <span>{c}</span>
               </label>
@@ -268,7 +270,7 @@ export default function AgencyRegister() {
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+          <label className="mb-2 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
             Team Size
           </label>
           <select name="teamSizeBand" defaultValue="2-5" className={inputClass}>
@@ -292,21 +294,21 @@ export default function AgencyRegister() {
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+          <label className="mb-2 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
             About the Agency
           </label>
           <textarea
             name="description"
             rows={4}
             placeholder="Tell people what your agency does"
-            className="w-full resize-none rounded-[12px] border border-[#E7ECF1] bg-white px-3 py-3 text-sm text-[#2C2C2C] placeholder:text-[#989EA7] outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
+            className="w-full resize-none rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3 py-3 text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition"
           />
         </div>
 
         {error && (
           <p
             role="alert"
-            className="text-center text-xs font-semibold text-rose-600"
+            className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400"
           >
             {error}
           </p>
@@ -314,7 +316,7 @@ export default function AgencyRegister() {
         {success && (
           <div
             role="status"
-            className="flex items-center justify-center gap-2 rounded-[12px] bg-emerald-50 border border-emerald-500/20 px-3 py-2.5 text-center text-xs font-semibold text-emerald-700"
+            className="flex items-center justify-center gap-2 rounded-[12px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 dark:border-emerald-800/40 px-3 py-2.5 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300"
           >
             <CheckCircle2 size={16} />
             <span>{success}</span>
@@ -323,11 +325,11 @@ export default function AgencyRegister() {
 
         <button
           disabled={busy}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary text-sm font-semibold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-60 cursor-pointer active:scale-[0.99]"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-semibold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer active:scale-[0.99]"
         >
           {busy ? (
             <>
-              <Loader2 size={17} className="animate-spin" /> Registering
+              <Loader2 size={17} className="animate-spin text-current" /> Registering
               Agency...
             </>
           ) : (
@@ -335,11 +337,11 @@ export default function AgencyRegister() {
           )}
         </button>
 
-        <p className="text-center text-sm text-[#67696D]">
+        <p className="text-center text-sm text-[#71717A] dark:text-[#A1A1AA]">
           Already registered?{" "}
           <Link
             to="/login"
-            className="font-semibold text-primary hover:underline"
+            className="font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:underline"
           >
             Sign in
           </Link>
@@ -366,10 +368,10 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-bold text-[#2C2C2C]">
+      <label className="mb-2 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
         {label}
         {!required && (
-          <span className="ml-1 font-normal text-[#67696D]">(optional)</span>
+          <span className="ml-1 font-normal text-[#71717A] dark:text-[#A1A1AA]">(optional)</span>
         )}
       </label>
       <input

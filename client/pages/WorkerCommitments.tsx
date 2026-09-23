@@ -56,25 +56,25 @@ export default function WorkerCommitments() {
 
   return (
     <PageShell backTo="/worker-dashboard" backLabel="Back">
-      <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-7 shadow-soft">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+      <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
           Worker Portal
         </p>
-        <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-[#2C2C2C]">
+        <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight">
           My Commitments
         </h1>
-        <p className="mt-1 text-sm text-[#67696D]">
+        <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA]">
           Your upcoming, completed and cancelled jobs.
         </p>
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2">
           {tabs.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-full px-4 py-2 text-xs font-semibold capitalize transition-colors cursor-pointer shadow-subtle ${
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-all cursor-pointer shadow-xs ${
                 tab === t
-                  ? "bg-primary text-white"
-                  : "border border-[#E7ECF1] bg-white text-[#67696D] hover:bg-[#F6F9FC]"
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
               }`}
             >
               {t}
@@ -85,35 +85,35 @@ export default function WorkerCommitments() {
 
       <section className="mt-5 space-y-3">
         {loading ? (
-          <p className="rounded-[16px] border border-[#E7ECF1] bg-white p-6 text-center text-sm text-[#67696D] shadow-soft">
+          <p className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-center text-xs text-[#71717A] dark:text-[#A1A1AA] shadow-sm">
             Loading commitments...
           </p>
         ) : filtered.length === 0 ? (
-          <p className="rounded-[16px] border border-[#E7ECF1] bg-white p-6 text-center text-sm text-[#67696D] shadow-soft">
+          <p className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-center text-xs text-[#71717A] dark:text-[#A1A1AA] shadow-sm">
             No {tab} commitments yet.
           </p>
         ) : (
           filtered.map((job) => (
             <article
               key={job.id}
-              className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft"
+              className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-bold text-[#2C2C2C] text-base">
+                  <h2 className="font-bold text-[#09090B] dark:text-[#FAFAFA] text-base">
                     {job.job_type}
                   </h2>
-                  <p className="mt-1 text-xs text-[#67696D]">
+                  <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA]">
                     {job.location || "Location not set"}
                   </p>
                 </div>
-                <span className="rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-1 text-[11px] font-bold capitalize text-[#2C2C2C]">
+                <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3 py-1 text-[11px] font-bold capitalize text-[#09090B] dark:text-[#FAFAFA]">
                   {job.status.replace("_", " ")}
                 </span>
               </div>
-              <div className="mt-3 grid gap-2 text-xs text-[#67696D] sm:grid-cols-2">
+              <div className="mt-3 grid gap-2 text-xs text-[#71717A] dark:text-[#A1A1AA] sm:grid-cols-2">
                 <span className="flex items-center gap-1.5">
-                  <CalendarDays size={14} className="text-primary" />
+                  <CalendarDays size={14} className="text-[#09090B] dark:text-[#FAFAFA]" />
                   {new Date(job.start_time).toLocaleDateString(undefined, {
                     day: "numeric",
                     month: "short",
@@ -121,7 +121,7 @@ export default function WorkerCommitments() {
                   })}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock3 size={14} className="text-primary" />
+                  <Clock3 size={14} className="text-[#09090B] dark:text-[#FAFAFA]" />
                   {new Date(job.start_time).toLocaleTimeString(undefined, {
                     hour: "numeric",
                     minute: "2-digit",
@@ -134,16 +134,16 @@ export default function WorkerCommitments() {
                 </span>
               </div>
               {job.description && (
-                <p className="mt-3 text-sm text-[#67696D]">{job.description}</p>
+                <p className="mt-3 text-xs text-[#71717A] dark:text-[#A1A1AA]">{job.description}</p>
               )}
               {job.cancellation_reason && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
                   <XCircle size={14} />
                   {job.cancellation_reason}
                 </p>
               )}
               {job.status === "completed" && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 size={14} />
                   Completed
                 </p>

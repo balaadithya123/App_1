@@ -136,23 +136,23 @@ export default function WorkerAssignedProjects({
   ).length;
 
   return (
-    <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+    <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#E7ECF1] pb-4 mb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#E4E4E7] dark:border-[#27272A] pb-4 mb-4">
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E7ECF1] bg-[#F6F9FC] text-primary">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
             <FolderKanban size={16} />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-[#2C2C2C]">
+              <h2 className="text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
                 Agency Assigned Projects
               </h2>
-              <span className="rounded-full border border-[#E7ECF1] bg-[#F6F9FC] px-2.5 py-0.5 text-[10px] font-semibold text-[#67696D]">
+              <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2.5 py-0.5 text-[10px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
                 {activeCount} active job{activeCount === 1 ? "" : "s"}
               </span>
             </div>
-            <p className="text-xs text-[#67696D]">
+            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
               Client contracts and field job assignments dispatched to you by
               your affiliated agency.
             </p>
@@ -163,19 +163,19 @@ export default function WorkerAssignedProjects({
           type="button"
           onClick={() => void loadProjects(true)}
           disabled={refreshing}
-          className="inline-flex h-8 items-center gap-1.5 self-start rounded-full border border-[#E7ECF1] bg-white px-3 text-xs font-semibold text-[#2C2C2C] transition hover:bg-[#F6F9FC] disabled:opacity-50 cursor-pointer shadow-subtle sm:self-auto"
+          className="inline-flex h-8 items-center gap-1.5 self-start rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] disabled:opacity-50 cursor-pointer shadow-sm sm:self-auto"
           title="Refresh assigned jobs"
         >
           <RotateCcw
             size={12}
-            className={refreshing ? "animate-spin text-primary" : ""}
+            className={refreshing ? "animate-spin text-current" : ""}
           />
           <span>Refresh</span>
         </button>
       </div>
 
       {notice && (
-        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-primary-100/50 bg-primary-100/15 p-2.5 text-xs font-semibold text-primary">
+        <div className="mb-4 flex items-center gap-2 rounded-[12px] border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 p-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
           <Check size={14} />
           <span>{notice}</span>
         </div>
@@ -191,8 +191,8 @@ export default function WorkerAssignedProjects({
               onClick={() => setFilter(t)}
               className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer capitalize ${
                 filter === t
-                  ? "bg-primary-100/25 border border-primary text-primary"
-                  : "border border-[#E7ECF1] bg-[#F6F9FC] text-[#67696D] hover:text-[#2C2C2C]"
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
+                  : "border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
               }`}
             >
               {t === "all" ? `All (${projects.length})` : t.replace("_", " ")}
@@ -203,18 +203,18 @@ export default function WorkerAssignedProjects({
 
       {/* Loading Skeleton */}
       {loading ? (
-        <div className="flex items-center justify-center p-8 text-xs text-[#67696D]">
-          <Loader2 size={16} className="mr-2 animate-spin text-primary" />
+        <div className="flex items-center justify-center p-8 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+          <Loader2 size={16} className="mr-2 animate-spin text-current" />
           Loading assigned projects...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-[#E7ECF1] bg-[#F6F9FC] p-6 text-center text-xs text-[#67696D]">
-          <FolderKanban size={24} className="mx-auto mb-2 text-[#989EA7]" />
-          <p className="font-bold text-[#2C2C2C]">
+        <div className="rounded-[16px] border border-dashed border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-6 text-center text-xs text-[#71717A] dark:text-[#A1A1AA]">
+          <FolderKanban size={24} className="mx-auto mb-2 text-[#71717A] dark:text-[#A1A1AA]" />
+          <p className="font-bold text-[#09090B] dark:text-[#FAFAFA]">
             No assigned projects{" "}
             {filter !== "all" ? `with status "${filter}"` : "yet"}
           </p>
-          <p className="mt-1 text-[11px] text-[#67696D]">
+          <p className="mt-1 text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
             When your affiliated agency assigns you to a client project or
             repair contract, the job details and client contacts will appear
             here in real-time.
@@ -229,65 +229,65 @@ export default function WorkerAssignedProjects({
             return (
               <div
                 key={proj.id}
-                className="flex flex-col justify-between rounded-[16px] border border-[#E7ECF1] bg-white p-4 shadow-subtle transition hover:border-primary/40"
+                className="flex flex-col justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 shadow-sm transition hover:border-neutral-400 dark:hover:border-neutral-500"
               >
                 <div>
                   {/* Top Badge & Title */}
                   <div className="flex items-start justify-between gap-2">
-                    <span className="inline-block rounded-full bg-primary-100/20 px-2.5 py-0.5 text-[10px] font-bold text-primary uppercase tracking-wide">
+                    <span className="inline-block rounded-md bg-[#FAFAFA] dark:bg-[#09090B] border border-[#E4E4E7] dark:border-[#27272A] px-2.5 py-0.5 text-[10px] font-bold text-[#09090B] dark:text-[#FAFAFA] uppercase tracking-wide">
                       {proj.service || "Contract"}
                     </span>
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold capitalize ${
                         proj.status === "completed"
-                          ? "bg-emerald-500/10 text-emerald-600"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                           : proj.status === "in_progress"
-                            ? "bg-blue-500/10 text-blue-600"
-                            : "bg-amber-500/10 text-amber-600"
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                       }`}
                     >
                       {proj.status.replace("_", " ")}
                     </span>
                   </div>
 
-                  <h3 className="mt-2 text-sm font-bold text-[#2C2C2C]">
+                  <h3 className="mt-2 text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
                     {proj.title}
                   </h3>
 
                   {/* Details Grid */}
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                     {/* Client Name & Phone */}
-                    <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-2.5">
-                      <span className="text-[10px] uppercase font-bold text-[#67696D]">
+                    <div className="rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-2.5">
+                      <span className="text-[10px] uppercase font-bold text-[#71717A] dark:text-[#A1A1AA]">
                         Client Name
                       </span>
-                      <p className="mt-0.5 font-semibold text-[#2C2C2C] truncate">
+                      <p className="mt-0.5 font-semibold text-[#09090B] dark:text-[#FAFAFA] truncate">
                         {proj.client_name}
                       </p>
                       {proj.client_phone && (
-                        <p className="mt-0.5 text-[11px] font-mono text-[#67696D]">
+                        <p className="mt-0.5 text-[11px] font-mono text-[#71717A] dark:text-[#A1A1AA]">
                           +91 {proj.client_phone}
                         </p>
                       )}
                     </div>
 
                     {/* Site Location */}
-                    <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-2.5">
-                      <span className="text-[10px] uppercase font-bold text-[#67696D] flex items-center gap-1">
+                    <div className="rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-2.5">
+                      <span className="text-[10px] uppercase font-bold text-[#71717A] dark:text-[#A1A1AA] flex items-center gap-1">
                         <MapPin size={10} /> Location
                       </span>
-                      <p className="mt-0.5 font-semibold text-[#2C2C2C] truncate">
+                      <p className="mt-0.5 font-semibold text-[#09090B] dark:text-[#FAFAFA] truncate">
                         {proj.location || "Site location"}
                       </p>
                     </div>
 
                     {/* Target Deadline */}
                     {proj.deadline && (
-                      <div className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-2.5 col-span-2">
-                        <span className="text-[10px] uppercase font-bold text-[#67696D] flex items-center gap-1">
+                      <div className="rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-2.5 col-span-2">
+                        <span className="text-[10px] uppercase font-bold text-[#71717A] dark:text-[#A1A1AA] flex items-center gap-1">
                           <Calendar size={10} /> Target Completion
                         </span>
-                        <p className="mt-0.5 font-semibold text-[#2C2C2C]">
+                        <p className="mt-0.5 font-semibold text-[#09090B] dark:text-[#FAFAFA]">
                           {proj.deadline}
                         </p>
                       </div>
@@ -296,14 +296,14 @@ export default function WorkerAssignedProjects({
                 </div>
 
                 {/* Bottom Action Bar */}
-                <div className="mt-3.5 space-y-2 border-t border-[#E7ECF1] pt-3">
+                <div className="mt-3.5 space-y-2 border-t border-[#E4E4E7] dark:border-[#27272A] pt-3">
                   {/* Contact Buttons */}
                   <div className="flex items-center gap-1.5">
                     {proj.client_phone && (
                       <>
                         <a
                           href={`tel:+91${phoneDigits}`}
-                          className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-full border border-[#E7ECF1] bg-white px-2 text-xs font-semibold text-[#2C2C2C] transition hover:bg-[#F6F9FC] shadow-subtle"
+                          className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] shadow-sm"
                         >
                           <Phone size={12} />
                           <span>Call Client</span>
@@ -314,7 +314,7 @@ export default function WorkerAssignedProjects({
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-full bg-emerald-600 px-2 text-xs font-semibold text-white transition hover:bg-emerald-700 shadow-subtle"
+                          className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-full bg-[#128C7E] px-2 text-xs font-semibold text-white transition hover:bg-[#075E54] shadow-sm"
                         >
                           <MessageSquare size={12} />
                           <span>WhatsApp</span>
@@ -325,7 +325,7 @@ export default function WorkerAssignedProjects({
 
                   {/* Status update controls */}
                   <div className="flex items-center justify-between gap-1.5 pt-1">
-                    <span className="text-[10px] text-[#67696D]">
+                    <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">
                       Assigned {new Date(proj.created_at).toLocaleDateString()}
                     </span>
 
@@ -335,7 +335,7 @@ export default function WorkerAssignedProjects({
                           type="button"
                           onClick={() => updateStatus(proj.id, "in_progress")}
                           disabled={isUpdating}
-                          className="inline-flex h-7 items-center gap-1 rounded-full border border-primary-100/50 bg-primary-100/15 px-2.5 text-[11px] font-semibold text-primary hover:bg-primary-100/30 transition cursor-pointer"
+                          className="inline-flex h-7 items-center gap-1 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2.5 text-[11px] font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-neutral-200 dark:hover:bg-neutral-800 transition cursor-pointer"
                         >
                           <Play size={10} />
                           <span>Start Work</span>
@@ -347,7 +347,7 @@ export default function WorkerAssignedProjects({
                           type="button"
                           onClick={() => updateStatus(proj.id, "completed")}
                           disabled={isUpdating}
-                          className="inline-flex h-7 items-center gap-1 rounded-full bg-primary px-3 text-[11px] font-semibold text-white hover:bg-[#157ad4] transition cursor-pointer shadow-subtle active:scale-95"
+                          className="inline-flex h-7 items-center gap-1 rounded-full bg-black text-white dark:bg-white dark:text-black px-3 text-[11px] font-semibold hover:bg-neutral-800 dark:hover:bg-neutral-200 transition cursor-pointer shadow-sm active:scale-95"
                         >
                           <CheckCircle2 size={11} />
                           <span>Mark Done</span>
@@ -355,7 +355,7 @@ export default function WorkerAssignedProjects({
                       )}
 
                       {proj.status === "completed" && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
                           <CheckCircle2 size={13} /> Completed
                         </span>
                       )}

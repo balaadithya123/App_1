@@ -579,8 +579,8 @@ export default function AddReminderSheet({
                       onClick={() => setCustomDateChoice(choice.id)}
                       className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition cursor-pointer text-center ${
                         customDateChoice === choice.id
-                          ? "bg-primary text-white font-semibold shadow-xs"
-                          : "border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] text-[#2C2C2C] dark:text-[#DDD] hover:bg-[#F6F9FC]"
+                          ? "bg-black text-white dark:bg-white dark:text-black font-semibold shadow-xs"
+                          : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
                       }`}
                     >
                       {choice.label}
@@ -590,13 +590,13 @@ export default function AddReminderSheet({
 
                 {customDateChoice === "custom" && (
                   <div className="flex items-center gap-2 pt-1">
-                    <Calendar size={14} className="text-[#67696D]" />
+                    <Calendar size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
                     <input
                       type="date"
                       value={customExactDate}
                       onChange={(e) => setCustomExactDate(e.target.value)}
                       max={formatDateIso(new Date())}
-                      className="rounded-lg border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] px-3 py-1.5 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3 py-1.5 text-xs text-[#09090B] dark:text-[#FAFAFA] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
                     />
                   </div>
                 )}
@@ -607,11 +607,11 @@ export default function AddReminderSheet({
 
         {/* Footer Actions */}
         {!successMessage && (
-          <div className="p-4 border-t border-[#E7ECF1] dark:border-[#222] bg-[#F6F9FC] dark:bg-[#141414] flex items-center justify-between gap-3">
+          <div className="p-4 border-t border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#141416] flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#1C1C1C] px-4 py-2 text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA] hover:bg-[#F6F9FC] transition cursor-pointer"
+              className="rounded-xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 py-2 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] transition cursor-pointer"
             >
               Cancel
             </button>
@@ -621,7 +621,7 @@ export default function AddReminderSheet({
                 type="submit"
                 form="catalog-form"
                 disabled={submitting || selectedCatalogCount === 0}
-                className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 text-xs font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-50 cursor-pointer"
               >
                 <Check size={14} />
                 <span>
@@ -637,7 +637,7 @@ export default function AddReminderSheet({
                 type="submit"
                 form="custom-form"
                 disabled={submitting || !customLabel.trim()}
-                className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-subtle hover:bg-[#157ad4] transition disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 text-xs font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-50 cursor-pointer"
               >
                 <Check size={14} />
                 <span>{submitting ? "Saving..." : "Save Custom Reminder"}</span>
