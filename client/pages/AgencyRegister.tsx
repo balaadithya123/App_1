@@ -341,6 +341,7 @@ export default function AgencyRegister() {
           Already registered?{" "}
           <Link
             to="/login"
+            state={{ from: "main" }}
             className="font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:underline"
           >
             Sign in

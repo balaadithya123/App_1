@@ -401,7 +401,7 @@ export default function Register() {
         return;
       }
       await finishPhoneVerification(phone, otp);
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     } catch (e) {
       setError(
         e instanceof Error
@@ -455,6 +455,7 @@ export default function Register() {
             Already have an account?{" "}
             <Link
               to="/login"
+              state={{ from: "main" }}
               className="font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline"
             >
               Login

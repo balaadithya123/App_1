@@ -23,6 +23,13 @@ import {
   Check,
   X,
   ExternalLink,
+  Briefcase,
+  Bell,
+  Building2,
+  UserRound,
+  ArrowRight,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import {
   type HomeItem,
@@ -44,6 +51,7 @@ import { supabase } from "@/lib/supabase";
 export default function InboxPage() {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<HomeItem[]>([]);
   const [catalog, setCatalog] = useState<MaintenanceCatalogItem[]>(
@@ -71,21 +79,36 @@ export default function InboxPage() {
   const [savingEmptyCatalog, setSavingEmptyCatalog] = useState(false);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase) {
+      setAuthLoaded(true);
+      return;
+    }
     void supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      setAuthLoaded(true);
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
+      setAuthLoaded(true);
     });
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  const userRole = session?.user?.user_metadata?.role;
+  const isWorker = userRole === "worker";
+  const isAgency = userRole === "agency";
+  const isEmployer =
+    userRole === "employer" || (!isWorker && !isAgency && !!session?.user);
+
   const loadData = async () => {
+    if (!session?.user?.id || !isEmployer) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const [userItems, catalogItems] = await Promise.all([
-        fetchUserHomeItems(session?.user?.id),
+        fetchUserHomeItems(session.user.id),
         fetchMaintenanceCatalog(),
       ]);
       setItems(userItems);
@@ -98,16 +121,23 @@ export default function InboxPage() {
   };
 
   useEffect(() => {
-    void loadData();
+    if (!authLoaded) return;
+    if (isEmployer && session?.user?.id) {
+      void loadData();
+    } else {
+      setLoading(false);
+    }
 
     const handleDataChanged = () => {
-      void loadData();
+      if (isEmployer && session?.user?.id) {
+        void loadData();
+      }
     };
 
     window.addEventListener("home-items-changed", handleDataChanged);
     return () =>
       window.removeEventListener("home-items-changed", handleDataChanged);
-  }, [session?.user?.id]);
+  }, [authLoaded, session?.user?.id, isEmployer]);
 
   const showToast = (msg: string) => {
     setActionMessage(msg);
@@ -230,53 +260,242 @@ export default function InboxPage() {
         </div>
       )}
 
-      {/* Main Header Card */}
-      <section className="rounded-[20px] border border-[#E7ECF1] dark:border-[#222] bg-white dark:bg-[#0A0A0A] p-5 sm:p-7 shadow-soft mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100/20 text-primary">
-              <Clock size={24} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
-                  Home Maintenance
-                </span>
-                {dueOrOverdueCount > 0 ? (
-                  <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] font-extrabold shadow-xs">
-                    {dueOrOverdueCount} Due Now
-                  </span>
-                ) : items.length > 0 ? (
-                  <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[10px] font-bold border border-emerald-500/20">
-                    All Up to Date
-                  </span>
-                ) : null}
-              </div>
-              <h1 className="mt-0.5 text-xl sm:text-2xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
-                Inbox & Reminders
-              </h1>
-              <p className="mt-1 text-xs sm:text-sm text-[#67696D] dark:text-[#A1A1AA]">
-                Track periodic servicing cycles. Find verified local specialists
-                when due.
-              </p>
-            </div>
+      {!authLoaded ? (
+        <div className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-12 text-center text-xs text-[#71717A] dark:text-[#A1A1AA] shadow-soft">
+          <Clock className="mx-auto mb-2 text-[#71717A] animate-spin" size={24} />
+          Loading inbox...
+        </div>
+      ) : !session?.user ? (
+        /* GUEST / NOT SIGNED IN STATE: Do not show recurring maintenance */
+        <section className="rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 sm:p-8 shadow-soft text-center space-y-5">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+            <Clock size={28} />
+          </div>
+          <div className="max-w-md mx-auto space-y-2">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+              Sign in to access your inbox
+            </h2>
+            <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] leading-relaxed">
+              Employers and homeowners can track recurring home appliance maintenance schedules, routine servicing reminders, and connect directly with local verified pros once signed in.
+            </p>
           </div>
 
-          <div className="flex items-center gap-2 sm:self-center">
-            <button
-              type="button"
-              onClick={() => {
-                setSheetMode("catalog");
-                setSheetOpen(true);
-              }}
-              className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] active:scale-95 transition cursor-pointer"
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs mx-auto">
+            <Link
+              to="/login"
+              state={{ from: "main" }}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] dark:hover:bg-neutral-200 py-2.5 px-5 text-xs font-semibold shadow-xs transition cursor-pointer active:scale-95"
             >
-              <Plus size={14} />
-              <span>Add Reminder</span>
-            </button>
+              <LogIn size={14} />
+              <span>Sign In</span>
+            </Link>
+            <Link
+              to="/join"
+              className="flex w-full items-center justify-center gap-2 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] py-2.5 px-5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-xs cursor-pointer active:scale-95"
+            >
+              <UserPlus size={14} />
+              <span>Register</span>
+            </Link>
+          </div>
+        </section>
+      ) : isWorker ? (
+        /* WORKER INBOX: Show callback requests and job commitments, NOT home appliance maintenance */
+        <div className="space-y-6">
+          <section className="rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 sm:p-7 shadow-soft">
+            <div className="flex items-center gap-3.5 mb-2">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+                <Briefcase size={22} />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
+                  Worker Portal
+                </span>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+                  Worker Inbox & Client Requests
+                </h1>
+              </div>
+            </div>
+            <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-1">
+              Manage incoming callback requests from local customers and view your confirmed job commitments.
+            </p>
+          </section>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              to="/callback-requests"
+              className="group flex flex-col justify-between rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-500 transition"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+                    <Bell size={18} />
+                  </div>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                    Direct leads <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
+                  Customer Callback Requests
+                </h3>
+                <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
+                  Respond to homeowners who requested an urgent call or quotation.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#E4E4E7] dark:border-[#27272A] text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
+                View Callback Requests &rarr;
+              </div>
+            </Link>
+
+            <Link
+              to="/worker-commitments"
+              className="group flex flex-col justify-between rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-500 transition"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+                    <CheckCircle2 size={18} />
+                  </div>
+                  <span className="text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA] inline-flex items-center gap-1">
+                    Scheduled <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
+                  Active Job Commitments
+                </h3>
+                <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
+                  Review scheduled service dates, customer addresses, and job status.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#E4E4E7] dark:border-[#27272A] text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
+                View Commitments &rarr;
+              </div>
+            </Link>
           </div>
         </div>
-      </section>
+      ) : isAgency ? (
+        /* AGENCY INBOX: Show agency inquiries, roster dispatches, NOT home appliance maintenance */
+        <div className="space-y-6">
+          <section className="rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 sm:p-7 shadow-soft">
+            <div className="flex items-center gap-3.5 mb-2">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+                <Building2 size={22} />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
+                  Agency Communications
+                </span>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+                  Agency Communications Hub
+                </h1>
+              </div>
+            </div>
+            <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-1">
+              Review hiring requests, worker dispatch notifications, and employer inquiries for your agency roster.
+            </p>
+          </section>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              to="/agency"
+              className="group flex flex-col justify-between rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-500 transition"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+                    <Building2 size={18} />
+                  </div>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                    Dashboard <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
+                  Agency Dashboard
+                </h3>
+                <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
+                  Manage worker profiles, assign tasks, and monitor active client jobs.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#E4E4E7] dark:border-[#27272A] text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
+                Open Dashboard &rarr;
+              </div>
+            </Link>
+
+            <Link
+              to="/agency/profile/edit"
+              className="group flex flex-col justify-between rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-xs hover:border-neutral-400 dark:hover:border-neutral-500 transition"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA]">
+                    <UserRound size={18} />
+                  </div>
+                  <span className="text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA] inline-flex items-center gap-1">
+                    Profile <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
+                  Agency Profile & Roster
+                </h3>
+                <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
+                  Update agency description, GST/pan verification, and contact phone number.
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-[#E4E4E7] dark:border-[#27272A] text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
+                Manage Profile &rarr;
+              </div>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* EMPLOYER / HOMEOWNER SIGNED-IN INBOX: Show Recurring Maintenance */
+        <>
+          {/* Main Header Card */}
+          <section className="rounded-[20px] border border-[#E7ECF1] dark:border-[#222] bg-white dark:bg-[#0A0A0A] p-5 sm:p-7 shadow-soft mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100/20 text-primary">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">
+                      Home Maintenance
+                    </span>
+                    {dueOrOverdueCount > 0 ? (
+                      <span className="rounded-full bg-rose-500 text-white px-2 py-0.5 text-[10px] font-extrabold shadow-xs">
+                        {dueOrOverdueCount} Due Now
+                      </span>
+                    ) : items.length > 0 ? (
+                      <span className="rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 text-[10px] font-bold border border-emerald-500/20">
+                        All Up to Date
+                      </span>
+                    ) : null}
+                  </div>
+                  <h1 className="mt-0.5 text-xl sm:text-2xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
+                    Inbox & Reminders
+                  </h1>
+                  <p className="mt-1 text-xs sm:text-sm text-[#67696D] dark:text-[#A1A1AA]">
+                    Track periodic servicing cycles. Find verified local specialists
+                    when due.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 sm:self-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSheetMode("catalog");
+                    setSheetOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] active:scale-95 transition cursor-pointer"
+                >
+                  <Plus size={14} />
+                  <span>Add Reminder</span>
+                </button>
+              </div>
+            </div>
+          </section>
 
       {/* Content Area */}
       {loading ? (
@@ -768,6 +987,8 @@ export default function InboxPage() {
             </form>
           </div>
         </div>
+      )}
+        </>
       )}
     </PageShell>
   );

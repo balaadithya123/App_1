@@ -1,11 +1,12 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import "./global.css";
 
 import Index from "./pages/Index";
@@ -50,6 +51,85 @@ function RouteLoadingFallback() {
   );
 }
 
+function RootRoute() {
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
+  const [isAuth, setIsAuth] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) {
+      setChecking(false);
+      return;
+    }
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) {
+        setIsAuth(true);
+        const role = data.session.user.user_metadata?.role;
+        if (role === "worker") {
+          navigate("/worker-dashboard", { replace: true });
+        } else if (role === "agency") {
+          navigate("/agency", { replace: true });
+        } else {
+          navigate("/home", { replace: true });
+        }
+      } else {
+        setChecking(false);
+      }
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (s?.user) {
+        setIsAuth(true);
+        const role = s.user.user_metadata?.role;
+        if (role === "worker") {
+          navigate("/worker-dashboard", { replace: true });
+        } else if (role === "agency") {
+          navigate("/agency", { replace: true });
+        } else {
+          navigate("/home", { replace: true });
+        }
+      } else {
+        setIsAuth(false);
+        setChecking(false);
+      }
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, [navigate]);
+
+  if (checking || isAuth) {
+    return <RouteLoadingFallback />;
+  }
+
+  return <LandingPage />;
+}
+
+function NavigationOriginTracker() {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const pathname = location.pathname;
+    if (
+      pathname === "/" ||
+      pathname === "/landing" ||
+      pathname === "/overview" ||
+      pathname === "/about"
+    ) {
+      sessionStorage.setItem("lw_auth_origin", "landing");
+    } else if (
+      pathname !== "/login" &&
+      pathname !== "/join" &&
+      pathname !== "/register" &&
+      pathname !== "/register-agency"
+    ) {
+      sessionStorage.setItem("lw_auth_origin", "main");
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 export default function App() {
   React.useEffect(() => {
     const initial = getInitialTheme();
@@ -62,16 +142,17 @@ export default function App() {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <NavigationOriginTracker />
           <Suspense fallback={<RouteLoadingFallback />}>
             <Routes>
-              {/* Direct Landing Page as Root Entry */}
-              <Route path="/" element={<LandingPage />} />
+              {/* Authenticated Aware Root & Landing Routes */}
+              <Route path="/" element={<RootRoute />} />
               <Route path="/home" element={<Index />} />
               <Route path="/app" element={<Index />} />
               <Route path="/explore" element={<Index />} />
-              <Route path="/landing" element={<LandingPage />} />
-              <Route path="/overview" element={<LandingPage />} />
-              <Route path="/about" element={<LandingPage />} />
+              <Route path="/landing" element={<RootRoute />} />
+              <Route path="/overview" element={<RootRoute />} />
+              <Route path="/about" element={<RootRoute />} />
               <Route path="/voice-onboarding" element={<VoiceOnboarding />} />
               <Route path="/voice" element={<VoiceOnboarding />} />
               <Route path="/search" element={<SearchResults />} />

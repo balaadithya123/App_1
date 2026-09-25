@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  ArrowLeft,
   Bookmark,
   Check,
   ChevronRight,
+  Clock,
   Edit3,
   Globe,
   Headphones,
+  Home,
   ImagePlus,
   LogIn,
   LogOut,
@@ -24,7 +27,6 @@ import {
   X,
 } from "lucide-react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import PageShell from "@/components/PageShell";
 import NavBar from "@/components/NavBar";
 import ThemeToggle from "@/components/ThemeToggle";
 import GoogleLocationInput from "@/components/GoogleLocationInput";
@@ -55,7 +57,7 @@ const emptyProfile: ProfileData = {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const locationState = useLocation();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [editing, setEditing] = useState(false);
@@ -76,10 +78,10 @@ export default function Profile() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (locationState.state && (locationState.state as any).edit) {
+    if (location.state && (location.state as any).edit) {
       setEditing(true);
     }
-  }, [locationState.state]);
+  }, [location.state]);
 
   const role = useMemo(
     () =>
@@ -329,26 +331,48 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <PageShell backTo="/" backLabel="Home">
-        <div className="mx-auto max-w-lg pb-24">
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-8 text-center shadow-soft">
-            <p className="text-sm font-semibold text-[#67696D] dark:text-[#A1A1AA]">
-              Loading account details...
-            </p>
-          </section>
-        </div>
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
+          <div className="mx-auto max-w-lg pb-24">
+            <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center shadow-soft">
+              <p className="text-sm font-semibold text-[#71717A] dark:text-[#A1A1AA]">
+                Loading account details...
+              </p>
+            </section>
+          </div>
+        </main>
         <NavBar />
-      </PageShell>
+      </div>
     );
   }
 
   // GUEST STATE (NOT LOGGED IN)
   if (!user) {
     return (
-      <PageShell backTo="/" backLabel="Home">
-        <div className="mx-auto max-w-lg space-y-4 pb-24">
-          {/* Top Profile Card */}
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-7">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
+          <div className="mx-auto max-w-lg space-y-4 pb-24">
+            {/* Back Navigation Bar */}
+            <div className="flex items-center justify-between pb-1">
+              <Link
+                to="/home"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-2xs cursor-pointer active:scale-95"
+                aria-label="Back to Homepage"
+              >
+                <ArrowLeft size={14} />
+                <span>Back to Home</span>
+              </Link>
+
+              <Link
+                to="/home"
+                className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white transition"
+              >
+                Home
+              </Link>
+            </div>
+
+            {/* Top Profile Card */}
+            <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-7">
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] text-primary shadow-subtle shrink-0">
                 <UserRound size={28} strokeWidth={1.8} />
@@ -366,13 +390,14 @@ export default function Profile() {
             <div className="mt-5 grid grid-cols-2 gap-2.5">
               <Link
                 to="/login"
-                className="flex items-center justify-center gap-1.5 rounded-full bg-primary py-2.5 px-4 text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition cursor-pointer"
+                state={{ from: "main" }}
+                className="flex items-center justify-center gap-1.5 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] dark:hover:bg-neutral-200 py-2.5 px-4 text-xs font-semibold shadow-xs transition cursor-pointer active:scale-95 border border-transparent"
               >
                 <LogIn size={14} /> Sign In
               </Link>
               <Link
                 to="/join"
-                className="flex items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] py-2.5 px-4 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary transition shadow-subtle cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] py-2.5 px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-xs cursor-pointer active:scale-95"
               >
                 <UserPlus size={14} /> Register
               </Link>
@@ -385,6 +410,32 @@ export default function Profile() {
               Quick Access
             </p>
             <div className="divide-y divide-[#E7ECF1] dark:divide-[#1F1F1F]">
+              <Link
+                to="/home"
+                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <Home size={16} className="text-primary shrink-0" />
+                  <span>Homepage & Search Pros</span>
+                </div>
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
+              </Link>
+              <Link
+                to="/inbox"
+                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <Clock size={16} className="text-primary shrink-0" />
+                  <span>Inbox & Recurring Maintenance</span>
+                </div>
+                <ChevronRight
+                  size={14}
+                  className="text-[#989EA7] dark:text-[#71717A]"
+                />
+              </Link>
               <Link
                 to="/saved"
                 className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
@@ -426,6 +477,7 @@ export default function Profile() {
               </Link>
               <Link
                 to="/login"
+                state={{ from: "main" }}
                 className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
               >
                 <div className="flex items-center gap-3">
@@ -453,10 +505,11 @@ export default function Profile() {
             </div>
           </section>
         </div>
-        <NavBar />
-      </PageShell>
-    );
-  }
+      </main>
+      <NavBar />
+    </div>
+  );
+}
 
   // AUTHENTICATED USER STATE
   const details: [string, string][] = [
@@ -475,9 +528,29 @@ export default function Profile() {
   }
 
   return (
-    <PageShell backTo="/" backLabel="Home">
-      <div className="mx-auto max-w-lg space-y-4 pb-24">
-        <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-7">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
+      <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mx-auto max-w-lg space-y-4 pb-24">
+          {/* Back Navigation Bar */}
+          <div className="flex items-center justify-between pb-1">
+            <Link
+              to="/home"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-2xs cursor-pointer active:scale-95"
+              aria-label="Back to Homepage"
+            >
+              <ArrowLeft size={14} />
+              <span>Back to Home</span>
+            </Link>
+
+            <Link
+              to="/home"
+              className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white transition"
+            >
+              Home
+            </Link>
+          </div>
+
+          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -493,7 +566,7 @@ export default function Profile() {
                   )}
                 </div>
                 <label
-                  className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white dark:border-black bg-primary text-white shadow-subtle hover:bg-[#0f766e] transition"
+                  className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white dark:border-black bg-black text-white dark:bg-white dark:text-black shadow-subtle hover:bg-neutral-800 dark:hover:bg-neutral-200 transition"
                   aria-label="Upload profile photo"
                 >
                   <ImagePlus size={14} />
@@ -682,7 +755,7 @@ export default function Profile() {
                     type="button"
                     onClick={verifyContact}
                     disabled={saving}
-                    className="mt-2.5 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-primary text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition disabled:opacity-60 cursor-pointer"
+                    className="mt-2.5 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-bold shadow-subtle hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer"
                   >
                     <Check size={15} />
                     Verify & Save
@@ -694,7 +767,7 @@ export default function Profile() {
                     type="button"
                     onClick={saveProfile}
                     disabled={saving}
-                    className="flex h-10 flex-1 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-subtle hover:bg-[#0f766e] transition disabled:opacity-60 cursor-pointer"
+                    className="flex h-10 flex-1 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-bold shadow-subtle hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer"
                   >
                     {saving ? "Saving..." : "Save changes"}
                   </button>
@@ -715,6 +788,54 @@ export default function Profile() {
               {message}
             </p>
           )}
+        </section>
+
+        {/* Quick Shortcuts */}
+        <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 shadow-soft">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#71717A] mb-3">
+            Quick Navigation
+          </p>
+          <div className="divide-y divide-[#E7ECF1] dark:divide-[#1F1F1F]">
+            <Link
+              to="/home"
+              className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <Home size={16} className="text-primary shrink-0" />
+                <span>Homepage & Browse Local Pros</span>
+              </div>
+              <ChevronRight
+                size={14}
+                className="text-[#989EA7] dark:text-[#71717A]"
+              />
+            </Link>
+            <Link
+              to="/inbox"
+              className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <Clock size={16} className="text-primary shrink-0" />
+                <span>Inbox & Home Recurring Maintenance</span>
+              </div>
+              <ChevronRight
+                size={14}
+                className="text-[#989EA7] dark:text-[#71717A]"
+              />
+            </Link>
+            <Link
+              to="/saved"
+              className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <Bookmark size={16} className="text-primary shrink-0" />
+                <span>Saved Workers & Bookmarks</span>
+              </div>
+              <ChevronRight
+                size={14}
+                className="text-[#989EA7] dark:text-[#71717A]"
+              />
+            </Link>
+          </div>
         </section>
 
         {/* Account Actions */}
@@ -776,7 +897,8 @@ export default function Profile() {
           )}
         </section>
       </div>
-      <NavBar />
-    </PageShell>
-  );
+    </main>
+    <NavBar />
+  </div>
+);
 }

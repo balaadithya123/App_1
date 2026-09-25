@@ -218,6 +218,7 @@ export default function MobileMenu() {
               </div>
               <Link
                 to="/login"
+                state={{ from: "main" }}
                 onClick={() => setOpen(false)}
                 className="rounded-full bg-black text-white dark:bg-white dark:text-black px-3.5 py-1 text-[11px] font-bold transition hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-sm"
               >
@@ -413,6 +414,7 @@ export default function MobileMenu() {
             <div className="border-t border-[#E4E4E7] dark:border-[#27272A] pt-2.5 space-y-2">
               <Link
                 to="/login"
+                state={{ from: "main" }}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-2 w-full rounded-full bg-black text-white dark:bg-white dark:text-black py-2 text-xs font-bold transition hover:opacity-90 shadow-xs"
               >

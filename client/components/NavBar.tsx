@@ -9,6 +9,7 @@ import {
   Building2,
   LayoutDashboard,
   MessageSquare,
+  Clock,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -110,7 +111,7 @@ export default function NavBar() {
     return (
       <nav
         aria-label="Worker Bottom Navigation"
-        className="md:hidden fixed bottom-4 inset-x-0 mx-auto w-fit z-40 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#141416]/90 backdrop-blur-xl px-3 py-1.5 shadow-xl flex items-center gap-2"
+        className="md:hidden fixed bottom-5 inset-x-0 mx-auto w-fit z-40 rounded-full border border-black/20 dark:border-white/25 bg-white/98 dark:bg-[#16161A]/98 backdrop-blur-2xl px-3.5 py-1.5 shadow-[0_16px_36px_-4px_rgba(0,0,0,0.28),0_6px_16px_rgba(0,0,0,0.14)] dark:shadow-[0_20px_48px_-4px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.15)] ring-1 ring-black/10 dark:ring-white/20 flex items-center gap-2"
       >
         {workerTabs.map((tab) => {
           const Icon = tab.icon;
@@ -163,7 +164,7 @@ export default function NavBar() {
     return (
       <nav
         aria-label="Agency Bottom Navigation"
-        className="md:hidden fixed bottom-4 inset-x-0 mx-auto w-fit z-40 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#141416]/90 backdrop-blur-xl px-3 py-1.5 shadow-xl flex items-center gap-2"
+        className="md:hidden fixed bottom-5 inset-x-0 mx-auto w-fit z-40 rounded-full border border-black/20 dark:border-white/25 bg-white/98 dark:bg-[#16161A]/98 backdrop-blur-2xl px-3.5 py-1.5 shadow-[0_16px_36px_-4px_rgba(0,0,0,0.28),0_6px_16px_rgba(0,0,0,0.14)] dark:shadow-[0_20px_48px_-4px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.15)] ring-1 ring-black/10 dark:ring-white/20 flex items-center gap-2"
       >
         {agencyTabs.map((tab) => {
           const Icon = tab.icon;
@@ -190,7 +191,7 @@ export default function NavBar() {
   return (
     <nav
       aria-label="Customer Bottom Navigation"
-      className="md:hidden fixed bottom-4 inset-x-0 mx-auto w-[94%] max-w-[380px] z-40 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#141416]/90 backdrop-blur-xl px-2 py-1.5 shadow-xl flex items-center justify-between gap-1.5"
+      className="md:hidden fixed bottom-5 inset-x-0 mx-auto w-[94%] max-w-[410px] z-40 rounded-full border border-black/20 dark:border-white/25 bg-white/98 dark:bg-[#16161A]/98 backdrop-blur-2xl px-2.5 py-1.5 shadow-[0_16px_36px_-4px_rgba(0,0,0,0.28),0_6px_16px_rgba(0,0,0,0.14)] dark:shadow-[0_20px_48px_-4px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.15)] ring-1 ring-black/10 dark:ring-white/20 flex items-center justify-between gap-1.5"
     >
       {/* 1. Home Button */}
       <Link
@@ -199,7 +200,7 @@ export default function NavBar() {
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
           location.pathname === "/home" || location.pathname === "/app"
             ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
-            : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+            : "text-[#52525B] hover:text-[#09090B] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
         }`}
       >
         <Home size={17} strokeWidth={location.pathname === "/home" || location.pathname === "/app" ? 2.2 : 2} />
@@ -217,7 +218,7 @@ export default function NavBar() {
             value={islandSearchQuery}
             onChange={(e) => setIslandSearchQuery(e.target.value)}
             placeholder="Search pros & services..."
-            className="h-8.5 w-full rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] pl-7.5 pr-7 text-xs text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] outline-none focus:border-neutral-400 dark:focus:border-neutral-500 transition-all"
+            className="h-9 w-full rounded-full border border-neutral-300 dark:border-neutral-700 bg-zinc-100 dark:bg-[#1E1F24] pl-8 pr-8 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#71717A] dark:placeholder:text-[#A1A1AA] outline-none focus:bg-white dark:focus:bg-[#141416] focus:border-neutral-500 transition-all shadow-2xs"
           />
           {islandSearchQuery ? (
             <button
@@ -231,7 +232,7 @@ export default function NavBar() {
             <button
               type="submit"
               aria-label="Search"
-              className="absolute right-1 flex h-6.5 w-6.5 items-center justify-center rounded-full bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all cursor-pointer"
+              className="absolute right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 transition-all cursor-pointer shadow-2xs"
             >
               <Search size={11} />
             </button>
@@ -246,7 +247,7 @@ export default function NavBar() {
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
           location.pathname === "/saved" || location.pathname === "/my-circle"
             ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
-            : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+            : "text-[#52525B] hover:text-[#09090B] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
         }`}
       >
         <Heart
@@ -260,14 +261,31 @@ export default function NavBar() {
         />
       </Link>
 
-      {/* 4. Profile Button */}
+      {/* 4. Inbox & Reminders Button */}
+      <Link
+        to="/inbox"
+        aria-label="Inbox & Home Maintenance"
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
+          location.pathname === "/inbox"
+            ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+            : "text-[#52525B] hover:text-[#09090B] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+        }`}
+      >
+        <Clock
+          size={17}
+          strokeWidth={location.pathname === "/inbox" ? 2.2 : 2}
+        />
+      </Link>
+
+      {/* 5. Profile Button */}
       <Link
         to={loggedIn ? "/profile" : "/login"}
+        state={{ from: "main" }}
         aria-label="Profile"
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
           location.pathname === "/profile" || location.pathname === "/login"
             ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
-            : "text-[#71717A] hover:text-[#09090B] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
+            : "text-[#52525B] hover:text-[#09090B] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
         }`}
       >
         <UserRound

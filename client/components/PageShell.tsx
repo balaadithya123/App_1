@@ -82,7 +82,11 @@ export default function PageShell({
     ) {
       navigate(-1);
     } else if (backTo) {
-      navigate(backTo);
+      if (backTo === "/" && loggedIn) {
+        navigate(isWorker ? "/worker-dashboard" : isAgency ? "/agency" : "/home");
+      } else {
+        navigate(backTo);
+      }
     } else {
       navigate(-1);
     }
@@ -113,7 +117,13 @@ export default function PageShell({
     : isAgency
       ? "Agency Dashboard"
       : "Profile Settings";
-  const homePath = isWorker ? "/worker-dashboard" : isAgency ? "/agency" : "/";
+  const homePath = isWorker
+    ? "/worker-dashboard"
+    : isAgency
+      ? "/agency"
+      : loggedIn
+        ? "/home"
+        : "/";
 
   const brand = (
     <div className="flex items-center gap-2 group">
@@ -136,46 +146,47 @@ export default function PageShell({
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
       {/* Sticky Top Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA]/80 dark:bg-[#09090B]/80 backdrop-blur-xl">
-        <div
-          className={`mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 lg:px-8 ${maxWidthClass}`}
-        >
-          {/* Brand Logo */}
-          <div className="flex items-center gap-6">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          {/* Brand Logo & Desktop Nav */}
+          <div className="flex items-center gap-4 lg:gap-8 min-w-0">
             {noHome ? (
-              <div aria-label="LocalWorker">{brand}</div>
+              <div aria-label="LocalWorker" className="shrink-0">{brand}</div>
             ) : (
               <button
                 type="button"
                 onClick={() => navigate(homePath)}
                 aria-label="Go to homepage"
-                className="text-left cursor-pointer focus-visible:outline-none rounded-xl"
+                className="text-left cursor-pointer focus-visible:outline-none rounded-xl shrink-0"
               >
                 {brand}
               </button>
             )}
 
+            {/* Subtle Divider */}
+            <div className="hidden md:block h-5 w-px bg-[#E4E4E7] dark:bg-[#27272A] shrink-0" />
+
             {/* Desktop Quick Nav Links */}
-            <nav className="hidden md:flex items-center gap-1 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA]">
+            <nav className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-[#52525B] dark:text-[#A1A1AA]">
               {isWorker ? (
                 <>
                   <Link
                     to="/worker-dashboard"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <LayoutDashboard size={14} />
                     <span>Dashboard</span>
                   </Link>
                   <Link
                     to="/worker-commitments"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Briefcase size={14} />
                     <span>Commitments</span>
                   </Link>
                   <Link
                     to="/callback-requests"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Bell size={14} />
                     <span>Callbacks</span>
@@ -185,21 +196,21 @@ export default function PageShell({
                 <>
                   <Link
                     to="/agency"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Building2 size={14} />
                     <span>Dashboard</span>
                   </Link>
                   <Link
                     to="/inbox"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <MessageSquare size={14} />
                     <span>Inbox</span>
                   </Link>
                   <Link
                     to="/agency/profile/edit"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <UserRound size={14} />
                     <span>Agency Profile</span>
@@ -209,28 +220,28 @@ export default function PageShell({
                 <>
                   <Link
                     to="/search?type=workers"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Search size={14} />
                     <span>Workers</span>
                   </Link>
                   <Link
                     to="/search?type=agencies"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Building2 size={14} />
                     <span>Agencies</span>
                   </Link>
                   <Link
                     to="/saved"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Heart size={14} />
                     <span>Saved</span>
                   </Link>
                   <Link
                     to="/inbox"
-                    className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
+                    className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
                   >
                     <Clock size={14} />
                     <span>Inbox</span>
@@ -246,12 +257,23 @@ export default function PageShell({
           </div>
 
           {/* Actions & Menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 shrink-0">
+            {!isWorker && !isAgency && (
+              <Link
+                to="/home"
+                state={{ openPostNeed: true }}
+                className="hidden lg:inline-flex items-center gap-1.5 rounded-full bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 px-3.5 py-1.5 text-xs font-semibold shadow-2xs transition active:scale-95"
+              >
+                <Sparkles size={13} />
+                <span>Post a Need</span>
+              </Link>
+            )}
             <ThemeToggle />
             {!loggedIn && (
               <Link
                 to="/login"
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/15 bg-black text-white dark:bg-white dark:text-black px-3.5 py-1.5 text-xs font-bold transition hover:opacity-90 shadow-xs"
+                state={{ from: "main" }}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/15 bg-black text-white dark:bg-white dark:text-black px-3.5 py-1.5 text-xs font-bold transition hover:opacity-90 shadow-2xs"
               >
                 Sign In
               </Link>
@@ -261,12 +283,14 @@ export default function PageShell({
                 to={portalPath}
                 aria-label={portalLabel}
                 title={portalLabel}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 shadow-sm"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 shadow-2xs"
               >
-                <UserRound size={16} />
+                <UserRound size={15} />
               </Link>
             )}
-            <MobileMenu />
+            <div className="md:hidden">
+              <MobileMenu />
+            </div>
           </div>
         </div>
       </header>
