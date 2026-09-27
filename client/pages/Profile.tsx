@@ -334,8 +334,8 @@ export default function Profile() {
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8">
           <div className="mx-auto max-w-lg pb-24">
-            <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center shadow-soft">
-              <p className="text-sm font-semibold text-[#71717A] dark:text-[#A1A1AA]">
+            <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 text-center shadow-xs">
+              <p className="text-sm font-semibold text-zinc-600 dark:text-zinc-300">
                 Loading account details...
               </p>
             </section>
@@ -356,7 +356,7 @@ export default function Profile() {
             <div className="flex items-center justify-between pb-1">
               <Link
                 to="/home"
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-2xs cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-1.5 text-xs font-bold text-zinc-950 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-2xs cursor-pointer active:scale-95"
                 aria-label="Back to Homepage"
               >
                 <ArrowLeft size={14} />
@@ -365,141 +365,88 @@ export default function Profile() {
 
               <Link
                 to="/home"
-                className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white transition"
+                className="text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white transition"
               >
                 Home
               </Link>
             </div>
 
             {/* Top Profile Card */}
-            <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-7">
+            <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs sm:p-7">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] text-primary shadow-subtle shrink-0">
-                <UserRound size={28} strokeWidth={1.8} />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 border border-zinc-200 dark:border-zinc-700 shadow-2xs shrink-0">
+                <UserRound size={26} strokeWidth={2} />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">
+                <h1 className="text-xl font-extrabold text-zinc-950 dark:text-zinc-50 truncate">
                   Guest Account
                 </h1>
-                <p className="text-xs text-[#67696D] dark:text-[#A1A1AA] mt-0.5">
-                  Sign in to access your worker profile and saved history.
+                <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-300 mt-0.5">
+                  Sign in to access your profile, reminders, and saved specialists.
                 </p>
               </div>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-2.5">
+            <div className="mt-5 grid grid-cols-2 gap-3">
               <Link
                 to="/login"
                 state={{ from: "main" }}
-                className="flex items-center justify-center gap-1.5 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] dark:hover:bg-neutral-200 py-2.5 px-4 text-xs font-semibold shadow-xs transition cursor-pointer active:scale-95 border border-transparent"
+                className="flex items-center justify-center gap-2 rounded-full bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 py-2.5 px-4 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
               >
-                <LogIn size={14} /> Sign In
+                <LogIn size={15} /> <span>Sign In</span>
               </Link>
               <Link
                 to="/join"
-                className="flex items-center justify-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] py-2.5 px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-xs cursor-pointer active:scale-95"
+                className="flex items-center justify-center gap-2 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-2.5 px-4 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-xs cursor-pointer active:scale-95"
               >
-                <UserPlus size={14} /> Register
+                <UserPlus size={15} /> <span>Register</span>
               </Link>
             </div>
           </section>
 
           {/* Quick Shortcuts */}
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 shadow-soft">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#71717A] mb-3">
+          <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+            <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
               Quick Access
             </p>
-            <div className="divide-y divide-[#E7ECF1] dark:divide-[#1F1F1F]">
+            <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
               <Link
                 to="/home"
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+                className="flex items-center justify-between py-3 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:text-zinc-600 dark:hover:text-zinc-300 transition cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <Home size={16} className="text-primary shrink-0" />
+                  <Home size={16} className="text-zinc-900 dark:text-zinc-100 shrink-0" />
                   <span>Homepage & Search Pros</span>
                 </div>
                 <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
+                  size={15}
+                  className="text-zinc-400"
                 />
               </Link>
               <Link
                 to="/inbox"
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+                className="flex items-center justify-between py-3 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:text-zinc-600 dark:hover:text-zinc-300 transition cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <Clock size={16} className="text-primary shrink-0" />
-                  <span>Inbox & Recurring Maintenance</span>
+                  <Clock size={16} className="text-zinc-900 dark:text-zinc-100 shrink-0" />
+                  <span>Inbox & Reminders</span>
                 </div>
                 <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
+                  size={15}
+                  className="text-zinc-400"
                 />
               </Link>
               <Link
                 to="/saved"
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+                className="flex items-center justify-between py-3 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:text-zinc-600 dark:hover:text-zinc-300 transition cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <Bookmark size={16} className="text-primary shrink-0" />
-                  <span>Saved Workers & Bookmarks</span>
+                  <Bookmark size={16} className="text-zinc-900 dark:text-zinc-100 shrink-0" />
+                  <span>Saved Pros & My Circle</span>
                 </div>
                 <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
-                />
-              </Link>
-              <Link
-                to="/assistant"
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Sparkles size={16} className="text-primary shrink-0" />
-                  <span>AI Search Assistant</span>
-                </div>
-                <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
-                />
-              </Link>
-              <Link
-                to="/voice-onboarding"
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Mic size={16} className="text-primary shrink-0" />
-                  <span>Voice Onboarding</span>
-                </div>
-                <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
-                />
-              </Link>
-              <Link
-                to="/login"
-                state={{ from: "main" }}
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Users size={16} className="text-primary shrink-0" />
-                  <span>Agency Management Portal</span>
-                </div>
-                <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
-                />
-              </Link>
-              <Link
-                to="/safety"
-                className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Shield size={16} className="text-primary shrink-0" />
-                  <span>Safety, Verification & Rules</span>
-                </div>
-                <ChevronRight
-                  size={14}
-                  className="text-[#989EA7] dark:text-[#71717A]"
+                  size={15}
+                  className="text-zinc-400"
                 />
               </Link>
             </div>
@@ -535,7 +482,7 @@ export default function Profile() {
           <div className="flex items-center justify-between pb-1">
             <Link
               to="/home"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-2xs cursor-pointer active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-1.5 text-xs font-bold text-zinc-950 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shadow-2xs cursor-pointer active:scale-95"
               aria-label="Back to Homepage"
             >
               <ArrowLeft size={14} />
@@ -544,17 +491,17 @@ export default function Profile() {
 
             <Link
               to="/home"
-              className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white transition"
+              className="text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white transition"
             >
               Home
             </Link>
           </div>
 
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-soft sm:p-7">
+          <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-xs sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#141414] text-primary shadow-subtle">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 shadow-2xs">
                   {profile.avatar_url ? (
                     <img
                       src={profile.avatar_url}
@@ -562,14 +509,14 @@ export default function Profile() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <UserRound size={28} strokeWidth={1.8} />
+                    <UserRound size={28} strokeWidth={2} />
                   )}
                 </div>
                 <label
-                  className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white dark:border-black bg-black text-white dark:bg-white dark:text-black shadow-subtle hover:bg-neutral-800 dark:hover:bg-neutral-200 transition"
+                  className="absolute -bottom-1 -right-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-white dark:border-black bg-black text-white dark:bg-white dark:text-black shadow-xs hover:bg-neutral-800 dark:hover:bg-neutral-200 transition"
                   aria-label="Upload profile photo"
                 >
-                  <ImagePlus size={14} />
+                  <ImagePlus size={13} />
                   <input
                     type="file"
                     accept="image/*"
@@ -584,11 +531,11 @@ export default function Profile() {
                 </label>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                <h1 className="text-xl font-extrabold text-zinc-950 dark:text-zinc-50">
                   {profile.name || "My Account"}
                 </h1>
-                <p className="mt-0.5 text-xs font-semibold text-primary inline-flex items-center gap-1">
-                  <UserCheck size={13} /> {role} Account
+                <p className="mt-0.5 text-xs font-bold text-zinc-600 dark:text-zinc-300 inline-flex items-center gap-1">
+                  <UserCheck size={14} className="text-emerald-600 dark:text-emerald-400" /> {role} Account
                 </p>
               </div>
             </div>
@@ -602,37 +549,37 @@ export default function Profile() {
                   setMessage("");
                   setEditing(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#141414] px-3.5 py-1.5 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:bg-[#F6F9FC] dark:hover:bg-[#1c1c1c] shadow-subtle cursor-pointer transition"
+                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-1.5 text-xs font-bold text-zinc-950 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-2xs cursor-pointer transition"
               >
-                <Edit3 size={14} /> Edit
+                <Edit3 size={13} /> Edit
               </button>
             )}
           </div>
 
           {uploading && (
-            <p className="mt-3 text-center text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA]">
+            <p className="mt-3 text-center text-xs font-bold text-zinc-600 dark:text-zinc-300">
               Uploading profile photo...
             </p>
           )}
 
           {!editing ? (
-            <div className="mt-6 space-y-2.5">
+            <div className="mt-6 space-y-3">
               {details.map(([label, value]) => (
                 <div
                   key={label}
-                  className="rounded-[12px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-[#F6F9FC] dark:bg-[#121212] px-4 py-2.5"
+                  className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-800/50 px-4 py-3"
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#67696D] dark:text-[#71717A]">
+                  <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     {label}
                   </p>
-                  <p className="mt-0.5 whitespace-pre-wrap text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                  <p className="mt-1 whitespace-pre-wrap text-sm sm:text-base font-bold text-zinc-950 dark:text-zinc-50">
                     {value}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="mt-6 space-y-3.5">
+            <div className="mt-6 space-y-4">
               <div className="grid gap-3.5 sm:grid-cols-2">
                 {[
                   ["name", "Name"],
@@ -644,12 +591,12 @@ export default function Profile() {
                   .filter(([id]) => isWorker || ["name", "phone"].includes(id))
                   .map(([id, label]) => (
                     <div key={id}>
-                      <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                         {label}
                       </label>
                       {id === "phone" ? (
-                        <div className="flex h-10 overflow-hidden rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#0A0A0A] transition">
-                          <span className="flex items-center border-r border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#1c1c1c] px-3 text-xs font-bold text-[#67696D] dark:text-[#A1A1AA]">
+                        <div className="flex h-10 overflow-hidden rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus-within:ring-2 focus-within:ring-zinc-950 dark:focus-within:ring-white transition">
+                          <span className="flex items-center border-r border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 text-xs font-bold text-zinc-700 dark:text-zinc-300">
                             +91
                           </span>
                           <input
@@ -660,13 +607,13 @@ export default function Profile() {
                               setDraft((v) => ({
                                 ...v,
                                 [id]: e.target.value
-                                  .replace(/\D/g, "")
-                                  .slice(0, 10),
+                                    .replace(/\D/g, "")
+                                    .slice(0, 10),
                               }))
                             }
                             disabled={pendingContact === "phone"}
                             placeholder="10-digit mobile number"
-                            className="min-w-0 flex-1 bg-transparent px-3 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] outline-none placeholder:text-[#989EA7]"
+                            className="min-w-0 flex-1 bg-transparent px-3 text-xs sm:text-sm font-semibold text-zinc-950 dark:text-zinc-50 outline-none placeholder:text-zinc-400"
                           />
                         </div>
                       ) : (
@@ -675,7 +622,7 @@ export default function Profile() {
                           onChange={(e) =>
                             setDraft((v) => ({ ...v, [id]: e.target.value }))
                           }
-                          className="h-10 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition placeholder:text-[#989EA7]"
+                          className="h-10 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 text-xs sm:text-sm font-semibold text-zinc-950 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white transition placeholder:text-zinc-400"
                         />
                       )}
                     </div>
@@ -693,7 +640,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                     Email Address
                   </label>
                   <input
@@ -701,12 +648,12 @@ export default function Profile() {
                     value={draftEmail}
                     onChange={(e) => setDraftEmail(e.target.value)}
                     disabled={pendingContact === "email"}
-                    className="h-10 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition placeholder:text-[#989EA7]"
+                    className="h-10 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 text-xs sm:text-sm font-semibold text-zinc-950 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white transition placeholder:text-zinc-400"
                   />
                 </div>
                 {isWorker && (
                   <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                       About You
                     </label>
                     <textarea
@@ -715,32 +662,32 @@ export default function Profile() {
                       onChange={(e) =>
                         setDraft((v) => ({ ...v, about: e.target.value }))
                       }
-                      className="w-full resize-none rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] px-3 py-2.5 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] focus:outline-none transition placeholder:text-[#989EA7]"
+                      className="w-full resize-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-zinc-950 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white transition placeholder:text-zinc-400"
                     />
                   </div>
                 )}
               </div>
 
               {message && (
-                <p className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 px-4 py-2 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <p className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 px-4 py-2 text-center text-xs font-bold text-emerald-800 dark:text-emerald-300">
                   {message}
                 </p>
               )}
               {error && (
-                <p className="text-center text-xs font-semibold text-rose-600 dark:text-rose-400">
+                <p className="text-center text-xs font-bold text-rose-600 dark:text-rose-400">
                   {error}
                 </p>
               )}
 
               {pendingContact ? (
-                <div className="rounded-[16px] border border-primary-100/60 dark:border-primary/30 bg-primary-100/10 dark:bg-primary/5 p-4 shadow-subtle">
-                  <p className="text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                <div className="rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-4 shadow-xs">
+                  <p className="text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50">
                     Verify your{" "}
                     {pendingContact === "email"
                       ? "new email"
                       : "new phone number"}
                   </p>
-                  <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#A1A1AA]">
+                  <p className="mt-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                     Enter the OTP sent to {pendingValue}.
                   </p>
                   <input
@@ -749,32 +696,32 @@ export default function Profile() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                     placeholder="Verification code"
-                    className="mt-2.5 h-10 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#141414] px-3 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:border-primary focus:outline-none"
+                    className="mt-2.5 h-10 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 text-xs sm:text-sm font-semibold text-zinc-950 dark:text-zinc-50 focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={verifyContact}
                     disabled={saving}
-                    className="mt-2.5 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-bold shadow-subtle hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer"
+                    className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-xs hover:bg-zinc-800 dark:hover:bg-zinc-200 transition disabled:opacity-60 cursor-pointer"
                   >
                     <Check size={15} />
                     Verify & Save
                   </button>
                 </div>
               ) : (
-                <div className="flex gap-2.5 pt-1">
+                <div className="flex gap-3 pt-2">
                   <button
                     type="button"
                     onClick={saveProfile}
                     disabled={saving}
-                    className="flex h-10 flex-1 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black text-xs font-bold shadow-subtle hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer"
+                    className="flex h-10 flex-1 items-center justify-center rounded-full bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 text-xs sm:text-sm font-bold shadow-xs hover:bg-zinc-800 dark:hover:bg-zinc-200 transition disabled:opacity-60 cursor-pointer"
                   >
                     {saving ? "Saving..." : "Save changes"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditing(false)}
-                    className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#141414] px-5 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] hover:bg-[#F6F9FC] dark:hover:bg-[#1c1c1c] shadow-subtle transition cursor-pointer"
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-6 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-xs transition cursor-pointer"
                   >
                     <X size={15} /> Cancel
                   </button>
@@ -784,68 +731,68 @@ export default function Profile() {
           )}
 
           {message && !editing && (
-            <p className="mt-4 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 px-4 py-2 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+            <p className="mt-4 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 px-4 py-2 text-center text-xs font-bold text-emerald-800 dark:text-emerald-300">
               {message}
             </p>
           )}
         </section>
 
         {/* Quick Shortcuts */}
-        <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 shadow-soft">
-          <p className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#71717A] mb-3">
+        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs">
+          <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-3">
             Quick Navigation
           </p>
-          <div className="divide-y divide-[#E7ECF1] dark:divide-[#1F1F1F]">
+          <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
             <Link
               to="/home"
-              className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+              className="flex items-center justify-between py-3 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:text-zinc-600 dark:hover:text-zinc-300 transition cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <Home size={16} className="text-primary shrink-0" />
-                <span>Homepage & Browse Local Pros</span>
+                <Home size={16} className="text-zinc-900 dark:text-zinc-100 shrink-0" />
+                <span>Homepage & Browse Pros</span>
               </div>
               <ChevronRight
-                size={14}
-                className="text-[#989EA7] dark:text-[#71717A]"
+                size={15}
+                className="text-zinc-400"
               />
             </Link>
             <Link
               to="/inbox"
-              className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+              className="flex items-center justify-between py-3 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:text-zinc-600 dark:hover:text-zinc-300 transition cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <Clock size={16} className="text-primary shrink-0" />
-                <span>Inbox & Home Recurring Maintenance</span>
+                <Clock size={16} className="text-zinc-900 dark:text-zinc-100 shrink-0" />
+                <span>Inbox & Reminders</span>
               </div>
               <ChevronRight
-                size={14}
-                className="text-[#989EA7] dark:text-[#71717A]"
+                size={15}
+                className="text-zinc-400"
               />
             </Link>
             <Link
               to="/saved"
-              className="flex items-center justify-between py-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] hover:text-primary transition cursor-pointer"
+              className="flex items-center justify-between py-3 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 hover:text-zinc-600 dark:hover:text-zinc-300 transition cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <Bookmark size={16} className="text-primary shrink-0" />
-                <span>Saved Workers & Bookmarks</span>
+                <Bookmark size={16} className="text-zinc-900 dark:text-zinc-100 shrink-0" />
+                <span>Saved Pros & My Circle</span>
               </div>
               <ChevronRight
-                size={14}
-                className="text-[#989EA7] dark:text-[#71717A]"
+                size={15}
+                className="text-zinc-400"
               />
             </Link>
           </div>
         </section>
 
         {/* Account Actions */}
-        <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-5 shadow-soft space-y-3">
+        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-xs space-y-3">
           <button
             type="button"
             onClick={logout}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] text-xs font-semibold text-[#67696D] dark:text-[#A1A1AA] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5] hover:bg-white dark:hover:bg-[#1c1c1c] shadow-subtle transition cursor-pointer"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-xs transition cursor-pointer"
           >
-            <LogOut size={15} /> Logout
+            <LogOut size={16} /> Logout
           </button>
           <button
             type="button"
@@ -853,34 +800,33 @@ export default function Profile() {
               setError("");
               setDeleteOpen(true);
             }}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-full border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 shadow-subtle transition cursor-pointer"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-rose-300 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-xs sm:text-sm font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 shadow-xs transition cursor-pointer"
           >
-            <Trash2 size={15} /> Delete account
+            <Trash2 size={16} /> Delete account
           </button>
 
           {deleteOpen && (
-            <div className="mt-4 rounded-[14px] border border-rose-200 dark:border-rose-900/80 bg-rose-50 dark:bg-rose-950/40 p-4 shadow-soft">
+            <div className="mt-4 rounded-2xl border border-rose-300 dark:border-rose-900/80 bg-rose-50 dark:bg-rose-950/40 p-4 sm:p-5 shadow-xs">
               <div className="flex items-start gap-3">
                 <AlertTriangle
                   className="mt-0.5 shrink-0 text-rose-600 dark:text-rose-400"
-                  size={18}
+                  size={20}
                 />
                 <div>
-                  <p className="font-bold text-xs text-rose-800 dark:text-rose-300">
+                  <p className="font-extrabold text-sm text-rose-900 dark:text-rose-200">
                     Delete your account?
                   </p>
-                  <p className="mt-1 text-[11px] leading-4 text-rose-700 dark:text-rose-400">
-                    This permanently removes your LocalWorker login account.
-                    This action cannot be undone.
+                  <p className="mt-1 text-xs font-semibold leading-relaxed text-rose-800 dark:text-rose-300">
+                    This permanently removes your account and profile data.
                   </p>
                 </div>
               </div>
-              <div className="mt-3.5 flex gap-2.5">
+              <div className="mt-4 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setDeleteOpen(false)}
                   disabled={deleting}
-                  className="flex-1 rounded-full border border-rose-200 dark:border-rose-900/60 bg-white dark:bg-[#141414] py-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 hover:bg-rose-50 shadow-subtle transition cursor-pointer"
+                  className="flex-1 rounded-full border border-rose-300 dark:border-rose-800 bg-white dark:bg-zinc-900 py-2 text-xs font-bold text-rose-800 dark:text-rose-300 hover:bg-rose-50 shadow-xs transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -888,7 +834,7 @@ export default function Profile() {
                   type="button"
                   onClick={deleteAccount}
                   disabled={deleting}
-                  className="flex-1 rounded-full bg-rose-600 py-1.5 text-xs font-bold text-white hover:bg-rose-700 shadow-subtle transition disabled:opacity-60 cursor-pointer"
+                  className="flex-1 rounded-full bg-rose-600 py-2 text-xs font-bold text-white hover:bg-rose-700 shadow-xs transition disabled:opacity-60 cursor-pointer"
                 >
                   {deleting ? "Deleting..." : "Delete permanently"}
                 </button>

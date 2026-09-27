@@ -4,6 +4,7 @@ import type {
   MaintenanceCatalogItem,
   ReminderStatus,
   HomeItemWithStatus,
+  ServiceHistoryEntry,
 } from "@shared/home-reminders";
 
 export type {
@@ -11,6 +12,7 @@ export type {
   MaintenanceCatalogItem,
   ReminderStatus,
   HomeItemWithStatus,
+  ServiceHistoryEntry,
 };
 
 export const DEFAULT_MAINTENANCE_CATALOG: MaintenanceCatalogItem[] = [
@@ -80,6 +82,7 @@ export const DEFAULT_MAINTENANCE_CATALOG: MaintenanceCatalogItem[] = [
 ];
 
 const LOCAL_STORAGE_KEY = "app1:customer-home-items";
+const LOCAL_HISTORY_KEY = "app1:customer-service-history";
 
 export function formatDateIso(d: Date): string {
   const y = d.getFullYear();
@@ -127,7 +130,7 @@ export function computeDueDate(
 
 /**
  * Generates status details for a home maintenance item.
- * today >= dueDate means due or overdue.
+ * Items enter the active daily reminder window 1 week (7 days) before the due date.
  */
 export function getReminderStatus(
   item: Pick<HomeItem, "last_serviced_date" | "interval_months">,
@@ -146,10 +149,15 @@ export function getReminderStatus(
   const dueDate = computeDueDate(item.last_serviced_date, item.interval_months);
   const dueDateStr = formatDateIso(dueDate);
 
+  // Reminder starts 7 days before due date
+  const reminderStartDate = new Date(dueDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const reminderStartDateStr = formatDateIso(reminderStartDate);
+
   const msPerDay = 1000 * 60 * 60 * 24;
   const diffDays = Math.round((today.getTime() - dueDate.getTime()) / msPerDay);
   const isDue = diffDays >= 0;
   const isOverdue = diffDays > 0;
+  const isReminderActive = diffDays >= -7; // Starts daily reminders 7 days before due date
 
   let statusText = "";
   if (diffDays > 0) {
@@ -171,11 +179,16 @@ export function getReminderStatus(
     }
   } else if (diffDays === 0) {
     statusText = "Due today";
-  } else {
+  } else if (diffDays >= -7) {
     const absDays = Math.abs(diffDays);
     if (absDays === 1) {
-      statusText = "Due tomorrow";
-    } else if (absDays < 30) {
+      statusText = "Due tomorrow • Daily reminder";
+    } else {
+      statusText = `Due in ${absDays} days • Daily reminder active`;
+    }
+  } else {
+    const absDays = Math.abs(diffDays);
+    if (absDays < 30) {
       statusText = `Due in ${absDays} days`;
     } else {
       const months = Math.round(absDays / 30);
@@ -186,9 +199,12 @@ export function getReminderStatus(
   return {
     dueDate,
     dueDateStr,
+    reminderStartDate,
+    reminderStartDateStr,
     diffDays,
     isDue,
     isOverdue,
+    isReminderActive,
     statusText,
   };
 }
@@ -218,9 +234,14 @@ export function getPresetLastServicedDate(
 }
 
 /**
- * Separates items into due/overdue vs upcoming and sorts them.
- * Due/Overdue: sorted overdue-first (most days overdue at top), then soonest-due.
- * Upcoming: sorted soonest-due first (least days remaining at top).
+ * Separates items into active reminders (due/overdue + within 7-day daily reminder window)
+ * vs upcoming (quietly stored in app memory).
+ * 
+ * Active Reminders:
+ *   - Overdue items sorted most overdue first
+ *   - Due today items
+ *   - 7-day daily reminder items sorted closest to due date first
+ * Upcoming: sorted soonest-due first
  */
 export function getDueAndUpcomingHomeItems(
   items: HomeItem[],
@@ -229,6 +250,8 @@ export function getDueAndUpcomingHomeItems(
   dueOrOverdue: HomeItemWithStatus[];
   upcoming: HomeItemWithStatus[];
   dueOrOverdueCount: number;
+  strictlyDueCount: number;
+  reminderWindowCount: number;
 } {
   const decorated: HomeItemWithStatus[] = items.map((item) => ({
     ...item,
@@ -236,7 +259,7 @@ export function getDueAndUpcomingHomeItems(
   }));
 
   const dueOrOverdue = decorated
-    .filter((item) => item.status.isDue)
+    .filter((item) => item.status.isReminderActive)
     .sort((a, b) => {
       // Overdue-first: largest diffDays first (most overdue)
       if (b.status.diffDays !== a.status.diffDays) {
@@ -246,21 +269,28 @@ export function getDueAndUpcomingHomeItems(
     });
 
   const upcoming = decorated
-    .filter((item) => !item.status.isDue)
+    .filter((item) => !item.status.isReminderActive)
     .sort((a, b) => {
       // Soonest-due first: earliest due date (closest to today, least negative diffDays)
       return a.status.dueDate.getTime() - b.status.dueDate.getTime();
     });
 
+  const strictlyDueCount = decorated.filter((item) => item.status.isDue).length;
+  const reminderWindowCount = decorated.filter(
+    (item) => item.status.isReminderActive && !item.status.isDue,
+  ).length;
+
   return {
     dueOrOverdue,
     upcoming,
     dueOrOverdueCount: dueOrOverdue.length,
+    strictlyDueCount,
+    reminderWindowCount,
   };
 }
 
 /* =========================================================================
-   Storage & Supabase Service Layer
+   Storage & History Service Layer
    ========================================================================= */
 
 function readLocalStorage(userId?: string): HomeItem[] {
@@ -287,6 +317,52 @@ function writeLocalStorage(items: HomeItem[]): void {
   } catch (err) {
     console.warn("Could not write home items to localStorage:", err);
   }
+}
+
+export function readServiceHistory(userId?: string): ServiceHistoryEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(LOCAL_HISTORY_KEY);
+    if (!raw) return [];
+    const list: ServiceHistoryEntry[] = JSON.parse(raw);
+    if (!Array.isArray(list)) return [];
+    return list;
+  } catch {
+    return [];
+  }
+}
+
+export function writeServiceHistory(history: ServiceHistoryEntry[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LOCAL_HISTORY_KEY, JSON.stringify(history));
+    window.dispatchEvent(new CustomEvent("service-history-changed"));
+  } catch (err) {
+    console.warn("Could not write service history to localStorage:", err);
+  }
+}
+
+export function addServiceHistoryEntry(
+  entry: Omit<ServiceHistoryEntry, "id" | "created_at">,
+): ServiceHistoryEntry {
+  const newEntry: ServiceHistoryEntry = {
+    ...entry,
+    id:
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `hist-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    created_at: new Date().toISOString(),
+  };
+
+  const history = readServiceHistory();
+  const updated = [newEntry, ...history].slice(0, 100); // Keep last 100 entries
+  writeServiceHistory(updated);
+  return newEntry;
+}
+
+export function deleteServiceHistoryEntry(id: string): void {
+  const history = readServiceHistory();
+  writeServiceHistory(history.filter((h) => h.id !== id));
 }
 
 /**
@@ -318,9 +394,13 @@ export async function fetchMaintenanceCatalog(): Promise<
 export async function fetchUserHomeItems(userId?: string): Promise<HomeItem[]> {
   let effectiveUserId = userId;
   if (!effectiveUserId && supabase) {
-    const { data } = await supabase.auth.getSession();
-    effectiveUserId = data.session?.user?.id;
+    try {
+      const { data } = await supabase.auth.getSession();
+      effectiveUserId = data.session?.user?.id;
+    } catch {}
   }
+
+  const localItems = readLocalStorage(effectiveUserId);
 
   if (supabase && effectiveUserId) {
     try {
@@ -330,18 +410,42 @@ export async function fetchUserHomeItems(userId?: string): Promise<HomeItem[]> {
         .eq("user_id", effectiveUserId)
         .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        // Sync to local storage as warm cache
-        writeLocalStorage(data as HomeItem[]);
-        return data as HomeItem[];
+      if (!error && data && Array.isArray(data)) {
+        const serverItems = data as HomeItem[];
+        const serverIds = new Set(serverItems.map((s) => s.id));
+
+        // Merge: keep newest local item if it has more recent updates
+        const merged: HomeItem[] = serverItems.map((sItem) => {
+          const lItem = localItems.find((l) => l.id === sItem.id);
+          if (lItem) {
+            const lUpdated = new Date(
+              lItem.updated_at || lItem.last_serviced_date || 0,
+            ).getTime();
+            const sUpdated = new Date(
+              sItem.updated_at || sItem.last_serviced_date || 0,
+            ).getTime();
+            if (lUpdated > sUpdated) {
+              return lItem;
+            }
+          }
+          return sItem;
+        });
+
+        for (const lItem of localItems) {
+          if (!serverIds.has(lItem.id)) {
+            merged.push(lItem);
+          }
+        }
+
+        writeLocalStorage(merged);
+        return merged;
       }
     } catch (err) {
       console.warn("fetchUserHomeItems Supabase query failed:", err);
     }
   }
 
-  // Fallback to local storage
-  return readLocalStorage(effectiveUserId);
+  return localItems;
 }
 
 /**
@@ -360,11 +464,15 @@ export async function createUserHomeItem(
     updated_at: new Date().toISOString(),
   };
 
+  const local = readLocalStorage(item.user_id);
+  writeLocalStorage([newItem, ...local]);
+
   if (supabase && item.user_id) {
     try {
       const { data, error } = await supabase
         .from("home_items")
         .insert({
+          id: newItem.id,
           user_id: item.user_id,
           item_type: item.item_type,
           label: item.label,
@@ -373,13 +481,13 @@ export async function createUserHomeItem(
           category_slug: item.category_slug,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
-        const local = readLocalStorage(item.user_id).filter(
-          (i) => i.id !== (data as HomeItem).id,
+        const fresh = readLocalStorage(item.user_id).map((i) =>
+          i.id === newItem.id ? (data as HomeItem) : i,
         );
-        writeLocalStorage([data as HomeItem, ...local]);
+        writeLocalStorage(fresh);
         return data as HomeItem;
       }
     } catch (err) {
@@ -387,8 +495,6 @@ export async function createUserHomeItem(
     }
   }
 
-  const local = readLocalStorage(item.user_id);
-  writeLocalStorage([newItem, ...local]);
   return newItem;
 }
 
@@ -400,35 +506,6 @@ export async function createBatchUserHomeItems(
 ): Promise<HomeItem[]> {
   if (items.length === 0) return [];
   const userId = items[0]?.user_id;
-
-  if (supabase && userId) {
-    try {
-      const payload = items.map((i) => ({
-        user_id: i.user_id,
-        item_type: i.item_type,
-        label: i.label,
-        last_serviced_date: i.last_serviced_date,
-        interval_months: i.interval_months,
-        category_slug: i.category_slug,
-      }));
-
-      const { data, error } = await supabase
-        .from("home_items")
-        .insert(payload)
-        .select();
-
-      if (!error && data) {
-        const created = data as HomeItem[];
-        const local = readLocalStorage(userId).filter(
-          (old) => !created.some((c) => c.id === old.id),
-        );
-        writeLocalStorage([...created, ...local]);
-        return created;
-      }
-    } catch (err) {
-      console.warn("createBatchUserHomeItems Supabase insert failed:", err);
-    }
-  }
 
   const newItems: HomeItem[] = items.map((item) => ({
     ...item,
@@ -442,11 +519,30 @@ export async function createBatchUserHomeItems(
 
   const local = readLocalStorage(userId);
   writeLocalStorage([...newItems, ...local]);
+
+  if (supabase && userId) {
+    try {
+      const payload = newItems.map((i) => ({
+        id: i.id,
+        user_id: i.user_id,
+        item_type: i.item_type,
+        label: i.label,
+        last_serviced_date: i.last_serviced_date,
+        interval_months: i.interval_months,
+        category_slug: i.category_slug,
+      }));
+
+      await supabase.from("home_items").insert(payload);
+    } catch (err) {
+      console.warn("createBatchUserHomeItems Supabase insert failed:", err);
+    }
+  }
+
   return newItems;
 }
 
 /**
- * Updates an existing home item
+ * Updates an existing home item with instant local update
  */
 export async function updateUserHomeItem(
   id: string,
@@ -462,28 +558,7 @@ export async function updateUserHomeItem(
     updated_at: new Date().toISOString(),
   };
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("home_items")
-        .update(payload)
-        .eq("id", id)
-        .select()
-        .single();
-
-      if (!error && data) {
-        const current = readLocalStorage();
-        const updated = current.map((i) =>
-          i.id === id ? (data as HomeItem) : i,
-        );
-        writeLocalStorage(updated);
-        return data as HomeItem;
-      }
-    } catch (err) {
-      console.warn("updateUserHomeItem Supabase update failed:", err);
-    }
-  }
-
+  // 1. Instantly update LocalStorage and dispatch event
   const current = readLocalStorage();
   let result: HomeItem | null = null;
   const updated = current.map((i) => {
@@ -494,40 +569,75 @@ export async function updateUserHomeItem(
     return i;
   });
   writeLocalStorage(updated);
+
+  // 2. Persist to Supabase in background
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("home_items")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .maybeSingle();
+
+      if (!error && data) {
+        const fresh = readLocalStorage().map((i) =>
+          i.id === id ? (data as HomeItem) : i,
+        );
+        writeLocalStorage(fresh);
+        return data as HomeItem;
+      }
+    } catch (err) {
+      console.warn("updateUserHomeItem Supabase update failed (kept local):", err);
+    }
+  }
+
   return result;
 }
 
 /**
  * Resets last_serviced_date to today for an item ("Mark as done today")
+ * and records completion in service history.
  */
 export async function markHomeItemDoneToday(
   id: string,
+  customNote?: string,
 ): Promise<HomeItem | null> {
   const todayIso = formatDateIso(new Date());
+  
+  // Record in service history for memory
+  const current = readLocalStorage();
+  const item = current.find((i) => i.id === id);
+  if (item) {
+    addServiceHistoryEntry({
+      item_id: item.id,
+      item_label: item.label,
+      completed_date: todayIso,
+      category_slug: item.category_slug,
+      note: customNote || "Serviced & marked done",
+    });
+  }
+
   return updateUserHomeItem(id, {
     last_serviced_date: todayIso,
   });
 }
 
 /**
- * Deletes a home item
+ * Deletes a home item with instant local deletion
  */
 export async function deleteUserHomeItem(id: string): Promise<boolean> {
+  const current = readLocalStorage();
+  writeLocalStorage(current.filter((i) => i.id !== id));
+
   if (supabase) {
     try {
-      const { error } = await supabase.from("home_items").delete().eq("id", id);
-      if (!error) {
-        const current = readLocalStorage();
-        writeLocalStorage(current.filter((i) => i.id !== id));
-        return true;
-      }
+      await supabase.from("home_items").delete().eq("id", id);
     } catch (err) {
       console.warn("deleteUserHomeItem Supabase delete failed:", err);
     }
   }
 
-  const current = readLocalStorage();
-  writeLocalStorage(current.filter((i) => i.id !== id));
   return true;
 }
 
@@ -560,3 +670,4 @@ export async function getLiveDueBadgeCount(
   );
   return dueOrOverdueCount;
 }
+

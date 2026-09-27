@@ -36,8 +36,32 @@ describe("home-items plain date arithmetic & reminder logic", () => {
     );
     expect(status.isDue).toBe(true);
     expect(status.isOverdue).toBe(false);
+    expect(status.isReminderActive).toBe(true);
     expect(status.diffDays).toBe(0);
     expect(status.statusText).toBe("Due today");
+  });
+
+  it("activates daily reminders starting 1 week (7 days) before the due date", () => {
+    const today = new Date(2026, 8, 21); // 2026-09-21
+    // Due 2026-09-26 (5 days away) -> within 7-day daily reminder window
+    const status1 = getReminderStatus(
+      { last_serviced_date: "2026-05-26", interval_months: 4 },
+      today,
+    );
+    expect(status1.isDue).toBe(false);
+    expect(status1.isReminderActive).toBe(true);
+    expect(status1.diffDays).toBe(-5);
+    expect(status1.statusText).toContain("Due in 5 days • Daily reminder active");
+
+    // Due 2026-10-15 (24 days away) -> >7 days away, safely in app memory
+    const status2 = getReminderStatus(
+      { last_serviced_date: "2026-06-15", interval_months: 4 },
+      today,
+    );
+    expect(status2.isDue).toBe(false);
+    expect(status2.isReminderActive).toBe(false);
+    expect(status2.diffDays).toBe(-24);
+    expect(status2.statusText).toBe("Due in 24 days");
   });
 
   it("identifies overdue items and calculates overdue days correctly", () => {
@@ -49,6 +73,7 @@ describe("home-items plain date arithmetic & reminder logic", () => {
     );
     expect(status.isDue).toBe(true);
     expect(status.isOverdue).toBe(true);
+    expect(status.isReminderActive).toBe(true);
     expect(status.diffDays).toBeGreaterThan(50);
     expect(status.statusText).toContain("Overdue");
   });

@@ -15,7 +15,9 @@ type Commitment = {
   cancellation_reason: string | null;
   worker_notes: string | null;
 };
+
 const tabs = ["upcoming", "past", "cancelled"] as const;
+
 export default function WorkerCommitments() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<(typeof tabs)[number]>("upcoming");
@@ -55,26 +57,26 @@ export default function WorkerCommitments() {
   );
 
   return (
-    <PageShell backTo="/worker-dashboard" backLabel="Back">
-      <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
+    <PageShell backTo="/worker-dashboard" backLabel="Back" headerTitle="My Commitments">
+      <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 sm:p-6 shadow-xs">
+        <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Worker Portal
         </p>
-        <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight">
-          My Commitments
+        <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold text-zinc-950 dark:text-zinc-50 tracking-tight">
+          Job Commitments
         </h1>
-        <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA]">
-          Your upcoming, completed and cancelled jobs.
+        <p className="mt-1 text-sm font-medium text-zinc-600 dark:text-zinc-300">
+          Your scheduled, completed, and cancelled client appointments.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           {tabs.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-all cursor-pointer shadow-xs ${
+              className={`rounded-full px-4.5 py-2 text-xs font-bold capitalize transition-all cursor-pointer shadow-xs ${
                 tab === t
-                  ? "bg-black text-white dark:bg-white dark:text-black"
-                  : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
+                  ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
+                  : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700"
               }`}
             >
               {t}
@@ -83,45 +85,45 @@ export default function WorkerCommitments() {
         </div>
       </section>
 
-      <section className="mt-5 space-y-3">
+      <section className="mt-5 space-y-3.5">
         {loading ? (
-          <p className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-center text-xs text-[#71717A] dark:text-[#A1A1AA] shadow-sm">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 text-center text-sm font-semibold text-zinc-600 dark:text-zinc-300 shadow-xs">
             Loading commitments...
-          </p>
+          </div>
         ) : filtered.length === 0 ? (
-          <p className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-center text-xs text-[#71717A] dark:text-[#A1A1AA] shadow-sm">
-            No {tab} commitments yet.
-          </p>
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 text-center text-sm font-semibold text-zinc-600 dark:text-zinc-300 shadow-xs">
+            No {tab} commitments found.
+          </div>
         ) : (
           filtered.map((job) => (
             <article
               key={job.id}
-              className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-sm"
+              className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 sm:p-6 shadow-xs"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-bold text-[#09090B] dark:text-[#FAFAFA] text-base">
+                  <h2 className="font-extrabold text-zinc-950 dark:text-zinc-50 text-base sm:text-lg">
                     {job.job_type}
                   </h2>
-                  <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA]">
-                    {job.location || "Location not set"}
+                  <p className="mt-1 text-xs sm:text-sm font-semibold text-zinc-600 dark:text-zinc-300">
+                    {job.location || "Location not specified"}
                   </p>
                 </div>
-                <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3 py-1 text-[11px] font-bold capitalize text-[#09090B] dark:text-[#FAFAFA]">
+                <span className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs font-bold capitalize text-zinc-900 dark:text-zinc-100">
                   {job.status.replace("_", " ")}
                 </span>
               </div>
-              <div className="mt-3 grid gap-2 text-xs text-[#71717A] dark:text-[#A1A1AA] sm:grid-cols-2">
-                <span className="flex items-center gap-1.5">
-                  <CalendarDays size={14} className="text-[#09090B] dark:text-[#FAFAFA]" />
+              <div className="mt-3.5 grid gap-2.5 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 sm:grid-cols-2">
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={15} className="text-zinc-950 dark:text-zinc-50" />
                   {new Date(job.start_time).toLocaleDateString(undefined, {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
                   })}
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock3 size={14} className="text-[#09090B] dark:text-[#FAFAFA]" />
+                <span className="flex items-center gap-2">
+                  <Clock3 size={15} className="text-zinc-950 dark:text-zinc-50" />
                   {new Date(job.start_time).toLocaleTimeString(undefined, {
                     hour: "numeric",
                     minute: "2-digit",
@@ -134,18 +136,14 @@ export default function WorkerCommitments() {
                 </span>
               </div>
               {job.description && (
-                <p className="mt-3 text-xs text-[#71717A] dark:text-[#A1A1AA]">{job.description}</p>
-              )}
-              {job.cancellation_reason && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-rose-600 dark:text-rose-400">
-                  <XCircle size={14} />
-                  {job.cancellation_reason}
+                <p className="mt-3 text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800">
+                  {job.description}
                 </p>
               )}
-              {job.status === "completed" && (
-                <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 size={14} />
-                  Completed
+              {job.cancellation_reason && (
+                <p className="mt-3 flex items-center gap-2 text-xs sm:text-sm font-bold text-rose-700 dark:text-rose-400">
+                  <span>Cancellation reason:</span>
+                  <span>{job.cancellation_reason}</span>
                 </p>
               )}
             </article>

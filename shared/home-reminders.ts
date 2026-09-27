@@ -20,12 +20,25 @@ export interface MaintenanceCatalogItem {
   created_at?: string;
 }
 
+export interface ServiceHistoryEntry {
+  id: string;
+  item_id: string;
+  item_label: string;
+  completed_date: string; // YYYY-MM-DD
+  category_slug?: string;
+  created_at: string;
+  note?: string;
+}
+
 export interface ReminderStatus {
   dueDate: Date;
   dueDateStr: string; // YYYY-MM-DD
-  diffDays: number; // positive = overdue by diffDays, 0 = due today, negative = days remaining
+  reminderStartDate: Date; // 7 days before dueDate
+  reminderStartDateStr: string; // YYYY-MM-DD
+  diffDays: number; // positive = overdue by diffDays, 0 = due today, negative = days remaining until dueDate
   isDue: boolean; // today >= dueDate (diffDays >= 0)
   isOverdue: boolean; // diffDays > 0
+  isReminderActive: boolean; // diffDays >= -7 (starts reminding daily 1 week before due date)
   statusText: string;
 }
 

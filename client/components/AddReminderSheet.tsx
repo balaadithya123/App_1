@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import {
   type MaintenanceCatalogItem,
-  type HomeItem,
   DEFAULT_MAINTENANCE_CATALOG,
   fetchMaintenanceCatalog,
   createBatchUserHomeItems,
@@ -124,7 +123,6 @@ export default function AddReminderSheet({
       const items = await fetchMaintenanceCatalog();
       setCatalog(items);
 
-      // Initialize state for each catalog item
       const initial: Record<string, CatalogItemFormState> = {};
       const todayStr = formatDateIso(new Date());
       for (const item of items) {
@@ -152,7 +150,10 @@ export default function AddReminderSheet({
     }));
   };
 
-  const setDateChoiceForItem = (itemType: string, choice: QuickDateChoice) => {
+  const setDateChoiceForItem = (
+    itemType: string,
+    choice: QuickDateChoice,
+  ) => {
     setCatalogState((prev) => ({
       ...prev,
       [itemType]: {
@@ -162,32 +163,22 @@ export default function AddReminderSheet({
     }));
   };
 
-  const setCustomDateForItem = (itemType: string, dateStr: string) => {
+  const setCustomDateForItem = (itemType: string, date: string) => {
     setCatalogState((prev) => ({
       ...prev,
       [itemType]: {
         ...prev[itemType],
-        customDate: dateStr,
+        customDate: date,
       },
     }));
   };
 
-  const setCustomLabelForItem = (itemType: string, label: string) => {
+  const setIntervalForItem = (itemType: string, interval: number) => {
     setCatalogState((prev) => ({
       ...prev,
       [itemType]: {
         ...prev[itemType],
-        label,
-      },
-    }));
-  };
-
-  const setIntervalForItem = (itemType: string, intervalMonths: number) => {
-    setCatalogState((prev) => ({
-      ...prev,
-      [itemType]: {
-        ...prev[itemType],
-        intervalMonths: Math.max(1, intervalMonths),
+        intervalMonths: Math.max(1, interval),
       },
     }));
   };
@@ -198,46 +189,45 @@ export default function AddReminderSheet({
 
   const handleSaveCatalogItems = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedCatalogCount === 0) return;
+    const selectedTypes = Object.keys(catalogState).filter(
+      (type) => catalogState[type]?.selected,
+    );
+    if (selectedTypes.length === 0) return;
 
     setSubmitting(true);
     try {
-      const itemsToCreate: Array<
-        Omit<HomeItem, "id" | "created_at" | "updated_at">
-      > = [];
+      const todayStr = formatDateIso(new Date());
+      const batch = selectedTypes.map((itemType) => {
+        const itemState = catalogState[itemType];
+        const catItem =
+          catalog.find((c) => c.item_type === itemType) ||
+          DEFAULT_MAINTENANCE_CATALOG.find((c) => c.item_type === itemType)!;
 
-      for (const catItem of catalog) {
-        const state = catalogState[catItem.item_type];
-        if (!state || !state.selected) continue;
-
-        let lastServiced = formatDateIso(new Date());
-        if (state.dateChoice === "custom") {
-          lastServiced = state.customDate || lastServiced;
+        let lastServiced = todayStr;
+        if (itemState.dateChoice === "custom") {
+          lastServiced = itemState.customDate || todayStr;
         } else {
-          lastServiced = getPresetLastServicedDate(state.dateChoice);
+          lastServiced = getPresetLastServicedDate(itemState.dateChoice);
         }
 
-        itemsToCreate.push({
+        return {
           user_id: userId || "guest-user",
           item_type: catItem.item_type,
-          label: state.label.trim() || catItem.default_label,
+          label: itemState.label || catItem.default_label,
           last_serviced_date: lastServiced,
-          interval_months:
-            state.intervalMonths || catItem.default_interval_months,
+          interval_months: itemState.intervalMonths || catItem.default_interval_months,
           category_slug: catItem.category_slug,
-        });
-      }
+        };
+      });
 
-      await createBatchUserHomeItems(itemsToCreate);
-      setSuccessMessage(
-        `Added ${itemsToCreate.length} home reminder${itemsToCreate.length > 1 ? "s" : ""}!`,
-      );
+      await createBatchUserHomeItems(batch);
+      setSuccessMessage(`Added ${batch.length} reminders!`);
       onItemsAdded();
       setTimeout(() => {
         onOpenChange(false);
-      }, 700);
+      }, 600);
     } catch (err) {
-      console.error("Failed to add catalog reminders:", err);
+      console.error("Failed to save catalog reminders:", err);
     } finally {
       setSubmitting(false);
     }
@@ -274,7 +264,7 @@ export default function AddReminderSheet({
       onItemsAdded();
       setTimeout(() => {
         onOpenChange(false);
-      }, 700);
+      }, 600);
     } catch (err) {
       console.error("Failed to add custom reminder:", err);
     } finally {
@@ -286,48 +276,47 @@ export default function AddReminderSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-xl p-0 flex flex-col h-full bg-white dark:bg-[#0E0E0E] text-[#2C2C2C] dark:text-[#F4F4F5] border-l border-[#E7ECF1] dark:border-[#222]"
+        className="w-full sm:max-w-xl p-0 flex flex-col h-full bg-white dark:bg-zinc-900 text-zinc-950 dark:text-zinc-50 border-l border-zinc-200 dark:border-zinc-800"
       >
-        <SheetHeader className="p-6 border-b border-[#E7ECF1] dark:border-[#222] bg-[#F6F9FC] dark:bg-[#141414]">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Clock size={16} />
+        <SheetHeader className="p-6 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/90">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 border border-zinc-200 dark:border-zinc-700">
+              <Clock size={18} />
             </span>
             <div>
-              <SheetTitle className="text-lg font-bold tracking-tight">
+              <SheetTitle className="text-xl font-extrabold tracking-tight text-zinc-950 dark:text-zinc-50">
                 Add Home Reminder
               </SheetTitle>
-              <SheetDescription className="text-xs text-[#67696D] dark:text-[#989EA7]">
-                Track periodic maintenance cycles for your home appliances &
-                fittings.
+              <SheetDescription className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                Track periodic maintenance cycles for your home.
               </SheetDescription>
             </div>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="mt-4 flex rounded-xl bg-white dark:bg-[#0A0A0A] p-1 border border-[#E7ECF1] dark:border-[#262626]">
+          <div className="mt-4 flex rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1 border border-zinc-200 dark:border-zinc-700">
             <button
               type="button"
               onClick={() => setActiveTab("catalog")}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === "catalog"
-                  ? "bg-primary text-white shadow-sm"
-                  : "text-[#67696D] dark:text-[#989EA7] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+                  ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white"
               }`}
             >
-              <Sparkle size={13} />
+              <Sparkle size={14} />
               <span>Popular Items</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("custom")}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-2 rounded-lg py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === "custom"
-                  ? "bg-primary text-white shadow-sm"
-                  : "text-[#67696D] dark:text-[#989EA7] hover:text-[#2C2C2C] dark:hover:text-[#F4F4F5]"
+                  ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white"
               }`}
             >
-              <Plus size={13} />
+              <Plus size={14} />
               <span>Custom Reminder</span>
             </button>
           </div>
@@ -337,11 +326,13 @@ export default function AddReminderSheet({
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
           {successMessage ? (
             <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in-95">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 mb-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 mb-3 border border-emerald-300 dark:border-emerald-800">
                 <CheckCircle2 size={24} />
               </span>
-              <h3 className="text-base font-bold">{successMessage}</h3>
-              <p className="text-xs text-[#67696D] dark:text-[#989EA7] mt-1">
+              <h3 className="text-base sm:text-lg font-bold text-zinc-950 dark:text-zinc-50">
+                {successMessage}
+              </h3>
+              <p className="text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-300 mt-1">
                 Updating your Inbox schedule...
               </p>
             </div>
@@ -351,16 +342,16 @@ export default function AddReminderSheet({
               onSubmit={handleSaveCatalogItems}
               className="space-y-4"
             >
-              <div className="flex items-center justify-between text-xs text-[#67696D] dark:text-[#989EA7] px-1">
-                <span>Select items you have at home:</span>
-                <span className="font-semibold text-primary">
+              <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300 px-1">
+                <span>Select appliances & fittings:</span>
+                <span className="font-extrabold text-zinc-950 dark:text-zinc-50">
                   {selectedCatalogCount} selected
                 </span>
               </div>
 
               {loadingCatalog ? (
-                <div className="py-8 text-center text-xs text-[#67696D]">
-                  Loading catalog items...
+                <div className="py-8 text-center text-xs font-semibold text-zinc-500">
+                  Loading catalog...
                 </div>
               ) : (
                 catalog.map((item) => {
@@ -375,13 +366,13 @@ export default function AddReminderSheet({
                   return (
                     <div
                       key={item.item_type}
-                      className={`rounded-2xl border transition-all p-3.5 ${
+                      className={`rounded-2xl border transition-all p-4 ${
                         state.selected
-                          ? "border-primary/50 bg-primary-100/10 dark:bg-primary-950/20 shadow-subtle"
-                          : "border-[#E7ECF1] dark:border-[#222] bg-white dark:bg-[#121212] hover:border-[#D0D7DE]"
+                          ? "border-zinc-950 dark:border-zinc-200 bg-zinc-50 dark:bg-zinc-800/80 shadow-xs"
+                          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
                       }`}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3.5">
                         <Checkbox
                           id={`cb-${item.item_type}`}
                           checked={state.selected}
@@ -393,25 +384,25 @@ export default function AddReminderSheet({
                         <div className="flex-1 min-w-0">
                           <label
                             htmlFor={`cb-${item.item_type}`}
-                            className="flex items-center gap-2 font-semibold text-sm cursor-pointer select-none"
+                            className="flex items-center gap-2 font-bold text-sm sm:text-base cursor-pointer select-none"
                           >
-                            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F6F9FC] dark:bg-[#1C1C1C] text-[#67696D] dark:text-[#A1A1AA]">
-                              {getCatalogIcon(item.icon_name, "h-3.5 w-3.5")}
+                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
+                              {getCatalogIcon(item.icon_name, "h-4 w-4")}
                             </span>
-                            <span className="truncate">
+                            <span className="truncate text-zinc-950 dark:text-zinc-50">
                               {item.default_label}
                             </span>
-                            <span className="ml-auto shrink-0 text-[11px] font-normal text-[#67696D] dark:text-[#989EA7] bg-[#F0F4F8] dark:bg-[#1C1C1C] px-2 py-0.5 rounded-full">
+                            <span className="ml-auto shrink-0 text-xs font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2.5 py-0.5 rounded-full">
                               Every {item.default_interval_months} mo
                             </span>
                           </label>
 
                           {/* Expanded Configuration when selected */}
                           {state.selected && (
-                            <div className="mt-3 pt-3 border-t border-[#E7ECF1]/80 dark:border-[#262626] space-y-2.5 animate-in fade-in duration-200">
+                            <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700 space-y-3 animate-in fade-in duration-150">
                               <div>
-                                <div className="flex items-center justify-between text-[11px] font-medium text-[#67696D] dark:text-[#A1A1AA] mb-1.5">
-                                  <span>Last serviced date:</span>
+                                <div className="text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                                  Last serviced date:
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                                   {(
@@ -437,10 +428,10 @@ export default function AddReminderSheet({
                                           choice.id,
                                         )
                                       }
-                                      className={`rounded-lg px-2 py-1.5 text-[11px] font-medium transition cursor-pointer text-center ${
+                                      className={`rounded-xl px-2.5 py-2 text-xs font-bold transition cursor-pointer text-center ${
                                         state.dateChoice === choice.id
-                                          ? "bg-primary text-white font-semibold shadow-xs"
-                                          : "border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] text-[#2C2C2C] dark:text-[#DDD] hover:bg-[#F6F9FC]"
+                                          ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-xs"
+                                          : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                                       }`}
                                     >
                                       {choice.label}
@@ -452,8 +443,8 @@ export default function AddReminderSheet({
                               {state.dateChoice === "custom" && (
                                 <div className="flex items-center gap-2 pt-1">
                                   <Calendar
-                                    size={13}
-                                    className="text-[#67696D]"
+                                    size={14}
+                                    className="text-zinc-600 dark:text-zinc-300"
                                   />
                                   <input
                                     type="date"
@@ -465,29 +456,27 @@ export default function AddReminderSheet({
                                       )
                                     }
                                     max={formatDateIso(new Date())}
-                                    className="rounded-lg border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] px-2.5 py-1 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] focus:outline-none focus:ring-1 focus:ring-primary"
+                                    className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-zinc-950 dark:text-zinc-50"
                                   />
                                 </div>
                               )}
 
-                              <div className="flex items-center gap-3 pt-1 text-[11px] text-[#67696D] dark:text-[#989EA7]">
-                                <div className="flex items-center gap-1.5">
-                                  <span>Cycle:</span>
-                                  <input
-                                    type="number"
-                                    min={1}
-                                    max={60}
-                                    value={state.intervalMonths}
-                                    onChange={(e) =>
-                                      setIntervalForItem(
-                                        item.item_type,
-                                        Number(e.target.value) || 1,
-                                      )
-                                    }
-                                    className="w-14 rounded-md border border-[#E7ECF1] dark:border-[#2C2C2C] bg-white dark:bg-[#181818] px-2 py-0.5 text-center text-xs text-[#2C2C2C] dark:text-[#F4F4F5]"
-                                  />
-                                  <span>months</span>
-                                </div>
+                              <div className="flex items-center gap-2 pt-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                <span>Cycle: Every</span>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={60}
+                                  value={state.intervalMonths}
+                                  onChange={(e) =>
+                                    setIntervalForItem(
+                                      item.item_type,
+                                      Number(e.target.value) || 1,
+                                    )
+                                  }
+                                  className="w-16 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-2 py-1 text-center text-xs font-bold text-zinc-950 dark:text-zinc-50"
+                                />
+                                <span>months</span>
                               </div>
                             </div>
                           )}
@@ -505,40 +494,35 @@ export default function AddReminderSheet({
               className="space-y-4"
             >
               <div>
-                <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Reminder Label <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g., Water Filter UV Lamp, Solar Inverter, Fire Extinguisher"
+                  placeholder="e.g. Water Filter UV Lamp, Solar Inverter"
                   value={customLabel}
                   onChange={(e) => setCustomLabel(e.target.value)}
-                  className="w-full rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] px-3.5 py-2.5 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] placeholder:text-[#989EA7] focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
+                  className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-semibold text-zinc-950 dark:text-zinc-50 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
-                  Worker Category / Service Name
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Trade Category
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g., Plumber, Electrician, Technician"
+                  placeholder="e.g. Plumber, Electrician, Technician"
                   value={customCategory}
                   onChange={(e) => setCustomCategory(e.target.value)}
-                  className="w-full rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] px-3.5 py-2.5 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] placeholder:text-[#989EA7] focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
+                  className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-semibold text-zinc-950 dark:text-zinc-50 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:focus:ring-white"
                 />
-                <p className="mt-1 text-[11px] text-[#67696D] dark:text-[#989EA7]">
-                  Used for finding matching nearby specialists when this
-                  reminder is due.
-                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
-                  Service Cycle Interval{" "}
-                  <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Service Cycle (Months) <span className="text-rose-500">*</span>
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -552,19 +536,19 @@ export default function AddReminderSheet({
                         Math.max(1, Number(e.target.value) || 1),
                       )
                     }
-                    className="w-24 rounded-xl border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#141414] px-3 py-2 text-sm text-[#2C2C2C] dark:text-[#F4F4F5] focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-24 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2 text-sm font-bold text-zinc-950 dark:text-zinc-50"
                   />
-                  <span className="text-xs text-[#67696D] dark:text-[#989EA7]">
-                    months between services
+                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+                    months between servicing
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Last Serviced
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mb-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
                   {(
                     [
                       { id: "today", label: "Today" },
@@ -577,10 +561,10 @@ export default function AddReminderSheet({
                       type="button"
                       key={choice.id}
                       onClick={() => setCustomDateChoice(choice.id)}
-                      className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition cursor-pointer text-center ${
+                      className={`rounded-xl px-3 py-2 text-xs font-bold transition cursor-pointer text-center ${
                         customDateChoice === choice.id
-                          ? "bg-black text-white dark:bg-white dark:text-black font-semibold shadow-xs"
-                          : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
+                          ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-xs"
+                          : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700"
                       }`}
                     >
                       {choice.label}
@@ -589,14 +573,14 @@ export default function AddReminderSheet({
                 </div>
 
                 {customDateChoice === "custom" && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <Calendar size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
+                  <div className="flex items-center gap-2 pt-1.5">
+                    <Calendar size={14} className="text-zinc-600 dark:text-zinc-300" />
                     <input
                       type="date"
                       value={customExactDate}
                       onChange={(e) => setCustomExactDate(e.target.value)}
                       max={formatDateIso(new Date())}
-                      className="rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3 py-1.5 text-xs text-[#09090B] dark:text-[#FAFAFA] focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
+                      className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-950 dark:text-zinc-50"
                     />
                   </div>
                 )}
@@ -607,11 +591,11 @@ export default function AddReminderSheet({
 
         {/* Footer Actions */}
         {!successMessage && (
-          <div className="p-4 border-t border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#141416] flex items-center justify-between gap-3">
+          <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="rounded-xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 py-2 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA] hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] transition cursor-pointer"
+              className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-5 py-2.5 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer"
             >
               Cancel
             </button>
@@ -621,9 +605,9 @@ export default function AddReminderSheet({
                 type="submit"
                 form="catalog-form"
                 disabled={submitting || selectedCatalogCount === 0}
-                className="flex items-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 text-xs font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-full bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 px-6 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition disabled:opacity-50 cursor-pointer"
               >
-                <Check size={14} />
+                <Check size={15} />
                 <span>
                   {submitting
                     ? "Adding..."
@@ -637,9 +621,9 @@ export default function AddReminderSheet({
                 type="submit"
                 form="custom-form"
                 disabled={submitting || !customLabel.trim()}
-                className="flex items-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black px-5 py-2.5 text-xs font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-50 cursor-pointer"
+                className="flex items-center gap-2 rounded-full bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-200 px-6 py-2.5 text-xs sm:text-sm font-bold shadow-xs transition disabled:opacity-50 cursor-pointer"
               >
-                <Check size={14} />
+                <Check size={15} />
                 <span>{submitting ? "Saving..." : "Save Custom Reminder"}</span>
               </button>
             )}
