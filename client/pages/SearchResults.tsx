@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
   Search as SearchIcon,
@@ -643,7 +644,12 @@ export default function SearchResults() {
     >
       {/* 1. CATEGORY HEADER (When chosen) OR CATEGORY SELECTOR CAROUSEL (Only when "All") */}
       {category !== "All" ? (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]"
+        >
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
@@ -658,14 +664,15 @@ export default function SearchResults() {
             </p>
           </div>
 
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.96 }}
             onClick={() => handleCategoryChange("All")}
             className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#18191D] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-xs hover:border-black/25 dark:hover:border-white/25 transition cursor-pointer"
           >
             <span>All Categories</span>
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       ) : (
         <div className="mb-4">
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -676,9 +683,10 @@ export default function SearchResults() {
                 category.toLowerCase() === cat.name.toLowerCase();
 
               return (
-                <button
+                <motion.button
                   key={cat.name}
                   type="button"
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleCategoryChange(cat.name)}
                   className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${
                     isSelected
@@ -695,7 +703,7 @@ export default function SearchResults() {
                     }
                   />
                   <span>{cat.label}</span>
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -732,8 +740,9 @@ export default function SearchResults() {
           </button>
 
           {/* Quick Filter Pill Buttons */}
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={() => setOnlyAvailableToday(!onlyAvailableToday)}
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               onlyAvailableToday
@@ -745,10 +754,11 @@ export default function SearchResults() {
               className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-emerald-500 animate-pulse"}`}
             />
             <span>Available Today</span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={() => setOnlyVerified(!onlyVerified)}
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               onlyVerified
@@ -761,10 +771,11 @@ export default function SearchResults() {
               className={onlyVerified ? "text-current" : "text-[#71717A]"}
             />
             <span>Verified</span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={() => setMinRating4Plus(!minRating4Plus)}
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
               minRating4Plus
@@ -781,18 +792,19 @@ export default function SearchResults() {
               }
             />
             <span>4.5+ Rating</span>
-          </button>
+          </motion.button>
 
           {/* Quick Filter Reset */}
           {hasActiveFilters && (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.95 }}
               onClick={handleResetFilters}
               className="inline-flex items-center gap-1 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] underline cursor-pointer ml-1"
             >
               <RotateCcw size={11} />
               <span>Reset</span>
-            </button>
+            </motion.button>
           )}
         </div>
 
@@ -836,63 +848,85 @@ export default function SearchResults() {
         </div>
       </div>
 
-      {/* 3. WORKER & AGENCY LISTINGS — Clean Grid presentation as depicted in solutions section */}
+      {/* 3. WORKER & AGENCY LISTINGS — Smooth layout transition & fade animation */}
       <section>
-        {combined.length ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {combined.map((item, index) =>
-              item.type === "agency" ? (
-                <AgencyCard
-                  key={`a-${item.data.id}-${index}`}
-                  agency={item.data}
-                />
-              ) : (
-                <WorkerCard
-                  key={`w-${item.data.id}`}
-                  worker={item.data}
-                  navigate={navigate}
-                  rankInfo={rankingMap[item.data.id]}
-                  isSaved={savedIds.includes(item.data.id)}
-                  onToggleSaved={(e) => handleToggleSaved(item.data.id, e)}
-                />
-              ),
-            )}
-          </div>
-        ) : (
-          /* Empty State */
-          <div className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#111215] p-8 text-center shadow-xs">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] mb-3.5">
-              <SearchIcon size={24} />
-            </div>
-            <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
-              No Specialists Found
-            </h3>
-            <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA] max-w-sm mx-auto">
-              We couldn't find any{" "}
-              {category !== "All" ? category.toLowerCase() : ""} professionals
-              matching your current filters
-              {targetLocality ? ` near ${targetLocality}` : ""}.
-            </p>
-            <div className="mt-5 flex flex-wrap justify-center gap-2.5">
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={handleResetFilters}
-                  className="inline-flex h-9 items-center justify-center rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] px-4 text-xs font-bold transition cursor-pointer shadow-xs"
+        <AnimatePresence mode="wait">
+          {combined.length ? (
+            <motion.div
+              key={`${category}-${searchType}-${locality}-${onlyAvailableToday ? "today" : ""}-${onlyVerified ? "ver" : ""}-${minRating4Plus ? "star" : ""}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              {combined.map((item, index) => (
+                <motion.div
+                  key={item.type === "agency" ? `a-${item.data.id}-${index}` : `w-${item.data.id}`}
+                  layout
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.18 }}
                 >
-                  Clear Filters
-                </button>
-              )}
-              <Link
-                to="/assistant"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/10 px-4 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-black/10 dark:hover:bg-white/15"
-              >
-                <Sparkles size={13} />
-                <span>Ask AI Matchmaker</span>
-              </Link>
-            </div>
-          </div>
-        )}
+                  {item.type === "agency" ? (
+                    <AgencyCard
+                      agency={item.data}
+                    />
+                  ) : (
+                    <WorkerCard
+                      worker={item.data}
+                      navigate={navigate}
+                      rankInfo={rankingMap[item.data.id]}
+                      isSaved={savedIds.includes(item.data.id)}
+                      onToggleSaved={(e) => handleToggleSaved(item.data.id, e)}
+                    />
+                  )}
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            /* Empty State */
+            <motion.div
+              key="empty-state"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#111215] p-8 text-center shadow-xs"
+            >
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] mb-3.5">
+                <SearchIcon size={24} />
+              </div>
+              <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
+                No Specialists Found
+              </h3>
+              <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA] max-w-sm mx-auto">
+                We couldn't find any{" "}
+                {category !== "All" ? category.toLowerCase() : ""} professionals
+                matching your current filters
+                {targetLocality ? ` near ${targetLocality}` : ""}.
+              </p>
+              <div className="mt-5 flex flex-wrap justify-center gap-2.5">
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="inline-flex h-9 items-center justify-center rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] px-4 text-xs font-bold transition cursor-pointer shadow-xs"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+                <Link
+                  to="/assistant"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/10 px-4 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-black/10 dark:hover:bg-white/15"
+                >
+                  <Sparkles size={13} />
+                  <span>Ask AI Matchmaker</span>
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Excluded Candidates Section */}
         {excludedWorkers.length > 0 && (

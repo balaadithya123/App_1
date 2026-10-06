@@ -641,7 +641,7 @@ export default function WorkerProfile() {
 
             {worker.locality && (
               <span className="flex items-center gap-1">
-                <MapPin size={13} className="text-primary shrink-0" />
+                <MapPin size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{worker.locality}</span>
               </span>
             )}
@@ -652,6 +652,22 @@ export default function WorkerProfile() {
                 <span>{worker.experience} experience</span>
               </span>
             )}
+          </div>
+
+          {/* Direct Trust & Guarantee Triad */}
+          <div className="mt-3.5 pt-3 border-t border-[#E7ECF1] dark:border-[#222222] grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/60 p-2 border border-black/[0.04] dark:border-white/[0.06]">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 block">✓ ID Verified</span>
+              <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">Govt Aadhaar</span>
+            </div>
+            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/60 p-2 border border-black/[0.04] dark:border-white/[0.06]">
+              <span className="font-bold text-[#09090B] dark:text-white block">0% Commission</span>
+              <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">Pay Direct</span>
+            </div>
+            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/60 p-2 border border-black/[0.04] dark:border-white/[0.06]">
+              <span className="font-bold text-teal-600 dark:text-teal-400 block">~10m Reply</span>
+              <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">Fast Response</span>
+            </div>
           </div>
         </div>
       </section>

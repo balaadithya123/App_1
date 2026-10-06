@@ -350,6 +350,32 @@ export default function Index() {
                     </span>
                   </button>
 
+                  {/* Popular Localities Quick Select */}
+                  <div className="mb-3">
+                    <p className="text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA] mb-1.5 uppercase tracking-wider">
+                      Popular Localities
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        "Indiranagar",
+                        "Koramangala",
+                        "HSR Layout",
+                        "Whitefield",
+                        "Jayanagar",
+                        "Coimbatore",
+                      ].map((locName) => (
+                        <button
+                          key={locName}
+                          type="button"
+                          onClick={() => handleApplyLocation(locName)}
+                          className="rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#1B1B1F] hover:bg-neutral-100 dark:hover:bg-[#26262B] px-2.5 py-1 text-[11px] font-medium text-[#09090B] dark:text-[#FAFAFA] transition cursor-pointer"
+                        >
+                          {locName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Custom Location Input */}
                   <form
                     onSubmit={(e) => {
@@ -493,40 +519,6 @@ export default function Index() {
 
       {/* MAIN CONTENT — Clean max-w-5xl Desktop Canvas */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 sm:px-6 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
-
-        {/* HERO INTRO BAR (Desktop & Mobile) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E4E4E7] dark:border-[#27272A]">
-          <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1.5">
-              <CheckCircle2 size={13} />
-              <span>Zero Broker Markup · Direct Connection</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
-              Find trusted neighborhood pros
-            </h1>
-            <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-1 font-normal leading-relaxed">
-              Verified background credentials, customer feedback, and instant WhatsApp / phone calling.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Link
-              to="/join"
-              className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-4 py-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition shadow-2xs"
-            >
-              <span>Join as Worker</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setPostNeedOpen(true)}
-              className="inline-flex sm:hidden items-center gap-1.5 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] px-4 py-2 text-xs font-semibold shadow-xs transition"
-            >
-              <Sparkles size={13} />
-              <span>Post Need</span>
-            </button>
-          </div>
-        </div>
-
         {/* 1. "VERIFIED PROS NEAR YOU" SECTION */}
         <section aria-labelledby="verified-pros-heading">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-0.5">

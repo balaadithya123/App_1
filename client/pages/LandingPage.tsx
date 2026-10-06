@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   motion,
   AnimatePresence,
@@ -20,10 +20,20 @@ import {
   ChevronDown,
   MapPin,
   Sparkles,
+  Phone,
+  Wrench,
+  Hammer,
+  Paintbrush,
+  Brush,
+  Wind,
+  Layers,
+  XCircle,
 } from "lucide-react";
 import ScreenshotShowcase from "@/components/ScreenshotShowcase";
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
   // Isolate light theme for LandingPage so dark-theme bleed never makes texts invisible
   useEffect(() => {
     const root = document.documentElement;
@@ -42,86 +52,122 @@ export default function LandingPage() {
     };
   }, []);
 
-  // Pricing Cycle Toggle
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
-
-  // Dynamic Selected Plan (Elevated on Click)
   const [selectedPlan, setSelectedPlan] = useState<"homeowner" | "pro" | "agency">("pro");
-
-  // Active How-It-Works Step
   const [activeStep, setActiveStep] = useState<number>(1);
-
-  // Active FAQ Item
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const popularTrades = [
-    { name: "Electrician", query: "electrician" },
-    { name: "Plumber", query: "plumber" },
-    { name: "Carpenter", query: "carpenter" },
-    { name: "AC Repair", query: "ac" },
-    { name: "Painter", query: "painter" },
-    { name: "Cleaning", query: "cleaner" },
-  ];
 
   const howItWorksSteps = [
     {
       step: 1,
-      title: "1. Search Nearby Pros",
-      subtitle: "Enter your neighborhood locality or service trade",
+      title: "1. Search Neighborhood Pros",
+      subtitle: "Enter your locality or select a trade specialty",
       description:
-        "Select Electrician, Plumber, Carpenter, or Technician. Instant proximity matching highlights verified pros operating right in your immediate neighborhood.",
+        "Select an electrician, plumber, carpenter, or technician. Proximity-first ranking instantly surfaces background-checked pros operating right in your sector.",
       icon: Search,
-      highlight: "Proximity-First Ranking",
+      highlight: "Proximity Matching",
     },
     {
       step: 2,
-      title: "2. Check Verified Profiles",
-      subtitle: "Inspect Aadhaar Govt ID badges & past work photo portfolios",
+      title: "2. Inspect Verified Credentials",
+      subtitle: "Check Govt Aadhaar ID badges & past work photo gallery",
       description:
-        "Every pro's background verification status, homeowner ratings, completed job track record, and verified skill badges are open and transparent.",
+        "Every pro's ID screening status, homeowner review ratings, completed job history, and verified skill badges are open and 100% transparent.",
       icon: BadgeCheck,
-      highlight: "100% ID Verified",
+      highlight: "100% Aadhaar Verified",
     },
     {
       step: 3,
-      title: "3. Direct WhatsApp / Call",
-      subtitle: "Instant click-to-chat with zero intermediary wait time",
+      title: "3. Direct WhatsApp or Call",
+      subtitle: "Instant 1-tap connection with zero intermediary delay",
       description:
-        "Talk directly to the professional on WhatsApp or call them instantly on their phone. No platform agents, no queue delay, no middleman booking markup.",
+        "Message directly on WhatsApp or call immediately on their direct phone. No call centers, no queue wait times, and no booking markups.",
       icon: MessageCircle,
-      highlight: "Zero Commission Cut",
+      highlight: "Direct Connection",
     },
     {
       step: 4,
-      title: "4. Direct Payment & Satisfaction",
-      subtitle: "Pay the worker directly upon job completion",
+      title: "4. Pay Directly Upon Job Completion",
+      subtitle: "Direct fair wage with 100% satisfaction guarantee",
       description:
-        "The worker retains 100% of their hard-earned wage. Build your personal circle of trusted neighborhood specialists for seamless future repairs.",
+        "Pay the technician directly after you inspect the finished work. The worker keeps 100% of their earnings with zero commission deductions.",
       icon: CheckCircle2,
-      highlight: "100% Fair Pay to Pros",
+      highlight: "0% Broker Deductions",
+    },
+  ];
+
+  const comparisonPoints = [
+    {
+      feature: "Platform Middleman Cut",
+      traditional: "20% – 30% extracted from worker",
+      localworker: "0% Commission · Pros keep 100%",
+    },
+    {
+      feature: "Customer Connection",
+      traditional: "Hidden phone numbers & support chatbots",
+      localworker: "Direct WhatsApp & Instant Phone Call",
+    },
+    {
+      feature: "Arrival & Dispatch Speed",
+      traditional: "2 – 4 hour slot windows",
+      localworker: "~15 Mins direct neighborhood dispatch",
+    },
+    {
+      feature: "Identity & Background Check",
+      traditional: "Third-party outsourced screening",
+      localworker: "Direct Govt Aadhaar & Phone verified",
+    },
+    {
+      feature: "Pricing Transparency",
+      traditional: "Surprise platform booking surcharges",
+      localworker: "Upfront agreed rates with worker",
+    },
+  ];
+
+  const testimonials = [
+    {
+      quote:
+        "Called Ramesh for an emergency water pipe leak in Indiranagar. He arrived in 15 minutes, fixed the issue cleanly, and charged the standard fair rate directly.",
+      author: "Priya Sundaram",
+      role: "Homeowner in Indiranagar",
+      rating: 5,
+    },
+    {
+      quote:
+        "As an electrician, other apps took 25% of my daily wage. On LocalWorker, clients call me directly on WhatsApp and I keep every rupee I earn.",
+      author: "Murugan K.",
+      role: "Master Electrician (8 Yrs Exp)",
+      rating: 5,
+    },
+    {
+      quote:
+        "Finding reliable carpenters used to take days of asking neighbors. Here I inspected portfolio photos and verified ID in seconds. Super simple.",
+      author: "Anand Ranganathan",
+      role: "Homeowner in HSR Layout",
+      rating: 5,
     },
   ];
 
   const faqs = [
     {
-      q: "Is LocalWorker free to use for homeowners?",
-      a: "Yes! Searching for local pros, viewing verified credentials, inspecting work photo portfolios, and connecting via direct call or WhatsApp is 100% free with zero platform surcharges.",
+      q: "Is LocalWorker free to use for households?",
+      a: "Yes! Searching for local professionals, inspecting verified credentials, viewing portfolio project photos, and connecting via WhatsApp or direct phone is 100% free with zero platform surcharges.",
     },
     {
       q: "How are workers and service contractors verified?",
-      a: "Every professional undergoes telephone screening, Aadhaar/Government ID verification, and portfolio work screening before appearing with the verified pro seal in neighborhood search results.",
+      a: "Every professional undergoes telephone screening, government Aadhaar ID verification, and portfolio work screening before earning the verified pro badge in search results.",
     },
     {
       q: "Does LocalWorker take a commission cut from workers?",
-      a: "No! Unlike traditional platforms that extract 20–30% from a worker's hard-earned income, LocalWorker operates on an open direct-connection model. Pros keep 100% of their agreed rate.",
+      a: "No! Unlike legacy platforms that extract 20–30% of a worker's hard-earned income, LocalWorker operates on an open direct-connection model. Pros keep 100% of their earnings.",
     },
     {
-      q: "Can trade contractors or agencies register multi-worker teams?",
+      q: "Can service agencies register multi-technician teams?",
       a: "Yes! Service agencies and trade contracting firms can register under the Agency Hub to manage technician rosters and receive direct neighborhood lead callbacks.",
     },
     {
-      q: "How do I request an immediate callback if a worker is busy?",
-      a: "Each worker profile features a direct 'Request Callback' feature. Homeowners can submit their phone number and task description for a prompt callback as soon as the pro is available.",
+      q: "How do I request a callback if a worker is currently busy?",
+      a: "Each worker profile features a direct 'Request Callback' button. Homeowners can submit their phone number and task description for a prompt callback as soon as the pro is available.",
     },
   ];
 
@@ -218,14 +264,14 @@ export default function LandingPage() {
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#52525B]">
-            <a href="#features" className="hover:text-[#09090B] transition">
-              Features
-            </a>
             <a href="#how-it-works" className="hover:text-[#09090B] transition">
               How It Works
             </a>
+            <a href="#why-choose" className="hover:text-[#09090B] transition">
+              Why Direct
+            </a>
             <a href="#screenshots" className="hover:text-[#09090B] transition">
-              Screenshots
+              App Preview
             </a>
             <a href="#pricing" className="hover:text-[#09090B] transition">
               Pricing
@@ -259,25 +305,27 @@ export default function LandingPage() {
       {/* 1. HERO SECTION                                                */}
       {/* ============================================================== */}
       <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Editorial Pill Kicker */}
+        {/* Unboxed Editorial Kicker */}
         <div className="flex justify-center mb-5">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#E4E4E7] bg-white px-4 py-1.5 text-xs font-bold text-[#09090B] shadow-2xs">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Direct Local Marketplace</span>
-            <span className="text-zinc-300">·</span>
-            <span className="text-[#52525B]">0% Middleman Fees</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#52525B]">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-bold text-[#09090B]">Direct Neighborhood Connection</span>
+            <span aria-hidden="true" className="text-zinc-300">·</span>
+            <span>0% Broker Fees</span>
+            <span aria-hidden="true" className="text-zinc-300">·</span>
+            <span>100% Aadhaar Verified</span>
           </div>
         </div>
 
         {/* Hero Title & Subtitle */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#09090B] leading-[1.08]">
-            Find, connect, and hire <br />
+            Find and hire <br />
             <span className="text-[#71717A] font-bold">verified local pros.</span>
           </h1>
 
           <p className="text-base sm:text-lg text-[#52525B] max-w-2xl mx-auto font-normal pt-2 leading-relaxed">
-            The community directory connecting homeowners directly with verified electricians, plumbers, carpenters, and technicians. Connect on WhatsApp or direct phone call. Zero commission markup.
+            The direct community marketplace connecting homeowners with verified electricians, plumbers, carpenters, and technicians. One-tap WhatsApp chat and phone calling with zero middleman markup.
           </p>
 
           {/* Action CTAs */}
@@ -296,20 +344,6 @@ export default function LandingPage() {
               <span>Join as a Worker</span>
             </Link>
           </div>
-
-          {/* Popular Trade Quick-Links */}
-          <div className="pt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-[#52525B]">
-            <span className="text-[#71717A]">Popular trades:</span>
-            {popularTrades.map((t) => (
-              <Link
-                key={t.query}
-                to={`/home?q=${t.query}`}
-                className="px-3.5 py-1.5 rounded-full border border-[#E4E4E7] bg-white text-[#09090B] hover:border-zinc-400 hover:text-black transition shadow-2xs font-semibold"
-              >
-                {t.name}
-              </Link>
-            ))}
-          </div>
         </div>
 
         {/* HERO SHOWCASE: Realistic Verified Pro Showcase Card */}
@@ -326,8 +360,8 @@ export default function LandingPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-extrabold text-[#09090B]">Ramesh Sharma</h3>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
-                      <ShieldCheck size={12} />
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                      <ShieldCheck size={13} className="text-emerald-600" />
                       <span>Govt ID Verified</span>
                     </span>
                   </div>
@@ -430,71 +464,44 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 3. CORE FEATURES SECTION                                       */}
+      {/* 3. WHY DIRECT: COMPARISON MATRIX (Psychological Risk-Reversal)  */}
       {/* ============================================================== */}
-      <section id="features" className="py-16 md:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-14">
+      <section id="why-choose" className="py-16 md:py-24 max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
           <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
-            Why LocalWorker
+            Direct Model vs Traditional Apps
           </span>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#09090B]">
-            Built for trust and transparency
+            Why homeowners & pros switch
           </h2>
           <p className="text-sm sm:text-base text-[#52525B] font-medium">
-            Engineered to make home repairs stress-free, fast, and 100% direct.
+            We removed the broker middleman so you get faster service and workers earn 100% of their wages.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Feature 1 */}
-          <div className="rounded-[28px] bg-white border border-[#E4E4E7] p-7 flex flex-col justify-between shadow-xs">
-            <div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-100 mb-5">
-                <ShieldCheck size={24} />
-              </div>
-              <h3 className="text-lg font-extrabold text-[#09090B]">100% Verified Identity</h3>
-              <p className="mt-2 text-xs sm:text-sm text-[#52525B] leading-relaxed font-medium">
-                Every service professional is telephone screened and Aadhaar / Government ID verified before receiving the verified pro badge.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-1.5 text-xs font-bold text-emerald-800">
-              <Check size={14} />
-              <span>Government ID Checked</span>
-            </div>
+        <div className="rounded-3xl border border-[#E4E4E7] bg-white overflow-hidden shadow-xs">
+          <div className="grid grid-cols-1 md:grid-cols-3 bg-zinc-50 border-b border-[#E4E4E7] p-4 text-xs font-bold text-[#52525B]">
+            <div className="hidden md:block">Key Comparison</div>
+            <div className="hidden md:block text-zinc-500">Traditional Middleman Platforms</div>
+            <div className="hidden md:block text-[#09090B] font-extrabold">LocalWorker Direct Network</div>
           </div>
 
-          {/* Feature 2 */}
-          <div className="rounded-[28px] bg-white border border-[#E4E4E7] p-7 flex flex-col justify-between shadow-xs">
-            <div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-[#09090B] border border-zinc-200 mb-5">
-                <PhoneCall size={24} />
+          <div className="divide-y divide-[#E4E4E7]">
+            {comparisonPoints.map((point, idx) => (
+              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 p-4 sm:p-5 gap-3 items-center">
+                <div className="font-bold text-xs sm:text-sm text-[#09090B]">
+                  {point.feature}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-[#71717A]">
+                  <XCircle size={15} className="text-rose-500 shrink-0" />
+                  <span>{point.traditional}</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50/70 p-2 rounded-xl border border-emerald-200">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>{point.localworker}</span>
+                </div>
               </div>
-              <h3 className="text-lg font-extrabold text-[#09090B]">Zero Broker Commissions</h3>
-              <p className="mt-2 text-xs sm:text-sm text-[#52525B] leading-relaxed font-medium">
-                Talk directly to the tradesperson and pay them directly upon job completion. No platform markups, booking surcharges, or hidden deductions.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-1.5 text-xs font-bold text-[#09090B]">
-              <Check size={14} />
-              <span>Direct Phone & WhatsApp</span>
-            </div>
-          </div>
-
-          {/* Feature 3 */}
-          <div className="rounded-[28px] bg-white border border-[#E4E4E7] p-7 flex flex-col justify-between shadow-xs">
-            <div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 text-amber-800 border border-amber-100 mb-5">
-                <Zap size={24} />
-              </div>
-              <h3 className="text-lg font-extrabold text-[#09090B]">Hyperlocal Proximity Matching</h3>
-              <p className="mt-2 text-xs sm:text-sm text-[#52525B] leading-relaxed font-medium">
-                Connect with technicians operating right in your sector or locality for ultra-fast arrival times and dependable doorstep service.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center gap-1.5 text-xs font-bold text-amber-800">
-              <Check size={14} />
-              <span>Real-Time Distance Match</span>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -569,8 +576,8 @@ export default function LandingPage() {
                     transition={{ duration: 0.25 }}
                     className="rounded-[28px] bg-white p-7 sm:p-10 border border-[#E4E4E7] shadow-sm relative"
                   >
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-[#09090B] text-xs font-bold mb-4">
-                      <CheckCircle2 size={13} className="text-emerald-600" />
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 mb-4">
+                      <CheckCircle2 size={14} className="text-emerald-600" />
                       <span>{step.highlight}</span>
                     </div>
 
@@ -624,7 +631,51 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 6. TRANSPARENT PRICING PLANS (Interactive Plan Elevation)     */}
+      {/* 6. SOCIAL PROOF & TESTIMONIALS (Consumer Trust & Proof)       */}
+      {/* ============================================================== */}
+      <section className="py-16 md:py-24 bg-white border-y border-[#E4E4E7]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
+              Community Stories
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#09090B]">
+              Trusted by 12,000+ households
+            </h2>
+            <p className="text-sm sm:text-base text-[#52525B] font-medium">
+              Real feedback from local residents and verified trade professionals.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((t, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-[#E4E4E7] bg-zinc-50/60 p-6 flex flex-col justify-between shadow-2xs"
+              >
+                <div>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(t.rating)].map((_, i) => (
+                      <Star key={i} size={14} className="text-amber-500 fill-amber-500" />
+                    ))}
+                  </div>
+                  <p className="text-xs sm:text-sm text-[#09090B] leading-relaxed font-medium">
+                    "{t.quote}"
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-zinc-200">
+                  <p className="text-xs font-bold text-[#09090B]">{t.author}</p>
+                  <p className="text-[11px] text-[#71717A] font-medium">{t.role}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* 7. TRANSPARENT PRICING PLANS (Interactive Plan Elevation)     */}
       {/* ============================================================== */}
       <section id="pricing" className="py-16 md:py-24 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
@@ -689,7 +740,7 @@ export default function LandingPage() {
                     : "bg-white text-[#09090B] border border-[#E4E4E7] shadow-xs hover:border-zinc-400 hover:shadow-md z-0 opacity-95"
                 }`}
               >
-                {/* Elevation Badge on Selected Card */}
+                {/* Selected Indicator */}
                 {isSelected && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[11px] font-extrabold px-3.5 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
                     <Sparkles size={12} />
@@ -789,7 +840,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 7. FREQUENTLY ASKED QUESTIONS                                 */}
+      {/* 8. FREQUENTLY ASKED QUESTIONS                                 */}
       {/* ============================================================== */}
       <section id="faq" className="py-16 md:py-24 max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center space-y-2 mb-12">
@@ -844,13 +895,13 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 8. CALL TO ACTION BANNER                                       */}
+      {/* 9. CALL TO ACTION BANNER                                       */}
       {/* ============================================================== */}
       <section className="py-16 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="rounded-[32px] bg-[#09090B] p-8 sm:p-14 text-white shadow-xl relative overflow-hidden">
           <div className="relative z-10 max-w-2xl space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs font-bold text-zinc-300">
-              <CheckCircle2 size={13} className="text-emerald-400" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-300">
+              <CheckCircle2 size={14} className="text-emerald-400" />
               <span>Direct Neighborhood Network</span>
             </span>
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
@@ -880,7 +931,7 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 9. FOOTER                                                      */}
+      {/* 10. FOOTER                                                     */}
       {/* ============================================================== */}
       <footer className="border-t border-[#E4E4E7] bg-white py-12 text-[#52525B]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
