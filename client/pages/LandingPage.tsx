@@ -32,11 +32,13 @@ import {
   Building2,
   Flame,
   CheckCircle,
+  Globe,
+  Compass,
 } from "lucide-react";
 import ScreenshotShowcase from "@/components/ScreenshotShowcase";
 import Hero3DCanvas from "@/components/Hero3DCanvas";
 
-// Smooth viewport animation variant inspired by Apple product pages
+// Smooth viewport animation variant inspired by high-end modern product sites
 const fadeInUpVariant: Variants = {
   hidden: { opacity: 0, y: 32 },
   visible: (custom = 0) => ({
@@ -384,31 +386,33 @@ export default function LandingPage() {
         } as React.CSSProperties
       }
     >
-      {/* Dynamic Background Ambient Light Orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-40">
-        <div className="absolute top-[-10%] left-[20%] w-[500px] h-[500px] rounded-full bg-radial from-emerald-300/30 via-emerald-100/10 to-transparent blur-3xl animate-pulse" />
-        <div className="absolute top-[40%] right-[-10%] w-[600px] h-[600px] rounded-full bg-radial from-blue-300/20 via-cyan-100/10 to-transparent blur-3xl" />
+      {/* Dynamic Ambient Background Light Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-50">
+        <div className="absolute top-[-5%] left-[25%] w-[600px] h-[600px] rounded-full bg-radial from-emerald-300/35 via-emerald-100/10 to-transparent blur-3xl animate-pulse" />
+        <div className="absolute top-[35%] right-[-5%] w-[650px] h-[650px] rounded-full bg-radial from-cyan-300/25 via-blue-100/10 to-transparent blur-3xl" />
       </div>
 
-      {/* TOP HEADER / NAVBAR */}
-      <header className="sticky top-0 z-50 w-full border-b border-[#E4E4E7]/80 bg-white/85 backdrop-blur-xl transition-all duration-300">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
+      {/* ============================================================== */}
+      {/* FLOATING GLASS NAVIGATION HEADER                               */}
+      {/* ============================================================== */}
+      <div className="sticky top-4 z-50 max-w-5xl mx-auto px-4 sm:px-6">
+        <header className="rounded-full border border-zinc-200/90 bg-white/80 backdrop-blur-2xl px-5 py-2.5 shadow-xl hover:border-zinc-300 transition-all duration-300 flex items-center justify-between">
           {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2.5 group cursor-pointer">
             <motion.span
-              whileHover={{ rotate: 8, scale: 1.05 }}
+              whileHover={{ rotate: 12, scale: 1.08 }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
-              className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white font-extrabold text-sm shadow-sm"
+              className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white font-black text-sm shadow-sm"
             >
               L
             </motion.span>
-            <span className="text-base sm:text-lg font-bold tracking-tight text-[#09090B]">
+            <span className="text-base font-extrabold tracking-tight text-[#09090B] group-hover:text-emerald-900 transition-colors">
               LocalWorker
             </span>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#52525B]">
+          <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-[#52525B]">
             <a href="#trades" className="hover:text-[#09090B] transition-colors">
               Specialties
             </a>
@@ -427,31 +431,31 @@ export default function LandingPage() {
           </nav>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <Link
               to="/login"
               state={{ from: "landing" }}
-              className="text-xs sm:text-sm font-semibold text-[#52525B] hover:text-[#09090B] transition px-3 py-1.5"
+              className="text-xs font-bold text-[#52525B] hover:text-[#09090B] transition px-3 py-1.5"
             >
               Sign in
             </Link>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
               <Link
                 to="/home"
-                className="inline-flex items-center justify-center rounded-full bg-[#09090B] hover:bg-neutral-800 text-white px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer"
+                className="inline-flex items-center justify-center rounded-full bg-[#09090B] hover:bg-neutral-800 text-white px-4 sm:px-4.5 py-1.5 text-xs font-extrabold shadow-md transition cursor-pointer"
               >
                 <span>Explore Marketplace</span>
-                <ChevronRight size={14} className="ml-1" />
+                <ChevronRight size={14} className="ml-0.5" />
               </Link>
             </motion.div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       {/* ============================================================== */}
       {/* 1. HERO SECTION WITH 3D CANVAS & INTERACTIVE SWITCHER           */}
       {/* ============================================================== */}
-      <section className="relative pt-10 pb-16 md:pt-20 md:pb-28 max-w-6xl mx-auto px-4 sm:px-6 z-10">
+      <section className="relative pt-8 pb-16 md:pt-16 md:pb-28 max-w-6xl mx-auto px-4 sm:px-6 z-10">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -476,7 +480,7 @@ export default function LandingPage() {
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#09090B] leading-[1.08]">
             Find and hire <br />
-            <span className="bg-gradient-to-r from-zinc-900 via-zinc-700 to-emerald-800 bg-clip-text text-transparent font-extrabold">
+            <span className="bg-gradient-to-r from-zinc-900 via-emerald-800 to-teal-700 bg-clip-text text-transparent font-extrabold">
               verified local pros.
             </span>
           </h1>
@@ -514,7 +518,7 @@ export default function LandingPage() {
           viewport={{ once: true }}
           variants={fadeInUpVariant}
           custom={2}
-          className="mt-10 max-w-3xl mx-auto"
+          className="mt-8 max-w-3xl mx-auto"
         >
           <Hero3DCanvas />
         </motion.div>
