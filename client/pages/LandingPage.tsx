@@ -30,6 +30,7 @@ import {
   XCircle,
 } from "lucide-react";
 import ScreenshotShowcase from "@/components/ScreenshotShowcase";
+import Hero3DCanvas from "@/components/Hero3DCanvas";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -250,7 +251,7 @@ export default function LandingPage() {
       }
     >
       {/* TOP HEADER / NAVBAR */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] bg-white/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] bg-white/95 backdrop-blur-md transition-shadow duration-200">
         <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
           {/* Brand Logo Matching Main Site */}
           <Link to="/" className="flex items-center gap-2.5 group cursor-pointer">
@@ -302,23 +303,27 @@ export default function LandingPage() {
       </header>
 
       {/* ============================================================== */}
-      {/* 1. HERO SECTION                                                */}
+      {/* 1. HERO SECTION WITH 3D CANVAS & ANIMATION                     */}
       {/* ============================================================== */}
-      <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Unboxed Editorial Kicker */}
-        <div className="flex justify-center mb-5">
-          <div className="flex items-center gap-2 text-xs font-semibold text-[#52525B]">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-bold text-[#09090B]">Direct Neighborhood Connection</span>
-            <span aria-hidden="true" className="text-zinc-300">·</span>
-            <span>0% Broker Fees</span>
-            <span aria-hidden="true" className="text-zinc-300">·</span>
-            <span>100% Aadhaar Verified</span>
+      <section className="relative pt-10 pb-16 md:pt-16 md:pb-24 max-w-6xl mx-auto px-4 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-3xl mx-auto space-y-4"
+        >
+          {/* Unboxed Editorial Kicker */}
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-xs font-bold text-emerald-800 shadow-2xs">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-extrabold text-[#09090B]">Direct Neighborhood Network</span>
+              <span aria-hidden="true" className="text-emerald-300">·</span>
+              <span>0% Broker Fees</span>
+              <span aria-hidden="true" className="text-emerald-300">·</span>
+              <span>100% Aadhaar Verified</span>
+            </div>
           </div>
-        </div>
 
-        {/* Hero Title & Subtitle */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#09090B] leading-[1.08]">
             Find and hire <br />
             <span className="text-[#71717A] font-bold">verified local pros.</span>
@@ -344,10 +349,25 @@ export default function LandingPage() {
               <span>Join as a Worker</span>
             </Link>
           </div>
-        </div>
+        </motion.div>
+
+        {/* 3D INTERACTIVE HERO CANVAS */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mt-10 max-w-3xl mx-auto"
+        >
+          <Hero3DCanvas />
+        </motion.div>
 
         {/* HERO SHOWCASE: Realistic Verified Pro Showcase Card */}
-        <div className="mt-12 max-w-2xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-8 max-w-2xl mx-auto"
+        >
           <div className="rounded-[28px] border border-[#E4E4E7] bg-white p-6 sm:p-8 shadow-lg relative">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-zinc-100">
               <div className="flex items-center gap-3.5">
@@ -418,7 +438,7 @@ export default function LandingPage() {
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ============================================================== */}
@@ -488,7 +508,7 @@ export default function LandingPage() {
 
           <div className="divide-y divide-[#E4E4E7]">
             {comparisonPoints.map((point, idx) => (
-              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 p-4 sm:p-5 gap-3 items-center">
+              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 p-4 sm:p-5 gap-3 items-center hover:bg-zinc-50/50 transition-colors">
                 <div className="font-bold text-xs sm:text-sm text-[#09090B]">
                   {point.feature}
                 </div>
@@ -649,9 +669,10 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="rounded-2xl border border-[#E4E4E7] bg-zinc-50/60 p-6 flex flex-col justify-between shadow-2xs"
+                whileHover={{ y: -4 }}
+                className="rounded-2xl border border-[#E4E4E7] bg-zinc-50/60 p-6 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-200"
               >
                 <div>
                   <div className="flex items-center gap-1 mb-3">
@@ -668,7 +689,7 @@ export default function LandingPage() {
                   <p className="text-xs font-bold text-[#09090B]">{t.author}</p>
                   <p className="text-[11px] text-[#71717A] font-medium">{t.role}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
