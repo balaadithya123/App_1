@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   motion,
   AnimatePresence,
+  Variants,
 } from "framer-motion";
 import {
   Check,
@@ -24,18 +25,153 @@ import {
   Wrench,
   Hammer,
   Paintbrush,
-  Brush,
   Wind,
   Layers,
   XCircle,
+  Users,
+  Building2,
+  Flame,
+  CheckCircle,
+  Globe,
+  Compass,
 } from "lucide-react";
 import ScreenshotShowcase from "@/components/ScreenshotShowcase";
 import Hero3DCanvas from "@/components/Hero3DCanvas";
 
+// Smooth viewport animation variant inspired by high-end modern product sites
+const fadeInUpVariant: Variants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: (custom = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.7,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+      delay: custom * 0.1,
+    },
+  }),
+};
+
+// Sample Pros for Interactive Hero Pro Card Switcher
+const samplePros = [
+  {
+    id: "electrician",
+    name: "Ramesh Sharma",
+    avatar: "RS",
+    role: "Licensed Master Electrician",
+    experience: "8 Years Exp",
+    locality: "Indiranagar",
+    distance: "1.2 km away",
+    eta: "~15 mins",
+    rating: 4.9,
+    reviewsCount: 142,
+    badge: "Govt Aadhaar Verified",
+    recentJob: "Power Panel & Wiring Overhaul",
+  },
+  {
+    id: "plumber",
+    name: "Suresh Kumar",
+    avatar: "SK",
+    role: "Expert Plumbing Contractor",
+    experience: "10 Years Exp",
+    locality: "Koramangala",
+    distance: "0.8 km away",
+    eta: "~10 mins",
+    rating: 4.95,
+    reviewsCount: 189,
+    badge: "Govt Aadhaar Verified",
+    recentJob: "Emergency Pipe Leak Repair",
+  },
+  {
+    id: "carpenter",
+    name: "Fatima Bano",
+    avatar: "FB",
+    role: "Master Woodwork & Furniture Pro",
+    experience: "6 Years Exp",
+    locality: "HSR Layout",
+    distance: "1.5 km away",
+    eta: "~20 mins",
+    rating: 4.88,
+    reviewsCount: 96,
+    badge: "Govt Aadhaar Verified",
+    recentJob: "Modular Kitchen Cabinet Installation",
+  },
+];
+
+// Trade Specialties for Interactive Bento Grid
+const tradeSpecialties = [
+  {
+    id: "electrical",
+    title: "Electrical & Power",
+    count: "1,240+ Pros Nearby",
+    eta: "15 min dispatch",
+    icon: Zap,
+    color: "bg-amber-500",
+    gradient: "from-amber-500/10 via-amber-500/5 to-transparent",
+    description: "Short circuits, DB box upgrades, inverter setups, and heavy fixture wiring.",
+    popularSkills: ["Short Circuit Repair", "MCB Box Replacement", "3-Phase Wiring"],
+  },
+  {
+    id: "plumbing",
+    title: "Plumbing & Drainage",
+    count: "980+ Pros Nearby",
+    eta: "12 min dispatch",
+    icon: Wrench,
+    color: "bg-blue-500",
+    gradient: "from-blue-500/10 via-blue-500/5 to-transparent",
+    description: "Pipe leak emergencies, pressure pumps, bathroom fittings, and drain clearing.",
+    popularSkills: ["Pipe Leak Fitting", "Water Heater Installation", "Drainage Unclogging"],
+  },
+  {
+    id: "woodwork",
+    title: "Carpentry & Furniture",
+    count: "750+ Pros Nearby",
+    eta: "25 min dispatch",
+    icon: Hammer,
+    color: "bg-orange-500",
+    gradient: "from-orange-500/10 via-orange-500/5 to-transparent",
+    description: "Modular kitchen assembly, door lock fitting, wardrobe repairs, and custom furniture.",
+    popularSkills: ["Modular Cabinets", "Door Lock & Hinges", "Custom Woodwork"],
+  },
+  {
+    id: "ac-repair",
+    title: "AC & Refrigeration",
+    count: "610+ Pros Nearby",
+    eta: "20 min dispatch",
+    icon: Wind,
+    color: "bg-cyan-500",
+    gradient: "from-cyan-500/10 via-cyan-500/5 to-transparent",
+    description: "Jet pressure servicing, gas leak top-ups, inverter AC PCB repair, and cooling fixes.",
+    popularSkills: ["AC Deep Cleaning", "Freon Gas Refill", "Compressor Servicing"],
+  },
+  {
+    id: "painting",
+    title: "Painting & Waterproofing",
+    count: "520+ Pros Nearby",
+    eta: "Same-Day Survey",
+    icon: Paintbrush,
+    color: "bg-purple-500",
+    gradient: "from-purple-500/10 via-purple-500/5 to-transparent",
+    description: "Interior wall repainting, dampness waterproofing treatment, and texture coats.",
+    popularSkills: ["Interior Repaint", "Wall Damp Proofing", "Texture Wall Art"],
+  },
+  {
+    id: "appliances",
+    title: "Home Appliances",
+    count: "430+ Pros Nearby",
+    eta: "30 min dispatch",
+    icon: Sparkles,
+    color: "bg-emerald-500",
+    gradient: "from-emerald-500/10 via-emerald-500/5 to-transparent",
+    description: "Washing machine motor repair, microwave troubleshooting, and chimney cleaning.",
+    popularSkills: ["Washing Machine Motor", "Kitchen Chimney Servicing", "RO Water Filter"],
+  },
+];
+
 export default function LandingPage() {
   const navigate = useNavigate();
 
-  // Isolate light theme for LandingPage so dark-theme bleed never makes texts invisible
+  // Enforce light background theme specifically for Landing Page
   useEffect(() => {
     const root = document.documentElement;
     const hadDark = root.classList.contains("dark");
@@ -53,64 +189,68 @@ export default function LandingPage() {
     };
   }, []);
 
+  const [activeHeroPro, setActiveHeroPro] = useState<string>("electrician");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [selectedPlan, setSelectedPlan] = useState<"homeowner" | "pro" | "agency">("pro");
   const [activeStep, setActiveStep] = useState<number>(1);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [hoveredTrade, setHoveredTrade] = useState<string | null>(null);
+
+  const selectedHeroPro = samplePros.find((p) => p.id === activeHeroPro) || samplePros[0];
 
   const howItWorksSteps = [
     {
       step: 1,
       title: "1. Search Neighborhood Pros",
-      subtitle: "Enter your locality or select a trade specialty",
+      subtitle: "Enter locality or select trade category",
       description:
-        "Select an electrician, plumber, carpenter, or technician. Proximity-first ranking instantly surfaces background-checked pros operating right in your sector.",
+        "Instant proximity matching surfaces Aadhaar background-checked pros operating directly in your local pincode.",
       icon: Search,
       highlight: "Proximity Matching",
     },
     {
       step: 2,
       title: "2. Inspect Verified Credentials",
-      subtitle: "Check Govt Aadhaar ID badges & past work photo gallery",
+      subtitle: "Check Govt Aadhaar ID badges & portfolio gallery",
       description:
-        "Every pro's ID screening status, homeowner review ratings, completed job history, and verified skill badges are open and 100% transparent.",
+        "Every pro's official ID screening status, homeowner review ratings, completed job history, and verified skill badges are 100% transparent.",
       icon: BadgeCheck,
       highlight: "100% Aadhaar Verified",
     },
     {
       step: 3,
       title: "3. Direct WhatsApp or Call",
-      subtitle: "Instant 1-tap connection with zero intermediary delay",
+      subtitle: "Instant 1-tap connection with zero middleman delay",
       description:
-        "Message directly on WhatsApp or call immediately on their direct phone. No call centers, no queue wait times, and no booking markups.",
+        "Message directly on WhatsApp or call immediately on their direct line. No call centers, no queue wait times, and zero booking markups.",
       icon: MessageCircle,
       highlight: "Direct Connection",
     },
     {
       step: 4,
       title: "4. Pay Directly Upon Job Completion",
-      subtitle: "Direct fair wage with 100% satisfaction guarantee",
+      subtitle: "Direct fair wage with 100% satisfaction",
       description:
-        "Pay the technician directly after you inspect the finished work. The worker keeps 100% of their earnings with zero commission deductions.",
+        "Pay the technician directly after inspecting the finished work. Workers keep 100% of their earnings with zero platform deductions.",
       icon: CheckCircle2,
-      highlight: "0% Broker Deductions",
+      highlight: "0% Commission Deductions",
     },
   ];
 
   const comparisonPoints = [
     {
       feature: "Platform Middleman Cut",
-      traditional: "20% – 30% extracted from worker",
+      traditional: "20% – 30% extracted from worker wage",
       localworker: "0% Commission · Pros keep 100%",
     },
     {
       feature: "Customer Connection",
-      traditional: "Hidden phone numbers & support chatbots",
+      traditional: "Hidden phone numbers & automated chatbots",
       localworker: "Direct WhatsApp & Instant Phone Call",
     },
     {
       feature: "Arrival & Dispatch Speed",
-      traditional: "2 – 4 hour slot windows",
+      traditional: "2 – 4 hour rigid slot windows",
       localworker: "~15 Mins direct neighborhood dispatch",
     },
     {
@@ -120,8 +260,8 @@ export default function LandingPage() {
     },
     {
       feature: "Pricing Transparency",
-      traditional: "Surprise platform booking surcharges",
-      localworker: "Upfront agreed rates with worker",
+      traditional: "Surprise booking platform surcharges",
+      localworker: "Upfront agreed rates directly with worker",
     },
   ];
 
@@ -231,7 +371,7 @@ export default function LandingPage() {
 
   return (
     <div
-      className="min-h-screen bg-[#FAFAFA] text-[#09090B] font-sans selection:bg-neutral-200 relative overflow-x-hidden"
+      className="min-h-screen bg-[#FAFAFA] text-[#09090B] font-sans selection:bg-emerald-100 selection:text-emerald-900 relative overflow-x-hidden"
       style={
         {
           colorScheme: "light",
@@ -243,90 +383,106 @@ export default function LandingPage() {
           "--color-background": "#FAFAFA",
           "--color-surface": "#FFFFFF",
           "--color-border": "#E4E4E7",
-          "--border": "240 6% 90%",
-          "--foreground": "240 10% 4%",
-          "--card": "0 0% 100%",
-          "--card-foreground": "240 10% 4%",
         } as React.CSSProperties
       }
     >
-      {/* TOP HEADER / NAVBAR */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] bg-white/95 backdrop-blur-md transition-shadow duration-200">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
-          {/* Brand Logo Matching Main Site */}
+      {/* Dynamic Ambient Background Light Orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-50">
+        <div className="absolute top-[-5%] left-[25%] w-[600px] h-[600px] rounded-full bg-radial from-emerald-300/35 via-emerald-100/10 to-transparent blur-3xl animate-pulse" />
+        <div className="absolute top-[35%] right-[-5%] w-[650px] h-[650px] rounded-full bg-radial from-cyan-300/25 via-blue-100/10 to-transparent blur-3xl" />
+      </div>
+
+      {/* ============================================================== */}
+      {/* FLOATING GLASS NAVIGATION HEADER                               */}
+      {/* ============================================================== */}
+      <div className="sticky top-4 z-50 max-w-5xl mx-auto px-4 sm:px-6">
+        <header className="rounded-full border border-zinc-200/90 bg-white/80 backdrop-blur-2xl px-5 py-2.5 shadow-xl hover:border-zinc-300 transition-all duration-300 flex items-center justify-between">
+          {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2.5 group cursor-pointer">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white font-extrabold text-sm shadow-sm transition-transform group-hover:scale-105">
+            <motion.span
+              whileHover={{ rotate: 12, scale: 1.08 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+              className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white font-black text-sm shadow-sm"
+            >
               L
-            </span>
-            <span className="text-base sm:text-lg font-bold tracking-tight text-[#09090B]">
+            </motion.span>
+            <span className="text-base font-extrabold tracking-tight text-[#09090B] group-hover:text-emerald-900 transition-colors">
               LocalWorker
             </span>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[#52525B]">
-            <a href="#how-it-works" className="hover:text-[#09090B] transition">
+          <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-[#52525B]">
+            <a href="#trades" className="hover:text-[#09090B] transition-colors">
+              Specialties
+            </a>
+            <a href="#how-it-works" className="hover:text-[#09090B] transition-colors">
               How It Works
             </a>
-            <a href="#why-choose" className="hover:text-[#09090B] transition">
+            <a href="#why-choose" className="hover:text-[#09090B] transition-colors">
               Why Direct
             </a>
-            <a href="#screenshots" className="hover:text-[#09090B] transition">
+            <a href="#screenshots" className="hover:text-[#09090B] transition-colors">
               App Preview
             </a>
-            <a href="#pricing" className="hover:text-[#09090B] transition">
+            <a href="#pricing" className="hover:text-[#09090B] transition-colors">
               Pricing
-            </a>
-            <a href="#faq" className="hover:text-[#09090B] transition">
-              FAQ
             </a>
           </nav>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <Link
               to="/login"
               state={{ from: "landing" }}
-              className="text-xs sm:text-sm font-semibold text-[#52525B] hover:text-[#09090B] transition px-3 py-1.5"
+              className="text-xs font-bold text-[#52525B] hover:text-[#09090B] transition px-3 py-1.5"
             >
               Sign in
             </Link>
-            <Link
-              to="/home"
-              className="inline-flex items-center justify-center rounded-full bg-[#09090B] hover:bg-neutral-800 text-white px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold shadow-sm transition active:scale-95 cursor-pointer"
-            >
-              <span>Explore Marketplace</span>
-              <ChevronRight size={14} className="ml-1" />
-            </Link>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+              <Link
+                to="/home"
+                className="inline-flex items-center justify-center rounded-full bg-[#09090B] hover:bg-neutral-800 text-white px-4 sm:px-4.5 py-1.5 text-xs font-extrabold shadow-md transition cursor-pointer"
+              >
+                <span>Explore Marketplace</span>
+                <ChevronRight size={14} className="ml-0.5" />
+              </Link>
+            </motion.div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       {/* ============================================================== */}
-      {/* 1. HERO SECTION WITH 3D CANVAS & ANIMATION                     */}
+      {/* 1. HERO SECTION WITH 3D CANVAS & INTERACTIVE SWITCHER           */}
       {/* ============================================================== */}
-      <section className="relative pt-10 pb-16 md:pt-16 md:pb-24 max-w-6xl mx-auto px-4 sm:px-6">
+      <section className="relative pt-8 pb-16 md:pt-16 md:pb-28 max-w-6xl mx-auto px-4 sm:px-6 z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          initial="hidden"
+          animate="visible"
+          variants={fadeInUpVariant}
+          custom={0}
           className="text-center max-w-3xl mx-auto space-y-4"
         >
-          {/* Unboxed Editorial Kicker */}
+          {/* Editorial Kicker Badge */}
           <div className="flex justify-center mb-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-xs font-bold text-emerald-800 shadow-2xs">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/90 text-xs font-bold text-emerald-900 shadow-2xs backdrop-blur-md cursor-default"
+            >
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
               <span className="font-extrabold text-[#09090B]">Direct Neighborhood Network</span>
               <span aria-hidden="true" className="text-emerald-300">·</span>
               <span>0% Broker Fees</span>
               <span aria-hidden="true" className="text-emerald-300">·</span>
               <span>100% Aadhaar Verified</span>
-            </div>
+            </motion.div>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-[#09090B] leading-[1.08]">
             Find and hire <br />
-            <span className="text-[#71717A] font-bold">verified local pros.</span>
+            <span className="bg-gradient-to-r from-zinc-900 via-emerald-800 to-teal-700 bg-clip-text text-transparent font-extrabold">
+              verified local pros.
+            </span>
           </h1>
 
           <p className="text-base sm:text-lg text-[#52525B] max-w-2xl mx-auto font-normal pt-2 leading-relaxed">
@@ -335,159 +491,296 @@ export default function LandingPage() {
 
           {/* Action CTAs */}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-3.5">
-            <Link
-              to="/home"
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#09090B] hover:bg-neutral-800 text-white font-bold px-7 py-3.5 text-sm sm:text-base shadow-sm transition cursor-pointer active:scale-95"
-            >
-              <span>Explore Marketplace</span>
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              to="/join"
-              className="inline-flex items-center gap-2 rounded-2xl border border-[#E4E4E7] bg-white hover:bg-zinc-100 text-[#09090B] font-bold px-6 py-3.5 text-sm sm:text-base shadow-xs transition cursor-pointer active:scale-95"
-            >
-              <span>Join as a Worker</span>
-            </Link>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                to="/home"
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#09090B] hover:bg-neutral-800 text-white font-bold px-7 py-3.5 text-sm sm:text-base shadow-md transition cursor-pointer"
+              >
+                <span>Explore Marketplace</span>
+                <ArrowRight size={16} />
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                to="/join"
+                className="inline-flex items-center gap-2 rounded-2xl border border-[#E4E4E7] bg-white hover:bg-zinc-100 text-[#09090B] font-bold px-6 py-3.5 text-sm sm:text-base shadow-2xs transition cursor-pointer"
+              >
+                <span>Join as a Worker</span>
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
 
         {/* 3D INTERACTIVE HERO CANVAS */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 30 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-10 max-w-3xl mx-auto"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          custom={2}
+          className="mt-8 max-w-3xl mx-auto"
         >
           <Hero3DCanvas />
         </motion.div>
 
-        {/* HERO SHOWCASE: Realistic Verified Pro Showcase Card */}
+        {/* HERO INTERACTIVE SHOWCASE CARD: Switch sample pros live */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          custom={3}
           className="mt-8 max-w-2xl mx-auto"
         >
-          <div className="rounded-[28px] border border-[#E4E4E7] bg-white p-6 sm:p-8 shadow-lg relative">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-zinc-100">
-              <div className="flex items-center gap-3.5">
-                <div className="relative">
-                  <div className="h-14 w-14 rounded-2xl bg-[#09090B] text-white flex items-center justify-center font-bold text-xl shadow-xs">
-                    RS
+          <div className="rounded-[28px] border border-[#E4E4E7] bg-white/95 p-6 sm:p-8 shadow-xl backdrop-blur-md relative overflow-hidden">
+            {/* Live Sample Pro Switcher Tabs */}
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-100 gap-2 overflow-x-auto">
+              <span className="text-xs font-bold text-[#71717A] uppercase tracking-wider shrink-0">
+                Live Pro Preview:
+              </span>
+              <div className="flex items-center gap-1.5">
+                {samplePros.map((pro) => {
+                  const isActive = activeHeroPro === pro.id;
+                  return (
+                    <button
+                      key={pro.id}
+                      type="button"
+                      onClick={() => setActiveHeroPro(pro.id)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-[#09090B] text-white shadow-xs"
+                          : "bg-zinc-100 text-[#52525B] hover:text-[#09090B]"
+                      }`}
+                    >
+                      {pro.name.split(" ")[0]} ({pro.id})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedHeroPro.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                className="pt-4"
+              >
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative">
+                      <div className="h-14 w-14 rounded-2xl bg-[#09090B] text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
+                        {selectedHeroPro.avatar}
+                      </div>
+                      <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-extrabold text-[#09090B]">
+                          {selectedHeroPro.name}
+                        </h3>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                          <ShieldCheck size={13} className="text-emerald-600" />
+                          <span>{selectedHeroPro.badge}</span>
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#52525B] font-medium mt-0.5">
+                        {selectedHeroPro.role} · {selectedHeroPro.experience}
+                      </p>
+                    </div>
                   </div>
-                  <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-extrabold text-[#09090B]">Ramesh Sharma</h3>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
-                      <ShieldCheck size={13} className="text-emerald-600" />
-                      <span>Govt ID Verified</span>
+
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#09090B] bg-zinc-50 px-3.5 py-1.5 rounded-full border border-[#E4E4E7]">
+                    <Star size={13} className="text-amber-500 fill-amber-500" />
+                    <span>{selectedHeroPro.rating}</span>
+                    <span className="text-[#71717A] font-normal">
+                      ({selectedHeroPro.reviewsCount} reviews)
                     </span>
                   </div>
-                  <p className="text-xs text-[#52525B] font-medium mt-0.5">
-                    Licensed Master Electrician · 8 Years Experience
-                  </p>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#09090B] bg-zinc-50 px-3.5 py-1.5 rounded-full border border-[#E4E4E7]">
-                <Star size={13} className="text-amber-500 fill-amber-500" />
-                <span>4.9</span>
-                <span className="text-[#71717A] font-normal">(142 reviews)</span>
-              </div>
-            </div>
+                {/* Pro Details Grid */}
+                <div className="py-3.5 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-zinc-50/80 p-3.5 rounded-2xl border border-zinc-100">
+                  <div className="flex items-center gap-2 text-[#52525B] font-medium">
+                    <MapPin size={15} className="text-[#71717A] shrink-0" />
+                    <span>{selectedHeroPro.locality} · {selectedHeroPro.distance}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#52525B] font-medium">
+                    <Clock size={15} className="text-[#71717A] shrink-0" />
+                    <span>Dispatch {selectedHeroPro.eta}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold">
+                    <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                    <span>Recent: {selectedHeroPro.recentJob}</span>
+                  </div>
+                </div>
 
-            {/* Pro Details Grid */}
-            <div className="py-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="flex items-center gap-2 text-[#52525B] font-medium">
-                <MapPin size={15} className="text-[#71717A] shrink-0" />
-                <span>Indiranagar · 1.4 km</span>
-              </div>
-              <div className="flex items-center gap-2 text-[#52525B] font-medium">
-                <Clock size={15} className="text-[#71717A] shrink-0" />
-                <span>Arrives in ~20 mins</span>
-              </div>
-              <div className="flex items-center gap-2 text-emerald-700 font-bold">
-                <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
-                <span>Available Today</span>
-              </div>
-            </div>
+                {/* Pro Action Buttons */}
+                <div className="pt-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Link
+                      to="/home"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white px-4 py-2 text-xs font-bold transition shadow-2xs active:scale-95"
+                    >
+                      <PhoneCall size={13} />
+                      <span>Direct Call</span>
+                    </Link>
+                    <Link
+                      to="/home"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white px-4 py-2 text-xs font-bold transition shadow-2xs active:scale-95"
+                    >
+                      <MessageCircle size={13} />
+                      <span>WhatsApp Chat</span>
+                    </Link>
+                  </div>
 
-            {/* Pro Action Buttons */}
-            <div className="pt-4 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <Link
-                  to="/home"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white px-4 py-2 text-xs font-bold transition shadow-xs"
-                >
-                  <PhoneCall size={13} />
-                  <span>Direct Call</span>
-                </Link>
-                <Link
-                  to="/home"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white px-4 py-2 text-xs font-bold transition shadow-xs"
-                >
-                  <MessageCircle size={13} />
-                  <span>WhatsApp</span>
-                </Link>
-              </div>
-
-              <span className="text-[11px] font-semibold text-[#52525B]">
-                0% Middleman cut · Direct Fair Pay
-              </span>
-            </div>
+                  <span className="text-[11px] font-semibold text-[#52525B]">
+                    0% Middleman cut · Direct Fair Wage
+                  </span>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </motion.div>
       </section>
 
       {/* ============================================================== */}
-      {/* 2. LIVE METRICS & IMPACT COUNTERS                              */}
+      {/* 2. APPLE-INSPIRED BENTO GRID TRADE SPECIALTIES SHOWCASE        */}
       {/* ============================================================== */}
-      <section className="py-10 bg-white border-y border-[#E4E4E7]">
+      <section id="trades" className="py-16 md:py-24 max-w-6xl mx-auto px-4 sm:px-6">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="text-center max-w-2xl mx-auto space-y-2 mb-14"
+        >
+          <span className="text-xs font-bold uppercase tracking-widest text-[#71717A]">
+            Neighborhood Specialties
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#09090B]">
+            Whatever you need fixed. <br />
+            <span className="text-[#71717A]">Right in your locality.</span>
+          </h2>
+          <p className="text-sm sm:text-base text-[#52525B] font-medium">
+            Explore verified trade pros ready for direct 1-tap dispatch in your sector.
+          </p>
+        </motion.div>
+
+        {/* Interactive Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tradeSpecialties.map((trade, idx) => {
+            const Icon = trade.icon;
+            const isHovered = hoveredTrade === trade.id;
+
+            return (
+              <motion.div
+                key={trade.id}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUpVariant}
+                custom={idx}
+                onMouseEnter={() => setHoveredTrade(trade.id)}
+                onMouseLeave={() => setHoveredTrade(null)}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                className={`rounded-[28px] border border-[#E4E4E7] bg-white p-6 sm:p-7 shadow-xs hover:shadow-xl transition-all duration-300 relative overflow-hidden flex flex-col justify-between group cursor-pointer`}
+                onClick={() => navigate(`/home?category=${trade.id}`)}
+              >
+                {/* Subtle Hover Gradient Glow */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${trade.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}
+                />
+
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className={`h-12 w-12 rounded-2xl ${trade.color} text-white flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110`}
+                    >
+                      <Icon size={22} />
+                    </div>
+                    <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                      {trade.eta}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-extrabold text-[#09090B] tracking-tight group-hover:text-black">
+                    {trade.title}
+                  </h3>
+                  <p className="text-xs text-[#52525B] font-medium mt-1.5 leading-relaxed">
+                    {trade.description}
+                  </p>
+
+                  {/* Skill Badges */}
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {trade.popularSkills.map((skill, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200/80"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between text-xs">
+                  <span className="font-extrabold text-[#09090B]">{trade.count}</span>
+                  <span className="font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    <span>Find Pros</span>
+                    <ChevronRight size={14} />
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ============================================================== */}
+      {/* 3. LIVE METRICS & IMPACT COUNTERS                              */}
+      {/* ============================================================== */}
+      <section className="py-12 bg-white border-y border-[#E4E4E7] relative z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="p-4 rounded-2xl bg-zinc-50/70 border border-[#E4E4E7]">
-              <p className="text-3xl sm:text-4xl font-extrabold text-[#09090B] tracking-tight">
-                5,000+
-              </p>
-              <p className="text-xs font-bold text-[#52525B] mt-1.5">
-                Verified Local Pros
-              </p>
-            </div>
-            <div className="p-4 rounded-2xl bg-zinc-50/70 border border-[#E4E4E7]">
-              <p className="text-3xl sm:text-4xl font-extrabold text-emerald-700 tracking-tight">
-                0%
-              </p>
-              <p className="text-xs font-bold text-[#52525B] mt-1.5">
-                Middleman Fees
-              </p>
-            </div>
-            <div className="p-4 rounded-2xl bg-zinc-50/70 border border-[#E4E4E7]">
-              <p className="text-3xl sm:text-4xl font-extrabold text-[#09090B] tracking-tight">
-                &lt; 15 Mins
-              </p>
-              <p className="text-xs font-bold text-[#52525B] mt-1.5">
-                Avg Dispatch Time
-              </p>
-            </div>
-            <div className="p-4 rounded-2xl bg-zinc-50/70 border border-[#E4E4E7]">
-              <p className="text-3xl sm:text-4xl font-extrabold text-amber-600 tracking-tight">
-                4.9 ★
-              </p>
-              <p className="text-xs font-bold text-[#52525B] mt-1.5">
-                Homeowner Rating
-              </p>
-            </div>
+            {[
+              { value: "5,000+", label: "Verified Local Pros", color: "text-[#09090B]" },
+              { value: "0%", label: "Middleman Fees", color: "text-emerald-800" },
+              { value: "< 15 Mins", label: "Avg Dispatch Time", color: "text-[#09090B]" },
+              { value: "4.9 ★", label: "Homeowner Rating", color: "text-amber-600" },
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUpVariant}
+                custom={idx}
+                className="p-5 rounded-2xl bg-zinc-50/70 border border-[#E4E4E7] shadow-2xs hover:shadow-xs transition-all"
+              >
+                <p className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${stat.color}`}>
+                  {stat.value}
+                </p>
+                <p className="text-xs font-bold text-[#52525B] mt-1.5">{stat.label}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* 3. WHY DIRECT: COMPARISON MATRIX (Psychological Risk-Reversal)  */}
+      {/* 4. WHY DIRECT: COMPARISON MATRIX                              */}
       {/* ============================================================== */}
-      <section id="why-choose" className="py-16 md:py-24 max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+      <section id="why-choose" className="py-16 md:py-24 max-w-5xl mx-auto px-4 sm:px-6 z-10">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="text-center max-w-2xl mx-auto space-y-2 mb-12"
+        >
           <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
             Direct Model vs Traditional Apps
           </span>
@@ -497,9 +790,15 @@ export default function LandingPage() {
           <p className="text-sm sm:text-base text-[#52525B] font-medium">
             We removed the broker middleman so you get faster service and workers earn 100% of their wages.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="rounded-3xl border border-[#E4E4E7] bg-white overflow-hidden shadow-xs">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="rounded-3xl border border-[#E4E4E7] bg-white overflow-hidden shadow-sm"
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 bg-zinc-50 border-b border-[#E4E4E7] p-4 text-xs font-bold text-[#52525B]">
             <div className="hidden md:block">Key Comparison</div>
             <div className="hidden md:block text-zinc-500">Traditional Middleman Platforms</div>
@@ -508,7 +807,11 @@ export default function LandingPage() {
 
           <div className="divide-y divide-[#E4E4E7]">
             {comparisonPoints.map((point, idx) => (
-              <div key={idx} className="grid grid-cols-1 md:grid-cols-3 p-4 sm:p-5 gap-3 items-center hover:bg-zinc-50/50 transition-colors">
+              <motion.div
+                key={idx}
+                whileHover={{ backgroundColor: "rgba(244, 244, 245, 0.6)" }}
+                className="grid grid-cols-1 md:grid-cols-3 p-4 sm:p-5 gap-3 items-center transition-colors"
+              >
                 <div className="font-bold text-xs sm:text-sm text-[#09090B]">
                   {point.feature}
                 </div>
@@ -516,21 +819,27 @@ export default function LandingPage() {
                   <XCircle size={15} className="text-rose-500 shrink-0" />
                   <span>{point.traditional}</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50/70 p-2 rounded-xl border border-emerald-200">
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-900 bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200">
                   <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
                   <span>{point.localworker}</span>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ============================================================== */}
-      {/* 4. INTERACTIVE HOW IT WORKS STEPPER                            */}
+      {/* 5. INTERACTIVE HOW IT WORKS STEPPER                            */}
       {/* ============================================================== */}
       <section id="how-it-works" className="py-16 md:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="text-center max-w-2xl mx-auto space-y-2 mb-12"
+        >
           <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
             Simple Process
           </span>
@@ -540,11 +849,11 @@ export default function LandingPage() {
           <p className="text-sm sm:text-base text-[#52525B] font-medium">
             Four simple steps from finding a problem to getting it resolved.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Step Selector Buttons */}
-          <div className="lg:col-span-5 space-y-3">
+          {/* Step Selector Buttons with Active Connector Indicator */}
+          <div className="lg:col-span-5 space-y-3 relative">
             {howItWorksSteps.map((step) => {
               const isActive = activeStep === step.step;
               const StepIcon = step.icon;
@@ -554,14 +863,21 @@ export default function LandingPage() {
                   key={step.step}
                   type="button"
                   onClick={() => setActiveStep(step.step)}
-                  className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-150 cursor-pointer flex items-start gap-4 ${
+                  className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer flex items-start gap-4 relative overflow-hidden ${
                     isActive
-                      ? "bg-white border-2 border-[#09090B] shadow-md ring-1 ring-[#09090B]"
+                      ? "bg-white border-2 border-[#09090B] shadow-md"
                       : "bg-white border-[#E4E4E7] hover:border-zinc-400"
                   }`}
                 >
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-step-bar"
+                      className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#09090B]"
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    />
+                  )}
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 font-bold text-sm ${
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl shrink-0 font-bold text-sm transition-colors ${
                       isActive
                         ? "bg-[#09090B] text-white shadow-xs"
                         : "bg-zinc-100 text-[#52525B]"
@@ -590,13 +906,13 @@ export default function LandingPage() {
                 .map((step) => (
                   <motion.div
                     key={step.step}
-                    initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                    initial={{ opacity: 0, scale: 0.98, y: 15 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.98, y: -10 }}
-                    transition={{ duration: 0.25 }}
-                    className="rounded-[28px] bg-white p-7 sm:p-10 border border-[#E4E4E7] shadow-sm relative"
+                    exit={{ opacity: 0, scale: 0.98, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="rounded-[28px] bg-white p-7 sm:p-10 border border-[#E4E4E7] shadow-md relative overflow-hidden"
                   >
-                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 mb-4">
+                    <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 mb-4">
                       <CheckCircle2 size={14} className="text-emerald-600" />
                       <span>{step.highlight}</span>
                     </div>
@@ -631,10 +947,16 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 5. APP SCREENSHOTS SHOWCASE (Clean Device Mockup Viewports)    */}
+      {/* 6. APP SCREENSHOTS SHOWCASE                                   */}
       {/* ============================================================== */}
       <section id="screenshots" className="py-16 md:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="text-center max-w-2xl mx-auto space-y-2 mb-12"
+        >
           <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
             App Experience
           </span>
@@ -644,18 +966,23 @@ export default function LandingPage() {
           <p className="text-sm sm:text-base text-[#52525B] font-medium">
             A preview of the LocalWorker interface across desktop and mobile devices.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Clean, dedicated Screenshot Showcase component */}
         <ScreenshotShowcase />
       </section>
 
       {/* ============================================================== */}
-      {/* 6. SOCIAL PROOF & TESTIMONIALS (Consumer Trust & Proof)       */}
+      {/* 7. SOCIAL PROOF & TESTIMONIALS                                 */}
       {/* ============================================================== */}
       <section className="py-16 md:py-24 bg-white border-y border-[#E4E4E7]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUpVariant}
+            className="text-center max-w-2xl mx-auto space-y-2 mb-12"
+          >
             <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
               Community Stories
             </span>
@@ -665,13 +992,18 @@ export default function LandingPage() {
             <p className="text-sm sm:text-base text-[#52525B] font-medium">
               Real feedback from local residents and verified trade professionals.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, idx) => (
               <motion.div
                 key={idx}
-                whileHover={{ y: -4 }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUpVariant}
+                custom={idx}
+                whileHover={{ y: -5 }}
                 className="rounded-2xl border border-[#E4E4E7] bg-zinc-50/60 p-6 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-200"
               >
                 <div>
@@ -696,10 +1028,16 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 7. TRANSPARENT PRICING PLANS (Interactive Plan Elevation)     */}
+      {/* 8. TRANSPARENT PRICING PLANS WITH SPRING SWITCHER               */}
       {/* ============================================================== */}
       <section id="pricing" className="py-16 md:py-24 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center max-w-2xl mx-auto space-y-2 mb-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="text-center max-w-2xl mx-auto space-y-2 mb-12"
+        >
           <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
             Pricing
           </span>
@@ -713,7 +1051,7 @@ export default function LandingPage() {
           {/* Monthly / Annual Toggle */}
           <div className="pt-3 flex items-center justify-center gap-3">
             <span
-              className={`text-xs font-bold ${
+              className={`text-xs font-bold transition-colors ${
                 billingCycle === "monthly" ? "text-[#09090B]" : "text-[#71717A]"
               }`}
             >
@@ -724,26 +1062,28 @@ export default function LandingPage() {
               onClick={() =>
                 setBillingCycle((prev) => (prev === "monthly" ? "annual" : "monthly"))
               }
-              className="relative inline-flex h-6 w-11 items-center rounded-full bg-zinc-200 transition cursor-pointer"
+              className="relative inline-flex h-6 w-11 items-center rounded-full bg-zinc-200 transition-colors cursor-pointer"
               aria-label="Toggle annual billing"
             >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-[#09090B] transition ${
+              <motion.span
+                layout
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className={`inline-block h-4 w-4 rounded-full bg-[#09090B] ${
                   billingCycle === "annual" ? "translate-x-6" : "translate-x-1"
                 }`}
               />
             </button>
             <span
-              className={`text-xs font-bold ${
+              className={`text-xs font-bold transition-colors ${
                 billingCycle === "annual" ? "text-[#09090B]" : "text-[#71717A]"
               }`}
             >
               Annual <span className="text-[11px] text-emerald-800 font-extrabold">(Save 20%)</span>
             </span>
           </div>
-        </div>
+        </motion.div>
 
-        {/* 3 Interactive Plan Cards with Smooth Elevation Switch */}
+        {/* 3 Interactive Plan Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch pt-4">
           {plans.map((plan) => {
             const isSelected = selectedPlan === plan.id;
@@ -761,12 +1101,16 @@ export default function LandingPage() {
                     : "bg-white text-[#09090B] border border-[#E4E4E7] shadow-xs hover:border-zinc-400 hover:shadow-md z-0 opacity-95"
                 }`}
               >
-                {/* Selected Indicator */}
+                {/* Selected Badge */}
                 {isSelected && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[11px] font-extrabold px-3.5 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[11px] font-extrabold px-3.5 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1.5 whitespace-nowrap"
+                  >
                     <Sparkles size={12} />
                     <span>{plan.badge} · Selected</span>
-                  </div>
+                  </motion.div>
                 )}
 
                 <div>
@@ -826,7 +1170,7 @@ export default function LandingPage() {
                         setSelectedPlan(plan.id);
                       }
                     }}
-                    className={`w-full inline-flex items-center justify-center rounded-xl py-3 text-sm font-extrabold transition shadow-sm cursor-pointer ${
+                    className={`w-full inline-flex items-center justify-center rounded-xl py-3 text-sm font-extrabold transition shadow-sm cursor-pointer active:scale-95 ${
                       isSelected
                         ? "bg-white hover:bg-neutral-100 text-[#09090B] shadow-md"
                         : "bg-zinc-100 hover:bg-zinc-200 text-[#09090B]"
@@ -861,24 +1205,35 @@ export default function LandingPage() {
       </section>
 
       {/* ============================================================== */}
-      {/* 8. FREQUENTLY ASKED QUESTIONS                                 */}
+      {/* 9. FREQUENTLY ASKED QUESTIONS                                 */}
       {/* ============================================================== */}
       <section id="faq" className="py-16 md:py-24 max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="text-center space-y-2 mb-12">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="text-center space-y-2 mb-12"
+        >
           <span className="text-xs font-bold uppercase tracking-wider text-[#71717A]">
             FAQ
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#09090B]">
             Frequently asked questions
           </h2>
-        </div>
+        </motion.div>
 
         <div className="space-y-3">
           {faqs.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
-              <div
+              <motion.div
                 key={idx}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                variants={fadeInUpVariant}
+                custom={idx}
                 className="rounded-2xl border border-[#E4E4E7] bg-white overflow-hidden transition-all shadow-2xs"
               >
                 <button
@@ -901,7 +1256,7 @@ export default function LandingPage() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.25 }}
                     >
                       <div className="px-5 pb-5 text-xs sm:text-sm text-[#52525B] leading-relaxed border-t border-zinc-100 pt-3 font-medium">
                         {faq.a}
@@ -909,19 +1264,25 @@ export default function LandingPage() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             );
           })}
         </div>
       </section>
 
       {/* ============================================================== */}
-      {/* 9. CALL TO ACTION BANNER                                       */}
+      {/* 10. CALL TO ACTION BANNER                                      */}
       {/* ============================================================== */}
       <section className="py-16 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="rounded-[32px] bg-[#09090B] p-8 sm:p-14 text-white shadow-xl relative overflow-hidden">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariant}
+          className="rounded-[32px] bg-[#09090B] p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden"
+        >
           <div className="relative z-10 max-w-2xl space-y-4">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-300">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-300 bg-white/10 px-3 py-1 rounded-full border border-white/15">
               <CheckCircle2 size={14} className="text-emerald-400" />
               <span>Direct Neighborhood Network</span>
             </span>
@@ -933,26 +1294,30 @@ export default function LandingPage() {
             </p>
 
             <div className="pt-4 flex flex-wrap items-center gap-4">
-              <Link
-                to="/home"
-                className="inline-flex items-center gap-2 rounded-2xl bg-white hover:bg-neutral-100 text-[#09090B] font-bold px-7 py-3.5 text-sm shadow-md transition cursor-pointer active:scale-95"
-              >
-                <span>Explore Marketplace</span>
-                <ArrowRight size={16} />
-              </Link>
-              <Link
-                to="/join"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/20 hover:bg-white/10 text-white font-bold px-6 py-3.5 text-sm transition cursor-pointer active:scale-95"
-              >
-                <span>Join as Service Pro</span>
-              </Link>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Link
+                  to="/home"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white hover:bg-neutral-100 text-[#09090B] font-bold px-7 py-3.5 text-sm shadow-md transition cursor-pointer"
+                >
+                  <span>Explore Marketplace</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Link
+                  to="/join"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-white/20 hover:bg-white/10 text-white font-bold px-6 py-3.5 text-sm transition cursor-pointer"
+                >
+                  <span>Join as Service Pro</span>
+                </Link>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ============================================================== */}
-      {/* 10. FOOTER                                                     */}
+      {/* 11. FOOTER                                                     */}
       {/* ============================================================== */}
       <footer className="border-t border-[#E4E4E7] bg-white py-12 text-[#52525B]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
