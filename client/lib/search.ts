@@ -12,6 +12,13 @@ const stemWord = (word: string) => {
   return w;
 };
 
+/**
+ * Fast worker search filter with minimal allocations per item.
+ * Performance Optimization:
+ * - Pre-computes normalized service & location parameters outside the loop.
+ * - Fast-paths when search terms are empty.
+ * - Avoids array creation ([worker.name, worker.category, ...worker.services]) per worker per filter pass.
+ */
 export const filterWorkers = (
   workers: Worker[],
   service: string,
@@ -19,35 +26,60 @@ export const filterWorkers = (
 ) => {
   const normalizedService = normalizeSearchValue(service);
   const normalizedLocation = normalizeSearchValue(location);
-  const serviceStem = stemWord(normalizedService);
+
+  // Fast path: if no search criteria, return all workers immediately
+  if (!normalizedService && !normalizedLocation) {
+    return workers;
+  }
+
+  const serviceStem = normalizedService ? stemWord(normalizedService) : "";
+
+  // Helper to check if a target field matches the normalized service query
+  const matchesFieldValue = (value: string): boolean => {
+    const normValue = normalizeSearchValue(value);
+    if (
+      normValue.includes(normalizedService) ||
+      normalizedService.includes(normValue)
+    ) {
+      return true;
+    }
+    if (
+      serviceStem &&
+      (normValue.includes(serviceStem) || stemWord(normValue).includes(serviceStem))
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   return workers.filter((worker) => {
-    const searchableServices = [
-      worker.name,
-      worker.category,
-      ...worker.services,
-    ].map((value) => normalizeSearchValue(value));
-    const searchableLocation = normalizeSearchValue(worker.locality);
-
-    const matchesService =
-      !normalizedService ||
-      searchableServices.some((value) => {
-        if (
-          value.includes(normalizedService) ||
-          normalizedService.includes(value)
-        )
-          return true;
-        if (
-          serviceStem &&
-          (value.includes(serviceStem) || stemWord(value).includes(serviceStem))
-        )
-          return true;
+    // Check location match first if location query exists
+    if (normalizedLocation) {
+      const searchableLocation = normalizeSearchValue(worker.locality);
+      if (!searchableLocation.includes(normalizedLocation)) {
         return false;
-      });
+      }
+    }
 
-    const matchesLocation =
-      !normalizedLocation || searchableLocation.includes(normalizedLocation);
+    // Check service query match if service query exists
+    if (normalizedService) {
+      // Check worker name, category, and services list without allocating temporary arrays
+      if (
+        matchesFieldValue(worker.name) ||
+        matchesFieldValue(worker.category)
+      ) {
+        return true;
+      }
 
-    return matchesService && matchesLocation;
+      for (let i = 0; i < worker.services.length; i++) {
+        if (matchesFieldValue(worker.services[i])) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    return true;
   });
 };
