@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Loader2, UserRound, ArrowLeft } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import BrandLogo from "@/components/BrandLogo";
 import { supabase } from "@/lib/supabase";
 
 const REMEMBER_KEY = "localworker.rememberMe";
@@ -96,14 +97,9 @@ export default function Login() {
             type="button"
             onClick={handleBack}
             className="flex items-center gap-2.5 group cursor-pointer text-left focus:outline-none"
-            aria-label="LocalWorker"
+            aria-label="Builderco"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-extrabold text-sm shadow-sm transition-transform group-hover:scale-105">
-              L
-            </span>
-            <span className="text-base font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
-              LocalWorker
-            </span>
+            <BrandLogo className="h-7 w-auto transition-transform group-hover:scale-105" />
           </button>
 
           {/* Back Button */}

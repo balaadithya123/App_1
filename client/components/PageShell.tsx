@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Clock,
 } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 import MobileMenu from "@/components/MobileMenu";
 import ThemeToggle from "@/components/ThemeToggle";
 import TrackRecordFollowUpBanner from "@/components/TrackRecordFollowUpBanner";
@@ -126,13 +127,8 @@ export default function PageShell({
         : "/";
 
   const brand = (
-    <div className="flex items-center gap-2 group">
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-extrabold text-sm shadow-sm transition-transform group-hover:scale-105">
-        L
-      </span>
-      <span className="text-base font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
-        LocalWorker
-      </span>
+    <div className="flex items-center group">
+      <BrandLogo className="h-7 w-auto transition-transform group-hover:scale-105" />
     </div>
   );
 
@@ -151,7 +147,7 @@ export default function PageShell({
           {/* Brand Logo & Desktop Nav */}
           <div className="flex items-center gap-4 lg:gap-8 min-w-0">
             {noHome ? (
-              <div aria-label="LocalWorker" className="shrink-0">{brand}</div>
+              <div aria-label="Builderco" className="shrink-0">{brand}</div>
             ) : (
               <button
                 type="button"

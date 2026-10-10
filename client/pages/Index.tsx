@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import BrandLogo from "@/components/BrandLogo";
 import {
   MapPin,
   ChevronDown,
@@ -280,14 +281,9 @@ export default function Index() {
             <Link
               to="/home"
               className="flex items-center gap-2.5 shrink-0 group"
-              aria-label="LocalWorker Home"
+              aria-label="Builderco Home"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black font-extrabold text-sm shadow-xs transition-transform group-hover:scale-105 border border-white/10 dark:border-black/10">
-                L
-              </span>
-              <span className="text-base sm:text-lg font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
-                LocalWorker
-              </span>
+              <BrandLogo className="h-7 w-auto transition-transform group-hover:scale-105" />
             </Link>
 
             {/* Subtle Divider */}
