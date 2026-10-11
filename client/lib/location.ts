@@ -195,9 +195,33 @@ const normalizeLoc = (loc: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+// Module-scoped stop words set to avoid re-allocating Set on every invocation
+const STOP_WORDS = new Set([
+  "near",
+  "opposite",
+  "road",
+  "street",
+  "nagar",
+  "colony",
+  "layout",
+  "tamil",
+  "nadu",
+  "india",
+  "area",
+  "main",
+  "cross",
+  "district",
+  "zone",
+  "city",
+]);
+
 /**
  * Intelligent locality & city matcher with stop-word boundary filters and city aliases.
  * Prevents false positive substring matches across distinct cities.
+ *
+ * Performance Optimization:
+ * - Pre-allocated module-level STOP_WORDS Set eliminates object creation overhead per invocation.
+ * - Short-circuiting indexed loops replace nested .some() array allocations and closure creation.
  */
 export function isLocationMatch(
   workerLocality?: string,
@@ -213,47 +237,59 @@ export function isLocationMatch(
   if (wNorm === tNorm) return true;
   if (wNorm.includes(tNorm) || tNorm.includes(wNorm)) return true;
 
-  const stopWords = new Set([
-    "near",
-    "opposite",
-    "road",
-    "street",
-    "nagar",
-    "colony",
-    "layout",
-    "tamil",
-    "nadu",
-    "india",
-    "area",
-    "main",
-    "cross",
-    "district",
-    "zone",
-    "city",
-  ]);
+  const wParts = wNorm.split(" ");
+  const tParts = tNorm.split(" ");
 
-  const wWords = wNorm
-    .split(" ")
-    .filter((w) => w.length >= 3 && !stopWords.has(w));
-  const tWords = tNorm
-    .split(" ")
-    .filter((w) => w.length >= 3 && !stopWords.has(w));
-
-  // Direct word overlap
-  if (tWords.some((tw) => wWords.some((ww) => ww === tw))) return true;
-
-  // City alias / synonym overlap
-  for (const tw of tWords) {
-    const aliases = CITY_ALIASES[tw] || [];
-    if (aliases.some((al) => wWords.includes(al) || wNorm.includes(al))) {
-      return true;
+  const wWords: string[] = [];
+  for (let i = 0; i < wParts.length; i++) {
+    const w = wParts[i];
+    if (w.length >= 3 && !STOP_WORDS.has(w)) {
+      wWords.push(w);
     }
   }
 
-  for (const ww of wWords) {
-    const aliases = CITY_ALIASES[ww] || [];
-    if (aliases.some((al) => tWords.includes(al) || tNorm.includes(al))) {
-      return true;
+  const tWords: string[] = [];
+  for (let i = 0; i < tParts.length; i++) {
+    const w = tParts[i];
+    if (w.length >= 3 && !STOP_WORDS.has(w)) {
+      tWords.push(w);
+    }
+  }
+
+  // Direct word overlap
+  for (let i = 0; i < tWords.length; i++) {
+    const tw = tWords[i];
+    for (let j = 0; j < wWords.length; j++) {
+      if (wWords[j] === tw) return true;
+    }
+  }
+
+  // City alias / synonym overlap
+  for (let i = 0; i < tWords.length; i++) {
+    const tw = tWords[i];
+    const aliases = CITY_ALIASES[tw];
+    if (aliases) {
+      for (let k = 0; k < aliases.length; k++) {
+        const al = aliases[k];
+        for (let j = 0; j < wWords.length; j++) {
+          if (wWords[j] === al) return true;
+        }
+        if (wNorm.includes(al)) return true;
+      }
+    }
+  }
+
+  for (let i = 0; i < wWords.length; i++) {
+    const ww = wWords[i];
+    const aliases = CITY_ALIASES[ww];
+    if (aliases) {
+      for (let k = 0; k < aliases.length; k++) {
+        const al = aliases[k];
+        for (let j = 0; j < tWords.length; j++) {
+          if (tWords[j] === al) return true;
+        }
+        if (tNorm.includes(al)) return true;
+      }
     }
   }
 
