@@ -40,6 +40,7 @@ const ChatAssistantPage = lazy(() => import("./pages/ChatAssistantPage"));
 const VoiceOnboarding = lazy(() => import("./pages/VoiceOnboarding"));
 const PortfolioModeration = lazy(() => import("./pages/PortfolioModeration"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const Materials = lazy(() => import("./pages/Materials"));
 
 const queryClient = new QueryClient();
 
@@ -217,6 +218,7 @@ export default function App() {
               <Route path="/worker-ranking" element={<SearchResults />} />
               <Route path="/admin/ranking" element={<SearchResults />} />
               <Route path="/admin/analytics" element={<AdminDashboard />} />
+              <Route path="/materials" element={<Materials />} />
               <Route path="/report" element={<Report />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
