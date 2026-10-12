@@ -439,41 +439,56 @@ export default function SearchResults() {
   const targetCategory = category !== "All" ? category : requestedService;
   const targetLocality = locality.trim() || requestedLocation.trim();
 
+  // Performance Optimization: Pre-compute query strings outside filtering loop,
+  // evaluate fast boolean flags first, short-circuit early, and avoid closure allocations.
   const matchingWorkers = useMemo(() => {
     const qLower = freeTextNeed.trim().toLowerCase();
+    const targetCatLower = targetCategory && targetCategory !== "All" ? targetCategory.toLowerCase() : "";
+    const targetCatStem = targetCatLower ? stemWord(targetCatLower) : "";
 
     return availableWorkers.filter((w) => {
-      const catMatched =
-        !targetCategory ||
-        targetCategory === "All" ||
-        w.category.toLowerCase().includes(targetCategory.toLowerCase()) ||
-        targetCategory.toLowerCase().includes(w.category.toLowerCase()) ||
-        stemWord(w.category) === stemWord(targetCategory);
+      // 1. Cheap boolean / flag filters first
+      if (onlyAvailableToday && !w.available_today) return false;
+      if (onlyVerified && !w.phone_verified) return false;
+      if (minRating4Plus && Number(w.avg_rating || w.rating || 4.8) < 4.5) return false;
 
-      const locMatched =
-        !targetLocality ||
-        isLocationMatch(w.locality, targetLocality);
+      // 2. Category matching
+      if (targetCatLower) {
+        const wCatLower = w.category.toLowerCase();
+        const catMatched =
+          wCatLower.includes(targetCatLower) ||
+          targetCatLower.includes(wCatLower) ||
+          stemWord(wCatLower) === targetCatStem;
+        if (!catMatched) return false;
+      }
 
-      const availMatched = !onlyAvailableToday || Boolean(w.available_today);
-      const verifiedMatched = !onlyVerified || Boolean(w.phone_verified);
-      const ratingMatched =
-        !minRating4Plus || Number(w.avg_rating || w.rating || 4.8) >= 4.5;
+      // 3. Location matching
+      if (targetLocality && !isLocationMatch(w.locality, targetLocality)) {
+        return false;
+      }
 
-      const qMatched =
-        !qLower ||
-        w.name.toLowerCase().includes(qLower) ||
-        w.category.toLowerCase().includes(qLower) ||
-        (w.locality || "").toLowerCase().includes(qLower) ||
-        (w.services || []).some((s) => s.toLowerCase().includes(qLower));
+      // 4. Free text search query matching
+      if (qLower) {
+        const wCatLower = w.category.toLowerCase();
+        if (
+          w.name.toLowerCase().includes(qLower) ||
+          wCatLower.includes(qLower) ||
+          (w.locality || "").toLowerCase().includes(qLower)
+        ) {
+          return true;
+        }
 
-      return (
-        catMatched &&
-        locMatched &&
-        qMatched &&
-        availMatched &&
-        verifiedMatched &&
-        ratingMatched
-      );
+        // Avoid allocating temporary arrays/closures with .some()
+        const services = w.services;
+        if (services) {
+          for (let i = 0; i < services.length; i++) {
+            if (services[i].toLowerCase().includes(qLower)) return true;
+          }
+        }
+        return false;
+      }
+
+      return true;
     });
   }, [
     availableWorkers,
@@ -510,6 +525,8 @@ export default function SearchResults() {
   ]);
 
   const sortedWorkers = useMemo(() => {
+    const targetLocLower = targetLocality ? targetLocality.toLowerCase() : "";
+
     return [...matchingWorkers].sort((a, b) => {
       // 1. AI Reasoning rank if available
       const rA = rankingMap[a.id]?.rank;
@@ -519,17 +536,9 @@ export default function SearchResults() {
       if (rB !== undefined) return 1;
 
       // 2. Locality match priority
-      if (targetLocality) {
-        const aLoc = (a.locality || "")
-          .toLowerCase()
-          .includes(targetLocality.toLowerCase())
-          ? 1
-          : 0;
-        const bLoc = (b.locality || "")
-          .toLowerCase()
-          .includes(targetLocality.toLowerCase())
-          ? 1
-          : 0;
+      if (targetLocLower) {
+        const aLoc = (a.locality || "").toLowerCase().includes(targetLocLower) ? 1 : 0;
+        const bLoc = (b.locality || "").toLowerCase().includes(targetLocLower) ? 1 : 0;
         if (bLoc !== aLoc) return bLoc - aLoc;
       }
 
@@ -551,43 +560,67 @@ export default function SearchResults() {
     });
   }, [matchingWorkers, rankingMap, targetLocality]);
 
-  const matchingAgencies = agencies.filter((a) => {
+  // Performance Optimization: Memoize agency filtering, evaluate cheap flags first,
+  // pre-compute query strings, short-circuit early, and replace .some() closures with indexed loops.
+  const matchingAgencies = useMemo(() => {
     const qLower = freeTextNeed.trim().toLowerCase();
+    const targetCatLower = targetCategory && targetCategory !== "All" ? targetCategory.toLowerCase() : "";
+    const targetCatStem = targetCatLower ? stemWord(targetCatLower) : "";
+    const targetLocLower = targetLocality ? targetLocality.toLowerCase() : "";
 
-    const catMatched =
-      !targetCategory ||
-      targetCategory === "All" ||
-      (a.categories || []).some((c) =>
-        String(c).toLowerCase().includes(targetCategory.toLowerCase()),
-      ) ||
-      (a.categories || []).some(
-        (c) => stemWord(String(c)) === stemWord(targetCategory),
-      );
+    return agencies.filter((a) => {
+      // 1. Cheap flag filter first
+      if (onlyVerified && !a.verified) return false;
 
-    const locMatched =
-      !targetLocality ||
-      (a.service_locations || []).some((l) =>
-        String(l).toLowerCase().includes(targetLocality.toLowerCase()),
-      ) ||
-      Boolean(
-        a.location &&
-        String(a.location).toLowerCase().includes(targetLocality.toLowerCase()),
-      );
+      // 2. Category matching
+      if (targetCatLower) {
+        const cats = a.categories || [];
+        let catMatched = false;
+        for (let i = 0; i < cats.length; i++) {
+          const cLower = String(cats[i]).toLowerCase();
+          if (cLower.includes(targetCatLower) || stemWord(cLower) === targetCatStem) {
+            catMatched = true;
+            break;
+          }
+        }
+        if (!catMatched) return false;
+      }
 
-    const qMatched =
-      !qLower ||
-      a.name.toLowerCase().includes(qLower) ||
-      (a.categories || []).some((c) =>
-        String(c).toLowerCase().includes(qLower),
-      ) ||
-      (a.service_locations || []).some((l) =>
-        String(l).toLowerCase().includes(qLower),
-      );
+      // 3. Location matching
+      if (targetLocLower) {
+        let locMatched = Boolean(a.location && String(a.location).toLowerCase().includes(targetLocLower));
+        if (!locMatched) {
+          const locs = a.service_locations || [];
+          for (let i = 0; i < locs.length; i++) {
+            if (String(locs[i]).toLowerCase().includes(targetLocLower)) {
+              locMatched = true;
+              break;
+            }
+          }
+        }
+        if (!locMatched) return false;
+      }
 
-    const verifiedMatched = !onlyVerified || Boolean(a.verified);
+      // 4. Search query matching
+      if (qLower) {
+        if (a.name.toLowerCase().includes(qLower)) return true;
 
-    return catMatched && locMatched && qMatched && verifiedMatched;
-  });
+        const cats = a.categories || [];
+        for (let i = 0; i < cats.length; i++) {
+          if (String(cats[i]).toLowerCase().includes(qLower)) return true;
+        }
+
+        const locs = a.service_locations || [];
+        for (let i = 0; i < locs.length; i++) {
+          if (String(locs[i]).toLowerCase().includes(qLower)) return true;
+        }
+
+        return false;
+      }
+
+      return true;
+    });
+  }, [agencies, targetCategory, targetLocality, freeTextNeed, onlyVerified]);
 
   // Combine or filter strictly according to selected searchType
   const combined: Array<
