@@ -54,7 +54,8 @@ export default function Materials() {
     setLoading(true); setFailed(false);
     try {
       if (!supabase) throw new Error("Supabase is not configured");
-      const result = await supabase.from("suppliers").select("id,name,category,description,area,city,delivery_radius_km,supplier_contacts(id,person_name,role,whatsapp),supplier_products(id,name,unit,indicative_price,price_updated_at)").eq("is_verified", true).order("name");
+      const client = supabase as any;
+      const result = await client.from("suppliers").select("id,name,category,description,area,city,delivery_radius_km,supplier_contacts(id,person_name,role,whatsapp),supplier_products(id,name,unit,indicative_price,price_updated_at)").eq("is_verified", true).order("name");
       if (result.error) throw result.error;
       setSuppliers((result.data ?? []) as unknown as Supplier[]);
     } catch (error) { console.warn("[Materials] Unable to load suppliers:", error); setFailed(true); }
