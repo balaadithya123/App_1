@@ -7,6 +7,7 @@ on:
       - ".github/workflows/app1-debug-apk.yml"
       - "android/**"
       - "capacitor.config.ts"
+      - "public/pwa-icon-512.png"
 
 permissions:
   contents: write
@@ -29,6 +30,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Use the existing Builderco app icon instead of Capacitor's default icon.
+      - name: Generate Android launcher icons
+        run: |
+          mkdir -p assets
+          cp public/pwa-icon-512.png assets/icon.png
+          npx --yes @capacitor/assets generate --android
 
       # The app loads the live Vercel site (server.url in capacitor.config.ts),
       # so bundled web assets only need to exist as a placeholder.
