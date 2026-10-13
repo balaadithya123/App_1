@@ -27,6 +27,7 @@ import type { WorkersResponse } from "@shared/api";
 import { logAnalyticsEvent } from "@/lib/analytics";
 import TrustStripWorkerCard from "@/components/TrustStripWorkerCard";
 import NavBar from "@/components/NavBar";
+import { getCategoryMeta } from "@/components/materials/categoryMeta";
 import PostNeedModal from "@/components/PostNeedModal";
 import ThemeToggle from "@/components/ThemeToggle";
 import MobileMenu from "@/components/MobileMenu";
@@ -701,6 +702,16 @@ export default function Index() {
               <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
                 Sand, stone, cement, tools & rentals from verified suppliers
               </p>
+              <div className="mt-2 flex gap-1.5" aria-hidden="true">
+                {["Sand", "Stone & Aggregates", "Cement", "Bricks & Blocks", "Steel", "Tools & Rental"].map((c) => {
+                  const { icon: CatIcon, tone } = getCategoryMeta(c);
+                  return (
+                    <span key={c} className={`flex h-6 w-6 items-center justify-center rounded-md ${tone}`}>
+                      <CatIcon size={13} />
+                    </span>
+                  );
+                })}
+              </div>
             </div>
             <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
           </Link>
