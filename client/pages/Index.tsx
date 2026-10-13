@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Clock,
   Building2,
+  Package,
 } from "lucide-react";
 import type { Worker } from "@shared/workers";
 import type { WorkersResponse } from "@shared/api";
@@ -682,6 +683,27 @@ export default function Index() {
               </button>
             ))}
           </div>
+        </section>
+
+        {/* 3. MATERIALS & SUPPLIERS (separate from worker categories) */}
+        <section aria-labelledby="materials-heading">
+          <Link
+            to="/materials"
+            className="group flex items-center gap-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99]"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-black/[0.04] dark:border-white/[0.06]">
+              <Package size={19} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 id="materials-heading" className="text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">
+                Need materials?
+              </h2>
+              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
+                Sand, stone, cement, tools & rentals from verified suppliers
+              </p>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
+          </Link>
         </section>
       </main>
 
