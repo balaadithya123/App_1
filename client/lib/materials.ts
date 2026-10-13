@@ -90,3 +90,57 @@ export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters)
     return supplierCoversPincode(s, filters.pincode);
   });
 }
+
+export type QuoteItem = {
+  name: string;
+  quantity: number;
+  unit: string | null;
+};
+
+export function buildQuoteMessage(input: {
+  contactName: string;
+  supplierName: string;
+  items: QuoteItem[];
+  pincode: string;
+}): string {
+  const lines = input.items.map((i) => `- ${i.quantity} ${i.unit ?? "units"} of ${i.name}`);
+  return [
+    `Hi ${input.contactName}, I found ${input.supplierName} on Builderco.`,
+    input.items.length === 1 ? "I need a quote for:" : "I need a quote for these items:",
+    ...lines,
+    `Delivery pincode: ${input.pincode.trim()}.`,
+    "Please share your best price and delivery time.",
+  ].join("\n");
+}
+
+export function formatPrice(product: Pick<SupplierProduct, "indicative_price" | "unit">): string | null {
+  if (product.indicative_price == null) return null;
+  const amount = new Intl.NumberFormat("en-IN").format(product.indicative_price);
+  return `₹${amount}${product.unit ? ` / ${product.unit}` : ""}`;
+}
+
+/** Newest price update across a supplier's products, or null when none is dated. */
+export function latestPriceUpdate(products: SupplierProduct[]): string | null {
+  const dates = products.map((p) => p.price_updated_at).filter((d): d is string => Boolean(d));
+  if (dates.length === 0) return null;
+  return dates.reduce((a, b) => (new Date(a).getTime() >= new Date(b).getTime() ? a : b));
+}
+
+const PINCODE_KEY = "builderco.materials.pincode";
+
+export function loadSavedPincode(): string {
+  try {
+    const v = window.localStorage.getItem(PINCODE_KEY) ?? "";
+    return isValidPincode(v) ? v : "";
+  } catch {
+    return "";
+  }
+}
+
+export function savePincode(pincode: string): void {
+  try {
+    if (isValidPincode(pincode)) window.localStorage.setItem(PINCODE_KEY, pincode.trim());
+  } catch {
+    // Storage can be unavailable (private mode); remembering is only a convenience.
+  }
+}

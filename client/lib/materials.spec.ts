@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildQuoteMessage,
+  formatPrice,
+  latestPriceUpdate,
   filterSuppliers,
   isPriceStale,
   supplierCoversPincode,
@@ -48,5 +51,32 @@ describe("materials helpers", () => {
     expect(filterSuppliers(all, { category: "Cement", place: "", pincode: "" })).toEqual([other]);
     expect(filterSuppliers(all, { category: "All", place: "guindy", pincode: "" })).toEqual([base]);
     expect(filterSuppliers(all, { category: "All", place: "", pincode: "605602" })).toEqual([other]);
+  });
+  it("builds a multi-item WhatsApp quote message", () => {
+    const msg = buildQuoteMessage({
+      contactName: "Ravi",
+      supplierName: "Sand Co",
+      items: [
+        { name: "M-sand", quantity: 2, unit: "unit" },
+        { name: "River sand", quantity: 1, unit: null },
+      ],
+      pincode: " 600032 ",
+    });
+    expect(msg).toContain("Hi Ravi, I found Sand Co on Builderco.");
+    expect(msg).toContain("these items");
+    expect(msg).toContain("- 2 unit of M-sand");
+    expect(msg).toContain("- 1 units of River sand");
+    expect(msg).toContain("Delivery pincode: 600032.");
+  });
+
+  it("formats prices in Indian grouping and handles missing prices", () => {
+    expect(formatPrice({ indicative_price: 125000, unit: "unit" })).toBe("₹1,25,000 / unit");
+    expect(formatPrice({ indicative_price: null, unit: "bag" })).toBeNull();
+  });
+
+  it("finds the newest price update", () => {
+    const p = (d: string | null) => ({ id: d ?? "x", name: "n", unit: null, indicative_price: 1, price_updated_at: d });
+    expect(latestPriceUpdate([p("2026-10-01"), p("2026-10-09"), p(null)])).toBe("2026-10-09");
+    expect(latestPriceUpdate([p(null)])).toBeNull();
   });
 });
