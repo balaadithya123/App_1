@@ -20,7 +20,6 @@ import {
   CheckCircle2,
   Clock,
   Building2,
-  Package,
 } from "lucide-react";
 import type { Worker } from "@shared/workers";
 import type { WorkersResponse } from "@shared/api";
@@ -45,7 +44,6 @@ const categories = [
   { name: "Carpenter", icon: Hammer, countText: "Furniture assembly, door lock & wood repair" },
   { name: "Painter", icon: Paintbrush, countText: "Interior wall, exterior & waterproofing" },
   { name: "Cleaner", icon: Brush, countText: "Deep cleaning, kitchen, sofa & bathroom" },
-  { name: "Materials & Suppliers", icon: Package, countText: "Sand, stone, cement, tools & rentals" },
   { name: "All Services", icon: ChevronRight, countText: "Browse all verified trade specialists" },
 ];
 
@@ -259,10 +257,6 @@ export default function Index() {
   };
 
   const handleCategoryClick = (categoryName: string) => {
-    if (categoryName === "Materials & Suppliers") {
-      navigate("/materials");
-      return;
-    }
     void logAnalyticsEvent("category_tile_clicked", null, {
       category: categoryName,
       location,
