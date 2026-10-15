@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const getUser = vi.fn();
+const { getUser } = vi.hoisted(() => ({ getUser: vi.fn() }));
 vi.mock("./supabase", () => ({ supabase: { auth: { getUser } } }));
 
 import { requireAdmin, sendAuthError } from "./admin-auth";
