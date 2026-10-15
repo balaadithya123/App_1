@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { screenImageSilently } from "./portfolio-screen";
 import type { WorkerPortfolioItem, WorkerTrustFlag } from "@shared/api";
 import { getAllWorkers } from "./workers";
+import { requireAdmin, sendAuthError } from "../lib/admin-auth";
 
 // In-memory fallback stores to guarantee availability
 const memoryPortfolio: Map<string, WorkerPortfolioItem[]> = new Map();
@@ -462,6 +463,7 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (
   res,
 ) => {
   try {
+    await requireAdmin(req);
     const allWorkers = await getAllWorkers();
 
     const combinedWorkersMap = new Map<string, any>();
@@ -564,6 +566,7 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (
 
     res.json({ workers: workersWithFlags });
   } catch (err) {
+    if (sendAuthError(err, res)) return;
     console.error("[admin workers] load error:", err);
     res.status(500).json({ message: "Unable to load admin workers list." });
   }
@@ -572,6 +575,7 @@ export const handleGetAdminWorkersWithFlags: RequestHandler = async (
 // POST /api/admin/workers/:workerId/resolve-flags
 export const handleResolveWorkerFlags: RequestHandler = async (req, res) => {
   try {
+    await requireAdmin(req);
     const workerId = String(req.params.workerId || "");
     if (!workerId) {
       res.status(400).json({ message: "Worker ID is required." });
@@ -592,6 +596,7 @@ export const handleResolveWorkerFlags: RequestHandler = async (req, res) => {
 
     res.json({ message: "Flags resolved successfully." });
   } catch (err) {
+    if (sendAuthError(err, res)) return;
     console.error("[admin workers] resolve flags error:", err);
     res.status(500).json({ message: "Unable to resolve flags." });
   }
@@ -603,6 +608,7 @@ export const handleToggleWorkerVerification: RequestHandler = async (
   res,
 ) => {
   try {
+    await requireAdmin(req);
     const workerId = req.params.workerId;
     const { verified } = req.body as { verified: boolean };
 
@@ -617,6 +623,7 @@ export const handleToggleWorkerVerification: RequestHandler = async (
       message: `Worker verification status set to ${verified ? "verified" : "unverified"}.`,
     });
   } catch (err) {
+    if (sendAuthError(err, res)) return;
     console.error("[admin workers] toggle verification error:", err);
     res.status(500).json({ message: "Unable to update worker verification." });
   }

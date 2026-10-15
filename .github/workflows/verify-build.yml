@@ -22,3 +22,5 @@ jobs:
         run: npm run build:client
       - name: Build server
         run: npm run build:server
+      - name: Unit tests
+        run: npm test

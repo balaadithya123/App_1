@@ -95,15 +95,20 @@ export default function AdminDashboard() {
     try {
       const { data: auth } = await supabase.auth.getUser();
       const user = auth.user;
-      const role = user?.user_metadata?.role || user?.app_metadata?.role;
+      // user_metadata is user-editable, so it cannot grant admin (the server
+      // enforces the same rule on every /api/admin route).
       const isAdmin =
         user?.app_metadata?.is_admin === true ||
-        role === "admin" ||
         user?.email === "pgbalaadithya@gmail.com";
       if (!user || !isAdmin) {
         navigate("/", { replace: true });
         return;
       }
+      const { data: sessionData } = await supabase.auth.getSession();
+      const adminAuthHeaders: Record<string, string> = sessionData?.session
+        ?.access_token
+        ? { Authorization: `Bearer ${sessionData.session.access_token}` }
+        : {};
       const since = new Date();
       since.setDate(since.getDate() - 7);
       const iso = since.toISOString();
@@ -132,7 +137,10 @@ export default function AdminDashboard() {
           .order("created_at", { ascending: false })
           .limit(100),
         fetch("/api/agencies", { cache: "no-store" }).catch(() => null),
-        fetch("/api/admin/workers", { cache: "no-store" }).catch(() => null),
+        fetch("/api/admin/workers", {
+          cache: "no-store",
+          headers: adminAuthHeaders,
+        }).catch(() => null),
       ]);
 
       setEvents((eventResult.data ?? []) as EventRow[]);
