@@ -216,12 +216,36 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
+ * Helper to process valid tokens (length >= 3 and not in STOP_WORDS) from a space-normalized string
+ * without allocating arrays. Short-circuits and returns true as soon as the callback returns true.
+ */
+function checkValidWords(
+  normStr: string,
+  fn: (word: string) => boolean,
+): boolean {
+  let start = 0;
+  const len = normStr.length;
+  while (start < len) {
+    let end = normStr.indexOf(" ", start);
+    if (end === -1) end = len;
+    if (end > start) {
+      const word = normStr.slice(start, end);
+      if (word.length >= 3 && !STOP_WORDS.has(word)) {
+        if (fn(word)) return true;
+      }
+    }
+    start = end + 1;
+  }
+  return false;
+}
+
+/**
  * Intelligent locality & city matcher with stop-word boundary filters and city aliases.
  * Prevents false positive substring matches across distinct cities.
  *
  * Performance Optimization:
  * - Pre-allocated module-level STOP_WORDS Set eliminates object creation overhead per invocation.
- * - Short-circuiting indexed loops replace nested .some() array allocations and closure creation.
+ * - Zero intermediate array allocations (no `.split(" ")` or temporary word arrays) during token matching.
  */
 export function isLocationMatch(
   workerLocality?: string,
@@ -237,63 +261,35 @@ export function isLocationMatch(
   if (wNorm === tNorm) return true;
   if (wNorm.includes(tNorm) || tNorm.includes(wNorm)) return true;
 
-  const wParts = wNorm.split(" ");
-  const tParts = tNorm.split(" ");
+  // Direct word overlap & target city alias overlap against worker locality
+  const directOrTargetAliasMatch = checkValidWords(tNorm, (tw) => {
+    // Direct word overlap check against worker words
+    const directMatch = checkValidWords(wNorm, (ww) => ww === tw);
+    if (directMatch) return true;
 
-  const wWords: string[] = [];
-  for (let i = 0; i < wParts.length; i++) {
-    const w = wParts[i];
-    if (w.length >= 3 && !STOP_WORDS.has(w)) {
-      wWords.push(w);
-    }
-  }
-
-  const tWords: string[] = [];
-  for (let i = 0; i < tParts.length; i++) {
-    const w = tParts[i];
-    if (w.length >= 3 && !STOP_WORDS.has(w)) {
-      tWords.push(w);
-    }
-  }
-
-  // Direct word overlap
-  for (let i = 0; i < tWords.length; i++) {
-    const tw = tWords[i];
-    for (let j = 0; j < wWords.length; j++) {
-      if (wWords[j] === tw) return true;
-    }
-  }
-
-  // City alias / synonym overlap
-  for (let i = 0; i < tWords.length; i++) {
-    const tw = tWords[i];
+    // City alias check for target word
     const aliases = CITY_ALIASES[tw];
     if (aliases) {
       for (let k = 0; k < aliases.length; k++) {
-        const al = aliases[k];
-        for (let j = 0; j < wWords.length; j++) {
-          if (wWords[j] === al) return true;
-        }
-        if (wNorm.includes(al)) return true;
+        if (wNorm.includes(aliases[k])) return true;
       }
     }
-  }
 
-  for (let i = 0; i < wWords.length; i++) {
-    const ww = wWords[i];
+    return false;
+  });
+
+  if (directOrTargetAliasMatch) return true;
+
+  // Worker city alias overlap check against target locality
+  return checkValidWords(wNorm, (ww) => {
     const aliases = CITY_ALIASES[ww];
     if (aliases) {
       for (let k = 0; k < aliases.length; k++) {
-        const al = aliases[k];
-        for (let j = 0; j < tWords.length; j++) {
-          if (tWords[j] === al) return true;
-        }
-        if (tNorm.includes(al)) return true;
+        if (tNorm.includes(aliases[k])) return true;
       }
     }
-  }
-
-  return false;
+    return false;
+  });
 }
 
 /**
