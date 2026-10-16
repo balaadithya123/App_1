@@ -44,6 +44,9 @@ const Materials = lazy(() => import("./pages/Materials"));
 const SupplierRegister = lazy(() => import("./pages/SupplierRegister"));
 const SupplierProfile = lazy(() => import("./pages/SupplierProfile"));
 const AdminSuppliers = lazy(() => import("./pages/AdminSuppliers"));
+const WorkerPassbook = lazy(() => import("./pages/WorkerPassbook"));
+const JobSlip = lazy(() => import("./pages/JobSlip"));
+const RateGuide = lazy(() => import("./pages/RateGuide"));
 
 const queryClient = new QueryClient();
 
@@ -224,6 +227,9 @@ export default function App() {
               <Route path="/materials" element={<Materials />} />
               <Route path="/materials/:id" element={<SupplierProfile />} />
               <Route path="/admin/suppliers" element={<AdminSuppliers />} />
+              <Route path="/worker-passbook" element={<WorkerPassbook />} />
+              <Route path="/job/:token" element={<JobSlip />} />
+              <Route path="/rate-guide" element={<RateGuide />} />
               <Route path="/register-supplier" element={<SupplierRegister />} />
               <Route path="/report" element={<Report />} />
               <Route path="*" element={<NotFound />} />

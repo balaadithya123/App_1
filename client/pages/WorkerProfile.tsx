@@ -39,6 +39,7 @@ import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 import RequestCallbackForm from "@/components/RequestCallbackForm";
 import TrustStripWorkerCard from "@/components/TrustStripWorkerCard";
 import WorkerTrackRecordSection from "@/components/WorkerTrackRecordSection";
+import WorkerPassbookSection from "@/components/WorkerPassbookSection";
 
 // Fallback high-quality proof-of-work project photos by category if worker has not uploaded custom photos yet
 const categoryFallbacks: Record<
@@ -732,6 +733,9 @@ export default function WorkerProfile() {
             workerName={worker.name}
           />
         )}
+
+        {/* Work Passbook: customer-confirmed jobs and the worker's typical rates */}
+        {worker && <WorkerPassbookSection workerId={worker.id} />}
 
         {/* 4. "MORE [CATEGORY] NEAR YOU" — Horizontal scroll on every worker profile */}
         {relatedWorkers.length > 0 && (

@@ -75,6 +75,12 @@ export default function Login() {
       localStorage.removeItem(EMAIL_KEY);
     }
     const role = data.user?.user_metadata?.role;
+    // Only a Work Passbook job link may be returned to, never an arbitrary URL.
+    const next = new URLSearchParams(location.search).get("next");
+    if (next && /^\/job\/[a-f0-9]{32}$/.test(next)) {
+      navigate(next, { replace: true });
+      return;
+    }
     navigate(
       role === "worker"
         ? "/worker-dashboard"
