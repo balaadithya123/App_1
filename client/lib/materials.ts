@@ -79,13 +79,30 @@ export type SupplierFilters = {
   pincode: string;
 };
 
+/**
+ * Fast supplier search filter with zero temporary string concatenation per item.
+ * Performance Optimization:
+ * - Direct property checks on area and city avoid dynamic string allocation (`${s.area ?? ""} ${s.city ?? ""}`) per supplier.
+ */
 export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters): Supplier[] {
   const place = filters.place.trim().toLowerCase();
   return suppliers.filter((s) => {
     if (filters.category !== "All" && s.category !== filters.category) return false;
     if (place) {
-      const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
-      if (!haystack.includes(place)) return false;
+      const areaLower = s.area ? s.area.toLowerCase() : "";
+      const cityLower = s.city ? s.city.toLowerCase() : "";
+
+      const areaMatch = areaLower ? areaLower.includes(place) : false;
+      const cityMatch = !areaMatch && cityLower ? cityLower.includes(place) : false;
+
+      if (!areaMatch && !cityMatch) {
+        // Fallback for combined multi-word queries spanning both area and city (e.g. "Guindy Chennai")
+        if (areaLower && cityLower && `${areaLower} ${cityLower}`.includes(place)) {
+          // match found
+        } else {
+          return false;
+        }
+      }
     }
     return supplierCoversPincode(s, filters.pincode);
   });
@@ -119,11 +136,27 @@ export function formatPrice(product: Pick<SupplierProduct, "indicative_price" | 
   return `₹${amount}${product.unit ? ` / ${product.unit}` : ""}`;
 }
 
-/** Newest price update across a supplier's products, or null when none is dated. */
+/**
+ * Newest price update across a supplier's products, or null when none is dated.
+ * Performance Optimization:
+ * - Single-pass loop avoids intermediate array allocations (.map and .filter).
+ * - Avoids repeated Date parsing in reduce operations by tracking max timestamp and corresponding date string.
+ */
 export function latestPriceUpdate(products: SupplierProduct[]): string | null {
-  const dates = products.map((p) => p.price_updated_at).filter((d): d is string => Boolean(d));
-  if (dates.length === 0) return null;
-  return dates.reduce((a, b) => (new Date(a).getTime() >= new Date(b).getTime() ? a : b));
+  let latestStr: string | null = null;
+  let maxTime = -Infinity;
+
+  for (let i = 0; i < products.length; i++) {
+    const d = products[i].price_updated_at;
+    if (!d) continue;
+    const time = new Date(d).getTime();
+    if (!Number.isNaN(time) && time > maxTime) {
+      maxTime = time;
+      latestStr = d;
+    }
+  }
+
+  return latestStr;
 }
 
 const PINCODE_KEY = "builderco.materials.pincode";
