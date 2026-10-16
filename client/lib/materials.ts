@@ -65,12 +65,22 @@ export function isValidPincode(value: string): boolean {
  * the same postal district (first 3 digits). Suppliers with no listed pincodes
  * are never excluded by a pincode check.
  */
-export function supplierCoversPincode(supplier: Pick<Supplier, "service_pincodes">, pincode: string): boolean {
+export function supplierCoversPincode(
+  supplier: Pick<Supplier, "service_pincodes">,
+  pincode: string,
+): boolean {
   const pin = pincode.trim();
   if (!isValidPincode(pin)) return true;
   const served = supplier.service_pincodes ?? [];
   if (served.length === 0) return true;
-  return served.some((p) => p === pin || p.slice(0, 3) === pin.slice(0, 3));
+  const districtPrefix = pin.slice(0, 3);
+  for (let i = 0; i < served.length; i++) {
+    const p = served[i];
+    if (p === pin || p.slice(0, 3) === districtPrefix) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export type SupplierFilters = {
@@ -79,15 +89,45 @@ export type SupplierFilters = {
   pincode: string;
 };
 
-export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters): Supplier[] {
+/**
+ * Optimized supplier filter.
+ * Pre-computes pincode parameters outside the loop and short-circuits area/city checks
+ * without allocating template strings.
+ */
+export function filterSuppliers(
+  suppliers: Supplier[],
+  filters: SupplierFilters,
+): Supplier[] {
   const place = filters.place.trim().toLowerCase();
+  const rawPin = filters.pincode.trim();
+  const hasValidPin = isValidPincode(rawPin);
+  const pinDistrict = hasValidPin ? rawPin.slice(0, 3) : "";
+
   return suppliers.filter((s) => {
     if (filters.category !== "All" && s.category !== filters.category) return false;
+
     if (place) {
-      const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
-      if (!haystack.includes(place)) return false;
+      const areaMatch = s.area ? s.area.toLowerCase().includes(place) : false;
+      const cityMatch = !areaMatch && s.city ? s.city.toLowerCase().includes(place) : false;
+      if (!areaMatch && !cityMatch) return false;
     }
-    return supplierCoversPincode(s, filters.pincode);
+
+    if (hasValidPin) {
+      const served = s.service_pincodes ?? [];
+      if (served.length > 0) {
+        let covers = false;
+        for (let i = 0; i < served.length; i++) {
+          const p = served[i];
+          if (p === rawPin || p.slice(0, 3) === pinDistrict) {
+            covers = true;
+            break;
+          }
+        }
+        if (!covers) return false;
+      }
+    }
+
+    return true;
   });
 }
 
@@ -113,17 +153,35 @@ export function buildQuoteMessage(input: {
   ].join("\n");
 }
 
+/** Reusable module-scoped number formatter to avoid heavy Intl instantiation per call. */
+const inrFormatter = new Intl.NumberFormat("en-IN");
+
 export function formatPrice(product: Pick<SupplierProduct, "indicative_price" | "unit">): string | null {
   if (product.indicative_price == null) return null;
-  const amount = new Intl.NumberFormat("en-IN").format(product.indicative_price);
+  const amount = inrFormatter.format(product.indicative_price);
   return `₹${amount}${product.unit ? ` / ${product.unit}` : ""}`;
 }
 
-/** Newest price update across a supplier's products, or null when none is dated. */
+/**
+ * Newest price update across a supplier's products, or null when none is dated.
+ * Performance Optimization: Single-pass traversal avoids `.map()`, `.filter()` array allocations
+ * and repeated `new Date()` parses.
+ */
 export function latestPriceUpdate(products: SupplierProduct[]): string | null {
-  const dates = products.map((p) => p.price_updated_at).filter((d): d is string => Boolean(d));
-  if (dates.length === 0) return null;
-  return dates.reduce((a, b) => (new Date(a).getTime() >= new Date(b).getTime() ? a : b));
+  let latestStr: string | null = null;
+  let latestTime = -Infinity;
+
+  for (let i = 0; i < products.length; i++) {
+    const d = products[i].price_updated_at;
+    if (!d) continue;
+    const t = new Date(d).getTime();
+    if (!Number.isNaN(t) && t >= latestTime) {
+      latestTime = t;
+      latestStr = d;
+    }
+  }
+
+  return latestStr;
 }
 
 const PINCODE_KEY = "builderco.materials.pincode";
