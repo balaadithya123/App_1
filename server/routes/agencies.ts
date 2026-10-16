@@ -46,7 +46,8 @@ const getAgencyUser = async (req: Parameters<RequestHandler>[0]) => {
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) throw new Error("UNAUTHORIZED");
   const role = data.user.user_metadata?.role || data.user.app_metadata?.role;
-  const isAdmin = data.user.app_metadata?.is_admin === true || role === "admin";
+  // user_metadata is user-editable, so only app_metadata can grant admin.
+  const isAdmin = data.user.app_metadata?.is_admin === true;
   if (role !== "agency" && !isAdmin) throw new Error("FORBIDDEN");
   return { user: data.user, token };
 };
@@ -913,7 +914,6 @@ export const handleGetAgencyDashboard: RequestHandler = async (req, res) => {
     // If user is admin or matches default admin agency
     const isAdmin =
       user.app_metadata?.is_admin === true ||
-      user.user_metadata?.role === "admin" ||
       userEmail === "pgbalaadithya@gmail.com";
 
     if (
