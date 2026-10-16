@@ -18,7 +18,7 @@ import {
   type RateGuideResponse,
   type RateUnit,
   type WorkerRate,
-} from "@shared/passbook";
+} from "../../shared/passbook";
 
 const MAX_PENDING_PER_WORKER = 20;
 const MAX_RATES_PER_WORKER = 10;
