@@ -315,6 +315,22 @@ export default function WorkerDashboard() {
           </div>
         </section>
 
+        {/* Work Passbook: customer-confirmed job history */}
+        <button
+          type="button"
+          onClick={() => navigate("/worker-passbook")}
+          className="flex w-full items-center gap-4 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 text-left shadow-sm transition hover:border-neutral-400 cursor-pointer"
+        >
+          <BadgeCheck size={22} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">Work Passbook</span>
+            <span className="block text-xs text-[#71717A] dark:text-[#A1A1AA]">
+              Record jobs, get customers to confirm them, and show your real work history
+            </span>
+          </span>
+          <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
+        </button>
+
         {/* Growth & Metric Summaries */}
         <WorkerGrowthCard />
 

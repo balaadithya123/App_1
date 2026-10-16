@@ -63,6 +63,17 @@ import {
 } from "./routes/track-record";
 
 // Production runtime: Supabase credentials are supplied through Vercel environment variables; Gemini remains optional.
+import {
+  handleCreateJobSlip,
+  handleGetMyPassbook,
+  handleCancelJobSlip,
+  handlePreviewJobSlip,
+  handleRespondJobSlip,
+  handlePutWorkerRates,
+  handleGetPublicPassbook,
+  handleGetRateGuide,
+} from "./routes/passbook";
+
 export function createServer() {
   const app = express();
   app.use(cors());
@@ -124,6 +135,14 @@ export function createServer() {
   );
   app.post("/api/workers/post-a-need", handlePostANeed);
   app.post("/api/workers/:id/lead", handleRecordLead);
+  app.post("/api/passbook/jobs", handleCreateJobSlip);
+  app.get("/api/passbook/mine", handleGetMyPassbook);
+  app.post("/api/passbook/jobs/:id/cancel", handleCancelJobSlip);
+  app.get("/api/passbook/slips/:token", handlePreviewJobSlip);
+  app.post("/api/passbook/slips/:token/respond", handleRespondJobSlip);
+  app.put("/api/passbook/rates", handlePutWorkerRates);
+  app.get("/api/passbook/workers/:id", handleGetPublicPassbook);
+  app.get("/api/rate-guide", handleGetRateGuide);
   app.post("/api/track-record", handleCreateTrackRecord);
   app.get("/api/workers/:id/track-record", handleGetWorkerTrackRecord);
   app.get("/api/download-zip", (_req, res) => {
