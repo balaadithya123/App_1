@@ -64,13 +64,39 @@ export function isValidPincode(value: string): boolean {
  * A supplier covers a pincode when it lists that exact pincode, or lists one in
  * the same postal district (first 3 digits). Suppliers with no listed pincodes
  * are never excluded by a pincode check.
+ *
+ * Performance Optimization:
+ * - Pre-computes trimmed pincode, validity test, and district prefix outside tight filter loops.
+ * - Avoids re-executing regex checks, string trims, and `slice(0, 3)` calls per supplier and per service pincode.
+ * - Uses indexed loop to prevent array iterator / closure allocations.
  */
-export function supplierCoversPincode(supplier: Pick<Supplier, "service_pincodes">, pincode: string): boolean {
-  const pin = pincode.trim();
-  if (!isValidPincode(pin)) return true;
+export function supplierCoversPincode(
+  supplier: Pick<Supplier, "service_pincodes">,
+  pincode: string,
+  precomputedDistrict?: string | null,
+  precomputedPin?: string,
+): boolean {
+  const pin = precomputedPin ?? pincode.trim();
+  const district =
+    precomputedDistrict !== undefined
+      ? precomputedDistrict
+      : isValidPincode(pin)
+        ? pin.slice(0, 3)
+        : null;
+
+  if (district === null) return true;
+
   const served = supplier.service_pincodes ?? [];
   if (served.length === 0) return true;
-  return served.some((p) => p === pin || p.slice(0, 3) === pin.slice(0, 3));
+
+  for (let i = 0; i < served.length; i++) {
+    const p = served[i];
+    if (p === pin || p.slice(0, 3) === district) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export type SupplierFilters = {
@@ -79,15 +105,31 @@ export type SupplierFilters = {
   pincode: string;
 };
 
-export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters): Supplier[] {
+export function filterSuppliers(
+  suppliers: Supplier[],
+  filters: SupplierFilters,
+): Supplier[] {
   const place = filters.place.trim().toLowerCase();
+  const category = filters.category;
+
+  // Pre-compute pincode parameters outside the supplier filtering loop
+  const pin = filters.pincode.trim();
+  const isValidPin = isValidPincode(pin);
+  const pinDistrict = isValidPin ? pin.slice(0, 3) : null;
+
   return suppliers.filter((s) => {
-    if (filters.category !== "All" && s.category !== filters.category) return false;
+    if (category !== "All" && s.category !== category) return false;
+
     if (place) {
-      const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
-      if (!haystack.includes(place)) return false;
+      const areaMatch = s.area ? s.area.toLowerCase().includes(place) : false;
+      const cityMatch = !areaMatch && s.city ? s.city.toLowerCase().includes(place) : false;
+      if (!areaMatch && !cityMatch) {
+        const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
+        if (!haystack.includes(place)) return false;
+      }
     }
-    return supplierCoversPincode(s, filters.pincode);
+
+    return supplierCoversPincode(s, pin, pinDistrict, pin);
   });
 }
 
