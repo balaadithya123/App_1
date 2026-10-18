@@ -64,13 +64,22 @@ export function isValidPincode(value: string): boolean {
  * A supplier covers a pincode when it lists that exact pincode, or lists one in
  * the same postal district (first 3 digits). Suppliers with no listed pincodes
  * are never excluded by a pincode check.
+ * Performance Optimization:
+ * - Uses an indexed for loop to avoid creating closure instances with .some().
  */
 export function supplierCoversPincode(supplier: Pick<Supplier, "service_pincodes">, pincode: string): boolean {
   const pin = pincode.trim();
   if (!isValidPincode(pin)) return true;
-  const served = supplier.service_pincodes ?? [];
-  if (served.length === 0) return true;
-  return served.some((p) => p === pin || p.slice(0, 3) === pin.slice(0, 3));
+  const served = supplier.service_pincodes;
+  if (!served || served.length === 0) return true;
+  const district = pin.slice(0, 3);
+  for (let i = 0; i < served.length; i++) {
+    const p = served[i];
+    if (p === pin || p.slice(0, 3) === district) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export type SupplierFilters = {
@@ -84,8 +93,15 @@ export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters)
   return suppliers.filter((s) => {
     if (filters.category !== "All" && s.category !== filters.category) return false;
     if (place) {
-      const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
-      if (!haystack.includes(place)) return false;
+      // Performance Optimization: Fast-path individual checks on lowercased area/city
+      // to avoid template string concatenation for single-field matches.
+      const area = s.area ? s.area.toLowerCase() : "";
+      const city = s.city ? s.city.toLowerCase() : "";
+      if (!area.includes(place) && !city.includes(place)) {
+        if (!area || !city || !`${area} ${city}`.includes(place)) {
+          return false;
+        }
+      }
     }
     return supplierCoversPincode(s, filters.pincode);
   });
@@ -119,11 +135,26 @@ export function formatPrice(product: Pick<SupplierProduct, "indicative_price" | 
   return `₹${amount}${product.unit ? ` / ${product.unit}` : ""}`;
 }
 
-/** Newest price update across a supplier's products, or null when none is dated. */
+/**
+ * Newest price update across a supplier's products, or null when none is dated.
+ * Performance Optimization:
+ * - Single-pass loop avoiding dynamic array allocations (.map, .filter, .reduce)
+ *   and object allocations by using primitive Date.parse() timestamp comparisons.
+ */
 export function latestPriceUpdate(products: SupplierProduct[]): string | null {
-  const dates = products.map((p) => p.price_updated_at).filter((d): d is string => Boolean(d));
-  if (dates.length === 0) return null;
-  return dates.reduce((a, b) => (new Date(a).getTime() >= new Date(b).getTime() ? a : b));
+  let latestStr: string | null = null;
+  let latestTime = -1;
+  for (let i = 0; i < products.length; i++) {
+    const dateStr = products[i].price_updated_at;
+    if (dateStr) {
+      const time = Date.parse(dateStr);
+      if (!Number.isNaN(time) && time >= latestTime) {
+        latestTime = time;
+        latestStr = dateStr;
+      }
+    }
+  }
+  return latestStr;
 }
 
 const PINCODE_KEY = "builderco.materials.pincode";
