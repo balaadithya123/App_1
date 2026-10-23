@@ -87,10 +87,14 @@ export const MIN_LISTED_FOR_GUIDE = 3;
 
 export const MAX_RATE = 1_000_000;
 
-/** Linear-interpolated percentile of a numeric list (p in 0..1). */
-export function percentile(values: number[], p: number): number {
+/** Linear-interpolated percentile of a numeric list (p in 0..1).
+ * Performance Optimization:
+ * - Accepts optional `isSorted` flag to avoid redundant array cloning and O(N log N) sorting
+ *   when computing multiple percentiles on the same dataset.
+ */
+export function percentile(values: number[], p: number, isSorted = false): number {
   if (values.length === 0) return NaN;
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = isSorted ? values : [...values].sort((a, b) => a - b);
   if (sorted.length === 1) return sorted[0];
   const pos = (sorted.length - 1) * Math.min(1, Math.max(0, p));
   const lo = Math.floor(pos);
@@ -126,13 +130,17 @@ export function summarizeRates(
   if (source === "none") {
     return { unit, source, sample_size: Math.max(jobs.length, listed.length), low: null, typical: null, high: null };
   }
+
+  // Pre-sort sample dataset once to eliminate 2 out of 3 redundant sort passes & array allocations
+  const sortedSample = [...sample].sort((a, b) => a - b);
+
   return {
     unit,
     source,
     sample_size: sample.length,
-    low: roundTo5(percentile(sample, 0.25)),
-    typical: roundTo5(percentile(sample, 0.5)),
-    high: roundTo5(percentile(sample, 0.75)),
+    low: roundTo5(percentile(sortedSample, 0.25, true)),
+    typical: roundTo5(percentile(sortedSample, 0.5, true)),
+    high: roundTo5(percentile(sortedSample, 0.75, true)),
   };
 }
 
