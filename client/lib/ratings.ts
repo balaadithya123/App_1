@@ -10,21 +10,65 @@ export interface CustomerRating {
 
 const STORAGE_KEY = "localworker_customer_ratings";
 
-function getAllStoredRatings(): CustomerRating[] {
-  if (typeof window === "undefined") return [];
+let cachedRaw: string | null = null;
+let cachedAllRatings: CustomerRating[] = [];
+let cachedMapByWorkerId: Map<string, CustomerRating[]> = new Map();
+
+function syncRatingsCache(): void {
+  if (typeof window === "undefined") {
+    cachedRaw = null;
+    cachedAllRatings = [];
+    cachedMapByWorkerId = new Map();
+    return;
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (raw === cachedRaw) return;
+
+    cachedRaw = raw;
+    if (!raw) {
+      cachedAllRatings = [];
+      cachedMapByWorkerId = new Map();
+      return;
+    }
+
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    const list: CustomerRating[] = Array.isArray(parsed) ? parsed : [];
+    cachedAllRatings = list;
+
+    // Group by workerId in O(M) time for O(1) worker rating lookups
+    const map = new Map<string, CustomerRating[]>();
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      if (item && item.workerId) {
+        let group = map.get(item.workerId);
+        if (!group) {
+          group = [];
+          map.set(item.workerId, group);
+        }
+        group.push(item);
+      }
+    }
+    cachedMapByWorkerId = map;
   } catch {
-    return [];
+    cachedAllRatings = [];
+    cachedMapByWorkerId = new Map();
   }
 }
 
+function getAllStoredRatings(): CustomerRating[] {
+  syncRatingsCache();
+  return cachedAllRatings;
+}
+
+/**
+ * Performance Optimization:
+ * Retrieves ratings for a given workerId using O(1) Map lookup from cached localStorage ratings.
+ * Avoids re-parsing JSON and re-filtering arrays per worker on every card render.
+ */
 export function getCustomerRatings(workerId: string): CustomerRating[] {
-  const all = getAllStoredRatings();
-  return all.filter((r) => r.workerId === workerId);
+  syncRatingsCache();
+  return cachedMapByWorkerId.get(workerId) || [];
 }
 
 export function saveCustomerRating(data: {
