@@ -119,11 +119,28 @@ export function formatPrice(product: Pick<SupplierProduct, "indicative_price" | 
   return `₹${amount}${product.unit ? ` / ${product.unit}` : ""}`;
 }
 
-/** Newest price update across a supplier's products, or null when none is dated. */
+/**
+ * Newest price update across a supplier's products, or null when none is dated.
+ * Performance Optimization:
+ * - Replaces temporary array allocations (.map() + .filter()) with a single-pass loop.
+ * - Avoids repeated Date parsing overhead inside .reduce(). Parses each date string once.
+ */
 export function latestPriceUpdate(products: SupplierProduct[]): string | null {
-  const dates = products.map((p) => p.price_updated_at).filter((d): d is string => Boolean(d));
-  if (dates.length === 0) return null;
-  return dates.reduce((a, b) => (new Date(a).getTime() >= new Date(b).getTime() ? a : b));
+  let latest: string | null = null;
+  let maxTime = -Infinity;
+
+  for (let i = 0; i < products.length; i++) {
+    const dateStr = products[i].price_updated_at;
+    if (dateStr) {
+      const time = new Date(dateStr).getTime();
+      if (!Number.isNaN(time) && time > maxTime) {
+        maxTime = time;
+        latest = dateStr;
+      }
+    }
+  }
+
+  return latest;
 }
 
 const PINCODE_KEY = "builderco.materials.pincode";
