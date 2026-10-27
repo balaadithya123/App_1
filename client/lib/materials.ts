@@ -70,7 +70,12 @@ export function supplierCoversPincode(supplier: Pick<Supplier, "service_pincodes
   if (!isValidPincode(pin)) return true;
   const served = supplier.service_pincodes ?? [];
   if (served.length === 0) return true;
-  return served.some((p) => p === pin || p.slice(0, 3) === pin.slice(0, 3));
+  const pinPrefix = pin.slice(0, 3);
+  for (let i = 0; i < served.length; i++) {
+    const p = served[i];
+    if (p === pin || p.slice(0, 3) === pinPrefix) return true;
+  }
+  return false;
 }
 
 export type SupplierFilters = {
@@ -84,8 +89,19 @@ export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters)
   return suppliers.filter((s) => {
     if (filters.category !== "All" && s.category !== filters.category) return false;
     if (place) {
-      const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
-      if (!haystack.includes(place)) return false;
+      const area = s.area ? s.area.toLowerCase() : "";
+      const city = s.city ? s.city.toLowerCase() : "";
+      if (area && city) {
+        if (!area.includes(place) && !city.includes(place) && !`${area} ${city}`.includes(place)) {
+          return false;
+        }
+      } else if (area) {
+        if (!area.includes(place)) return false;
+      } else if (city) {
+        if (!city.includes(place)) return false;
+      } else {
+        return false;
+      }
     }
     return supplierCoversPincode(s, filters.pincode);
   });
