@@ -50,6 +50,7 @@ describe("materials helpers", () => {
     expect(filterSuppliers(all, { category: "All", place: "", pincode: "" })).toHaveLength(2);
     expect(filterSuppliers(all, { category: "Cement", place: "", pincode: "" })).toEqual([other]);
     expect(filterSuppliers(all, { category: "All", place: "guindy", pincode: "" })).toEqual([base]);
+    expect(filterSuppliers(all, { category: "All", place: "guindy chennai", pincode: "" })).toEqual([base]);
     expect(filterSuppliers(all, { category: "All", place: "", pincode: "605602" })).toEqual([other]);
   });
   it("builds a multi-item WhatsApp quote message", () => {
