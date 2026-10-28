@@ -68,9 +68,16 @@ export function isValidPincode(value: string): boolean {
 export function supplierCoversPincode(supplier: Pick<Supplier, "service_pincodes">, pincode: string): boolean {
   const pin = pincode.trim();
   if (!isValidPincode(pin)) return true;
-  const served = supplier.service_pincodes ?? [];
-  if (served.length === 0) return true;
-  return served.some((p) => p === pin || p.slice(0, 3) === pin.slice(0, 3));
+  const served = supplier.service_pincodes;
+  if (!served || served.length === 0) return true;
+  const pinPrefix = pin.slice(0, 3);
+  for (let i = 0; i < served.length; i++) {
+    const p = served[i];
+    if (p === pin || p.slice(0, 3) === pinPrefix) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export type SupplierFilters = {
@@ -79,15 +86,49 @@ export type SupplierFilters = {
   pincode: string;
 };
 
+/**
+ * Fast supplier search filter with minimal allocations per item.
+ * Performance Optimization:
+ * - Pre-computes normalized place and pincode search parameters outside the loop.
+ * - Avoids string template allocations (`${s.area} ${s.city}`) per supplier pass.
+ * - Replaces `.some()` array iterator callbacks with direct indexed loops.
+ */
 export function filterSuppliers(suppliers: Supplier[], filters: SupplierFilters): Supplier[] {
+  const targetCategory = filters.category;
   const place = filters.place.trim().toLowerCase();
+  const pin = filters.pincode.trim();
+  const checkPin = isValidPincode(pin);
+  const pinPrefix = checkPin ? pin.slice(0, 3) : "";
+
   return suppliers.filter((s) => {
-    if (filters.category !== "All" && s.category !== filters.category) return false;
+    if (targetCategory !== "All" && s.category !== targetCategory) return false;
+
     if (place) {
-      const haystack = `${s.area ?? ""} ${s.city ?? ""}`.toLowerCase();
-      if (!haystack.includes(place)) return false;
+      const areaLower = s.area ? s.area.toLowerCase() : "";
+      const cityLower = s.city ? s.city.toLowerCase() : "";
+      if (!areaLower.includes(place) && !cityLower.includes(place)) {
+        if (!areaLower || !cityLower || !`${areaLower} ${cityLower}`.includes(place)) {
+          return false;
+        }
+      }
     }
-    return supplierCoversPincode(s, filters.pincode);
+
+    if (checkPin) {
+      const served = s.service_pincodes;
+      if (served && served.length > 0) {
+        let covered = false;
+        for (let i = 0; i < served.length; i++) {
+          const p = served[i];
+          if (p === pin || p.slice(0, 3) === pinPrefix) {
+            covered = true;
+            break;
+          }
+        }
+        if (!covered) return false;
+      }
+    }
+
+    return true;
   });
 }
 
