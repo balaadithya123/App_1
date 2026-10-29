@@ -10,11 +10,17 @@ export interface CustomerRating {
 
 const STORAGE_KEY = "localworker_customer_ratings";
 
+/**
+ * Fast path retrieval of local ratings.
+ * Performance Optimization:
+ * Short-circuits when localStorage is empty, missing, or '[]' to avoid unnecessary JSON.parse calls
+ * during frequent worker card renders and list computations.
+ */
 function getAllStoredRatings(): CustomerRating[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw || raw === "[]") return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
