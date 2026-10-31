@@ -239,7 +239,7 @@ export default function Index() {
     }
 
     // Fallback to top verified pros if exact locality has no registered workers yet
-    return { displayPros: sorted.slice(0, 6), isExactLocationMatch: false };
+    return { displayPros: [], isExactLocationMatch: false };
   }, [workers, location]);
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
@@ -275,10 +275,10 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800 pb-24 font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#09090B] text-[#141518] dark:text-[#FAFAFA] flex flex-col selection:bg-[#F7C7B7] dark:selection:bg-neutral-800 pb-28 md:pb-10 font-sans">
       {/* TOP HEADER — Clean, Polished Translucent Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 lg:gap-6 px-4 sm:px-6 lg:px-8 relative">
+      <header className="sticky top-0 z-40 w-full border-b border-[#E8E2D9] dark:border-[#27272A] bg-[#FAF8F5]/90 dark:bg-[#09090B]/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-3 lg:gap-6 px-4 sm:px-6 lg:px-8 relative">
           {/* Left: Brand Logo & Location Chip */}
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <Link
@@ -421,57 +421,16 @@ export default function Index() {
             </div>
           </div>
 
-          {/* Center: Desktop Search Input (Clean & Sleek) */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex flex-1 max-w-md min-w-0"
-          >
-            <div className="relative flex items-center w-full">
-              <Search
-                size={14}
-                className="absolute left-3.5 text-[#71717A] dark:text-[#A1A1AA] pointer-events-none"
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search electricians, plumbers, carpenters..."
-                className="h-9.5 w-full rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-[#141416] pl-9.5 pr-8 text-xs font-normal text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#71717A] dark:placeholder:text-[#A1A1AA] outline-none transition focus:bg-white dark:focus:bg-[#0D0D10] focus:border-neutral-400 dark:focus:border-neutral-600 focus:ring-2 focus:ring-black/5 dark:focus:ring-white/5 shadow-2xs"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 text-[#71717A] hover:text-[#09090B] dark:hover:text-white cursor-pointer"
-                >
-                  <X size={13} />
-                </button>
-              )}
-            </div>
-          </form>
-
           {/* Right: Actions & Profile */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 text-xs font-semibold text-[#52525B] dark:text-[#A1A1AA]">
-              <Link
-                to="/saved"
-                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-              >
-                <Heart size={14} />
-                <span>Saved</span>
-              </Link>
-              <Link
-                to="/inbox"
-                className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-              >
-                <Clock size={14} />
-                <span>Inbox</span>
-                {dueCount > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white shadow-xs">
-                    {dueCount > 9 ? "9+" : dueCount}
-                  </span>
-                )}
+            {/* Desktop navigation stays in the header; mobile uses the floating dock below. */}
+            <nav aria-label="Primary navigation" className="hidden lg:flex items-center gap-1 text-[13px] font-semibold text-[#5A5D64] dark:text-[#A1A1AA]">
+              <Link to="/home" aria-current={routerLocation.pathname === "/home" || routerLocation.pathname === "/app" ? "page" : undefined} className={routerLocation.pathname === "/home" || routerLocation.pathname === "/app" ? "rounded-full bg-[#FCE4D8] px-3.5 py-2 text-[#C94725] dark:bg-[#42251D] dark:text-[#FF9A79]" : "rounded-full px-3.5 py-2 transition hover:bg-[#F4EFEA] hover:text-[#141518] dark:hover:bg-white/10 dark:hover:text-white"}>Home</Link>
+              <Link to="/search" aria-current={routerLocation.pathname === "/search" ? "page" : undefined} className={routerLocation.pathname === "/search" ? "rounded-full bg-[#FCE4D8] px-3.5 py-2 text-[#C94725] dark:bg-[#42251D] dark:text-[#FF9A79]" : "rounded-full px-3.5 py-2 transition hover:bg-[#F4EFEA] hover:text-[#141518] dark:hover:bg-white/10 dark:hover:text-white"}>Search</Link>
+              <Link to="/saved" aria-current={routerLocation.pathname === "/saved" ? "page" : undefined} className={routerLocation.pathname === "/saved" ? "rounded-full bg-[#FCE4D8] px-3.5 py-2 text-[#C94725] dark:bg-[#42251D] dark:text-[#FF9A79]" : "rounded-full px-3.5 py-2 transition hover:bg-[#F4EFEA] hover:text-[#141518] dark:hover:bg-white/10 dark:hover:text-white"}>Saved</Link>
+              <Link to="/inbox" aria-current={routerLocation.pathname === "/inbox" ? "page" : undefined} className="relative rounded-full px-3.5 py-2 transition hover:bg-[#F4EFEA] hover:text-[#141518] dark:hover:bg-white/10 dark:hover:text-white">
+                Inbox
+                {dueCount > 0 && <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#DE542C] px-1 text-[10px] font-bold text-white">{dueCount > 9 ? "9+" : dueCount}</span>}
               </Link>
             </nav>
 
@@ -517,225 +476,137 @@ export default function Index() {
       </header>
 
       {/* MAIN CONTENT — Clean max-w-5xl Desktop Canvas */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 sm:px-6 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
-        {/* 1. "VERIFIED PROS NEAR YOU" SECTION */}
-        <section aria-labelledby="verified-pros-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-0.5">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2
-                  id="verified-pros-heading"
-                  className="text-lg sm:text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]"
-                >
-                  Verified pros near you
-                </h2>
-                {location && (
-                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-white/10 px-2.5 py-0.5 text-xs font-medium text-[#52525B] dark:text-[#D4D4D8]">
-                    <MapPin size={11} className="text-neutral-500" />
-                    <span>{location}</span>
-                  </span>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Top-rated background-checked specialists ready for direct booking
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleGps}
-                disabled={gpsLoading}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3 py-1 text-xs font-medium text-[#52525B] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white hover:border-neutral-500 transition shadow-2xs cursor-pointer"
-                title="Refresh location via GPS"
-              >
-                <Navigation size={12} className={gpsLoading ? "animate-spin text-current" : "text-current"} />
-                <span>{gpsLoading ? "Locating..." : "Refresh GPS"}</span>
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8 pb-10 space-y-10 sm:space-y-14">
+        {/* Editorial hero */}
+        <section className="relative isolate overflow-hidden rounded-[30px] sm:rounded-[36px] border border-[#EAD9CD] bg-[#F3E5DA] dark:border-[#3B2D28] dark:bg-[#211B19] min-h-[390px] sm:min-h-[430px]">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#FBF3EC] via-[#F5E8DE] to-[#EED5C5] dark:from-[#241D1A] dark:via-[#211B19] dark:to-[#34231E]" />
+          <div className="absolute right-[-8%] bottom-0 h-[82%] w-[70%] sm:w-[58%] opacity-75 dark:opacity-45" aria-hidden="true">
+            <svg viewBox="0 0 620 430" className="h-full w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M70 430V204L280 58L510 204V430H70Z" fill="#D8B9A3" opacity=".55"/>
+              <path d="M105 430V218L280 94L475 218V430H105Z" fill="#F9F0E8" stroke="#B88F77" strokeWidth="5"/>
+              <path d="M70 208L280 58L510 208" stroke="#9F7158" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M205 430V274C205 248 226 227 252 227H312C338 227 359 248 359 274V430" fill="#C99F83" stroke="#A87D63" strokeWidth="5"/>
+              <path d="M137 252H190V309H137V252ZM375 252H435V309H375V252Z" fill="#A9B7B5" stroke="#9A7865" strokeWidth="5"/>
+              <path d="M164 252V309M137 280H190M405 252V309M375 280H435" stroke="#F8EEE6" strokeWidth="4"/>
+              <path d="M30 430C36 374 49 340 76 315C103 339 115 376 119 430" fill="#87947C"/>
+              <path d="M10 430C14 386 22 357 45 333C68 357 75 389 78 430" fill="#A4AE91"/>
+              <path d="M485 430C490 365 516 324 548 298C580 324 603 368 610 430" fill="#7C8B72"/>
+              <path d="M510 430C514 382 530 351 550 333C570 351 587 386 591 430" fill="#9EAA8C"/>
+              <circle cx="505" cy="88" r="43" fill="#F7D7B9" opacity=".7"/>
+              <path d="M0 430H620" stroke="#B88F77" strokeWidth="5"/>
+            </svg>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FBF3EC] via-[#FBF3EC]/95 to-transparent dark:from-[#241D1A] dark:via-[#241D1A]/90 dark:to-transparent" />
+          <div className="relative z-10 flex min-h-[390px] sm:min-h-[430px] max-w-2xl flex-col justify-center px-5 py-9 sm:px-10 sm:py-12">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#E6CDBD] bg-white/60 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#A34A31] dark:border-[#684234] dark:bg-black/20 dark:text-[#F6A184]">
+              <ShieldCheck size={13} /> Local help, built on trust
+            </span>
+            <h1 className="mt-5 max-w-xl text-[clamp(2.5rem,7vw,4.8rem)] font-bold leading-[1.02] tracking-[-0.055em] text-[#17191D] dark:text-[#FFF8F2]">
+              The right people.
+              <span className="block text-[#DE542C]">The right help.</span>
+            </h1>
+            <p className="mt-4 max-w-md text-sm sm:text-base leading-relaxed text-[#5A5D64] dark:text-[#D4C6BD]">
+              Find trusted local professionals for every job, without the middleman.
+            </p>
+            <form onSubmit={handleSearchSubmit} className="mt-7 flex w-full max-w-[560px] items-center gap-2 rounded-full border border-[#E9D9CF] bg-white/95 p-1.5 pl-4 shadow-[0_12px_34px_rgba(76,48,31,0.12)] dark:border-white/10 dark:bg-[#171719]/95">
+              <Search size={19} className="shrink-0 text-[#8B817B]" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="What do you need help with?"
+                aria-label="Search services"
+                className="h-11 min-w-0 flex-1 bg-transparent text-sm text-[#141518] outline-none placeholder:text-[#938A84] dark:text-white"
+              />
+              <button type="submit" aria-label="Search" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F4512C] text-white shadow-sm transition hover:bg-[#D94423] active:scale-95">
+                <ChevronRight size={22} />
               </button>
-
-              <Link
-                to={
-                  location
-                    ? `/search?location=${encodeURIComponent(location)}`
-                    : "/search"
-                }
-                className="text-xs sm:text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:underline inline-flex items-center gap-0.5 transition"
-              >
-                <span>View all</span>
-                <ChevronRight size={14} />
-              </Link>
+            </form>
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold text-[#6E625B] dark:text-[#D4C6BD]">
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#DE542C]" /> Verified local trades</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#DE542C]" /> Direct contact</span>
+              <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} className="text-[#DE542C]" /> Zero commission</span>
             </div>
           </div>
-
-          {!isExactLocationMatch && location && displayPros.length > 0 && (
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-2.5 text-xs text-[#52525B] dark:text-[#A1A1AA]">
-              <span>
-                No pros registered strictly inside <strong>{location}</strong> yet. Showing top verified professionals nearby:
-              </span>
-              <button
-                type="button"
-                onClick={handleGps}
-                disabled={gpsLoading}
-                className="ml-2 shrink-0 text-xs font-bold text-[#09090B] dark:text-white underline cursor-pointer"
-              >
-                Re-check GPS
-              </button>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-5 overflow-x-auto pb-2 scrollbar-none snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-[240px] sm:w-[260px] md:w-full shrink-0 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 shadow-sm animate-pulse space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
-                      <div className="space-y-1.5">
-                        <div className="h-4 w-24 rounded bg-zinc-100 dark:bg-zinc-800" />
-                        <div className="h-3 w-16 rounded bg-zinc-100 dark:bg-zinc-800" />
-                      </div>
-                    </div>
-                    <div className="h-6 w-12 rounded bg-zinc-100 dark:bg-zinc-800" />
-                  </div>
-                  <div className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800" />
-                  <div className="flex gap-2 pt-2 border-t border-[#E4E4E7] dark:border-[#27272A]">
-                    <div className="h-7 flex-1 rounded bg-zinc-100 dark:bg-zinc-800" />
-                    <div className="h-7 flex-1 rounded bg-zinc-100 dark:bg-zinc-800" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : displayPros.length > 0 ? (
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-5 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-none snap-x snap-mandatory md:snap-none -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0 md:[&>article]:w-full md:[&>article]:max-w-none">
-              {displayPros.map((worker) => (
-                <TrustStripWorkerCard key={worker.id} worker={worker} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center shadow-xs">
-              <p className="text-sm font-normal text-[#71717A] dark:text-[#A1A1AA]">
-                No verified professionals found near{" "}
-                <span className="font-semibold text-[#09090B] dark:text-white">
-                  {location || "your area"}
-                </span>
-                .
-              </p>
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleGps}
-                  disabled={gpsLoading}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-4 py-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer shadow-xs"
-                >
-                  <Navigation
-                    size={13}
-                    className={gpsLoading ? "animate-spin" : ""}
-                  />
-                  <span>Check GPS</span>
-                </button>
-                <Link
-                  to="/search"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] dark:hover:bg-neutral-200 px-4.5 py-2 text-xs font-semibold shadow-xs"
-                >
-                  <span>Browse all workers</span>
-                </Link>
-              </div>
-            </div>
-          )}
         </section>
 
-        {/* 2. "EXPLORE BY CATEGORY" SECTION */}
+        {/* Service discovery */}
         <section aria-labelledby="categories-heading">
-          <div className="flex items-center justify-between mb-4 px-0.5">
+          <div className="mb-5 flex items-end justify-between gap-3">
             <div>
-              <h2
-                id="categories-heading"
-                className="text-lg sm:text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]"
-              >
-                Explore by trade category
-              </h2>
-              <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Choose a specialized service to find available neighborhood technicians
-              </p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#DE542C]">Find your specialist</p>
+              <h2 id="categories-heading" className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[#17191D] dark:text-white">Explore services</h2>
             </div>
+            <Link to="/search" className="mb-1 inline-flex items-center gap-1 text-sm font-semibold text-[#DE542C] hover:text-[#B83D20]">View all <ChevronRight size={17} /></Link>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {categories.map(({ name, icon: Icon, countText }) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => handleCategoryClick(name)}
-                className="group flex items-start sm:items-center gap-3.5 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-4.5 text-left shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99] cursor-pointer"
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-[#09090B] dark:text-[#FAFAFA] transition group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black border border-black/[0.04] dark:border-white/[0.06]">
-                  <Icon size={19} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition-colors">
-                    {name}
-                  </span>
-                  <span className="text-xs text-[#71717A] dark:text-[#A1A1AA] line-clamp-1 mt-0.5 font-normal">
-                    {countText}
-                  </span>
-                </div>
+              <button key={name} type="button" onClick={() => handleCategoryClick(name)} className="group flex min-h-[126px] flex-col items-start justify-between rounded-[22px] border border-[#EDE0D7] bg-white/80 p-4 text-left shadow-[0_4px_14px_rgba(66,43,30,0.035)] transition hover:-translate-y-0.5 hover:border-[#E8B9A5] hover:bg-white hover:shadow-[0_12px_24px_rgba(66,43,30,0.08)] dark:border-white/10 dark:bg-[#171719] dark:hover:bg-[#211B19]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FFF0E8] text-[#E6532D] dark:bg-[#42251D] dark:text-[#FF9A79]"><Icon size={20} strokeWidth={2.1} /></span>
+                <span>
+                  <span className="block text-sm font-bold text-[#17191D] dark:text-white">{name}</span>
+                  <span className="mt-1 block text-[10px] leading-snug text-[#8A817B] dark:text-[#A1A1AA] line-clamp-2">{countText}</span>
+                </span>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Fair Rate Guide: what jobs usually cost, before you call */}
-        <section aria-labelledby="rate-guide-heading">
-          <Link
-            to="/rate-guide"
-            className="group flex items-center gap-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99]"
-          >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-black/[0.04] dark:border-white/[0.06]">
-              <IndianRupee size={19} />
+        {/* Only real professionals returned by the workers API are shown. */}
+        <section aria-labelledby="verified-pros-heading">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#DE542C]">Registered in your area</p>
+              <h2 id="verified-pros-heading" className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[#17191D] dark:text-white">Professionals near you</h2>
+              <p className="mt-1 text-sm text-[#7A716B] dark:text-[#A1A1AA]">{location ? "Showing registered professionals for " + location : "Showing registered local professionals"}</p>
             </div>
-            <div className="min-w-0 flex-1">
-              <h2 id="rate-guide-heading" className="text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                Fair rate guide
-              </h2>
-              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                See what a job usually costs in your area before you call
-              </p>
+            <button type="button" onClick={handleGps} disabled={gpsLoading} className="inline-flex items-center gap-2 rounded-full border border-[#E7D9D0] bg-white/80 px-4 py-2 text-xs font-semibold text-[#625A55] transition hover:border-[#DE542C] hover:text-[#DE542C] dark:border-white/10 dark:bg-[#171719] dark:text-[#D4D4D8]">
+              <Navigation size={14} className={gpsLoading ? "animate-spin" : ""} /> {gpsLoading ? "Locating…" : "Refresh location"}
+            </button>
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => <div key={i} className="h-44 animate-pulse rounded-[22px] border border-[#EDE0D7] bg-white/80 dark:border-white/10 dark:bg-[#171719]" />)}
             </div>
-            <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
-          </Link>
+          ) : displayPros.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {displayPros.map((worker) => <TrustStripWorkerCard key={worker.id} worker={worker} />)}
+            </div>
+          ) : (
+            <div className="rounded-[24px] border border-dashed border-[#DCC9BC] bg-white/65 px-6 py-10 text-center dark:border-white/15 dark:bg-[#171719]">
+              <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF0E8] text-[#DE542C] dark:bg-[#42251D]"><ShieldCheck size={22} /></span>
+              <h3 className="mt-4 text-base font-bold text-[#17191D] dark:text-white">No registered professionals here yet</h3>
+              <p className="mx-auto mt-1 max-w-md text-sm text-[#7A716B] dark:text-[#A1A1AA]">We only show real registered profiles. Try another area or browse all services.</p>
+              <Link to="/search" className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#DE542C] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#C84725]">Browse professionals <ChevronRight size={15} /></Link>
+            </div>
+          )}
         </section>
 
-        {/* 3. MATERIALS & SUPPLIERS (separate from worker categories) */}
-        <section aria-labelledby="materials-heading">
-          <Link
-            to="/materials"
-            className="group flex items-center gap-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99]"
-          >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-black/[0.04] dark:border-white/[0.06]">
-              <Package size={19} />
+        {/* Trust statement */}
+        <section className="relative overflow-hidden rounded-[26px] bg-[#17191D] px-5 py-7 text-white sm:px-8 sm:py-8">
+          <div className="absolute -right-8 -top-16 h-56 w-56 rounded-full border border-white/10" />
+          <div className="absolute -right-1 top-[-4.5rem] h-56 w-56 rounded-full border border-[#DE542C]/35" />
+          <div className="relative flex items-center gap-4 sm:gap-6">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#DE542C] text-white"><ShieldCheck size={27} /></span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#F39A7D]">Built around trust</p>
+              <h2 className="mt-1 text-lg sm:text-2xl font-bold">Trusted & verified professionals</h2>
+              <p className="mt-1 text-xs sm:text-sm text-white/65">Clear profiles. Direct contact. No broker commission.</p>
             </div>
-            <div className="min-w-0 flex-1">
-              <h2 id="materials-heading" className="text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                Need materials?
-              </h2>
-              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Sand, stone, cement, tools & rentals from verified suppliers
-              </p>
-              <div className="mt-2 flex gap-1.5" aria-hidden="true">
-                {["Sand", "Stone & Aggregates", "Cement", "Bricks & Blocks", "Steel", "Tools & Rental"].map((c) => {
-                  const { icon: CatIcon, tone } = getCategoryMeta(c);
-                  return (
-                    <span key={c} className={`flex h-6 w-6 items-center justify-center rounded-md ${tone}`}>
-                      <CatIcon size={13} />
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-            <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
+          </div>
+        </section>
+
+        {/* Useful links */}
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link to="/rate-guide" className="group flex items-center gap-4 rounded-[22px] border border-[#EDE0D7] bg-white/80 p-5 transition hover:border-[#E8B9A5] hover:bg-white dark:border-white/10 dark:bg-[#171719]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFF0E8] text-[#DE542C] dark:bg-[#42251D]"><IndianRupee size={21} /></span>
+            <span className="min-w-0 flex-1"><span className="block font-bold text-[#17191D] dark:text-white">Fair rate guide</span><span className="mt-1 block text-xs text-[#7A716B] dark:text-[#A1A1AA]">Know typical job costs before you call</span></span>
+            <ChevronRight size={19} className="text-[#9B8C82] transition group-hover:translate-x-1 group-hover:text-[#DE542C]" />
+          </Link>
+          <Link to="/materials" className="group flex items-center gap-4 rounded-[22px] border border-[#EDE0D7] bg-white/80 p-5 transition hover:border-[#E8B9A5] hover:bg-white dark:border-white/10 dark:bg-[#171719]">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFF0E8] text-[#DE542C] dark:bg-[#42251D]"><Package size={21} /></span>
+            <span className="min-w-0 flex-1"><span className="block font-bold text-[#17191D] dark:text-white">Materials & suppliers</span><span className="mt-1 block text-xs text-[#7A716B] dark:text-[#A1A1AA]">Source materials and rentals from local suppliers</span></span>
+            <ChevronRight size={19} className="text-[#9B8C82] transition group-hover:translate-x-1 group-hover:text-[#DE542C]" />
           </Link>
         </section>
       </main>
