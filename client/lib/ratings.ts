@@ -87,8 +87,8 @@ export function getComputedWorkerRating(worker: {
   rating?: number;
   reviews_count?: number;
 }): { rating: number; reviewsCount: number; userRated: boolean } {
-  const baseRating = Number(worker.avg_rating || worker.rating || 4.8);
-  const baseCount = Number(worker.reviews_count || 18);
+  const baseRating = Number(worker.avg_rating || worker.rating || 0);
+  const baseCount = Number(worker.reviews_count || 0);
 
   const customerRatings = getCustomerRatings(worker.id);
   if (customerRatings.length === 0) {
