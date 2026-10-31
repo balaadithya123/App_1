@@ -66,7 +66,6 @@ function RouteLoadingFallback() {
 function RootRoute() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
-  const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
     const isNativeApp = Capacitor.isNativePlatform();
@@ -79,7 +78,6 @@ function RootRoute() {
 
     void supabase.auth.getSession().then(({ data }) => {
       if (data.session?.user) {
-        setIsAuth(true);
         const role = data.session.user.user_metadata?.role;
         if (role === "worker") {
           navigate("/worker-dashboard", { replace: true });
@@ -88,6 +86,7 @@ function RootRoute() {
         } else {
           navigate("/home", { replace: true });
         }
+        setChecking(false);
       } else if (isNativeApp) {
         navigate("/home", { replace: true });
         setChecking(false);
@@ -98,7 +97,6 @@ function RootRoute() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
       if (s?.user) {
-        setIsAuth(true);
         const role = s.user.user_metadata?.role;
         if (role === "worker") {
           navigate("/worker-dashboard", { replace: true });
@@ -107,8 +105,8 @@ function RootRoute() {
         } else {
           navigate("/home", { replace: true });
         }
+        setChecking(false);
       } else {
-        setIsAuth(false);
         if (isNativeApp) navigate("/home", { replace: true });
         setChecking(false);
       }
@@ -117,7 +115,7 @@ function RootRoute() {
     return () => listener.subscription.unsubscribe();
   }, [navigate]);
 
-  if (checking || isAuth) {
+  if (checking) {
     return <RouteLoadingFallback />;
   }
 
