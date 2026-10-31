@@ -711,7 +711,7 @@ export default function SearchResults() {
       )}
 
       {/* 2. COMPACT TOOLBAR & FILTER STRIP */}
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
+      <div className="mb-5 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         {/* Count and quick filters */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Active Standard Location Pill with GPS trigger */}
@@ -809,11 +809,11 @@ export default function SearchResults() {
         </div>
 
         {/* Segmented Type Switcher (All / Workers / Agencies) */}
-        <div className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-0.5 text-xs shadow-sm">
+        <div className="inline-flex w-full max-w-full rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-0.5 text-xs shadow-sm sm:w-auto">
           <button
             type="button"
             onClick={() => handleTypeChange("all")}
-            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+            className={`flex-1 rounded-full px-3 py-2 text-center font-semibold transition cursor-pointer sm:flex-none sm:py-1 ${
               searchType === "all"
                 ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
                 : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
