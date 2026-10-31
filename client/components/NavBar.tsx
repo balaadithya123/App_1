@@ -75,7 +75,7 @@ export default function NavBar() {
   const tabs = isWorker ? workerTabs : isAgency ? agencyTabs : customerTabs;
 
   return (
-    <nav aria-label="Mobile navigation" className="md:hidden fixed bottom-3 inset-x-3 z-50 mx-auto flex max-w-[520px] items-stretch justify-around rounded-[24px] border border-[#EADCD2] bg-[#FFFCF9]/95 px-2 py-2 shadow-[0_12px_34px_rgba(63,43,31,0.16)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#171719]/95 dark:shadow-[0_14px_34px_rgba(0,0,0,0.55)]">
+    <nav aria-label="Mobile navigation" className="lg:hidden fixed bottom-3 inset-x-3 z-50 mx-auto flex max-w-[520px] items-stretch justify-around rounded-[24px] border border-[#EADCD2] bg-[#FFFCF9]/95 px-2 py-2 shadow-[0_12px_34px_rgba(63,43,31,0.16)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#171719]/95 dark:shadow-[0_14px_34px_rgba(0,0,0,0.55)]">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
