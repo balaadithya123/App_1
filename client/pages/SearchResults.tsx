@@ -642,209 +642,82 @@ export default function SearchResults() {
       containerWidth="lg"
       className="pb-24"
     >
-      {/* 1. CATEGORY HEADER (When chosen) OR CATEGORY SELECTOR CAROUSEL (Only when "All") */}
-      {category !== "All" ? (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="mb-4 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]"
-        >
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
-                {category}s
+      {/* Search experience: prominent search panel, category navigation and focused filters */}
+      <section className="mb-7 overflow-hidden rounded-[28px] border border-[#E8E7E3] bg-[#F7F6F2] p-4 sm:p-6 lg:p-7 dark:border-white/10 dark:bg-[#151619]">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#85847D]">BUILDERCO · LOCAL SERVICES</p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-[#191A18] dark:text-white sm:text-3xl">
+                {category === "All" ? "Find the right professional." : `Find trusted ${getCategoryHeaderTitle(category).toLowerCase()}.`}
               </h1>
-              <span className="rounded-full bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] border border-black/10 dark:border-white/15 px-2.5 py-0.5 text-xs font-mono font-bold">
-                {matchingWorkers.length} {matchingWorkers.length === 1 ? "pro" : "pros"}
-              </span>
+              <p className="mt-1.5 text-sm text-[#77766F] dark:text-[#A1A1AA]">Skilled people and reliable teams, close to home.</p>
             </div>
-            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
-              Verified {category.toLowerCase()} professionals{targetLocality ? ` near ${targetLocality}` : ""}
-            </p>
+            <Link to="/saved" className="inline-flex h-10 items-center gap-2 rounded-full border border-[#E3E1DB] bg-white px-4 text-sm font-semibold text-[#292A27] transition hover:border-[#BDBAB0] dark:border-white/10 dark:bg-[#202125] dark:text-white">
+              <Heart size={15} className={savedIds.length ? "fill-rose-500 text-rose-500" : ""} /> Saved <span className="text-[#85847D]">{savedIds.length}</span>
+            </Link>
           </div>
 
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.96 }}
-            onClick={() => handleCategoryChange("All")}
-            className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#18191D] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-xs hover:border-black/25 dark:hover:border-white/25 transition cursor-pointer"
-          >
-            <span>All Categories</span>
-          </motion.button>
-        </motion.div>
-      ) : (
-        <div className="mb-4">
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
-            {categoryList.map((cat) => {
-              const Icon = cat.icon;
-              const isSelected =
-                (category === "All" && cat.name === "All") ||
-                category.toLowerCase() === cat.name.toLowerCase();
+          <div className="grid gap-2 rounded-2xl border border-[#E7E5DF] bg-white p-2 shadow-[0_8px_30px_rgba(25,26,24,0.05)] dark:border-white/10 dark:bg-[#202125] sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto]">
+            <label className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 focus-within:bg-[#F7F6F2] dark:focus-within:bg-white/5">
+              <SearchIcon size={19} className="shrink-0 text-[#77766F]" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#929087]">What do you need?</span>
+                <input value={freeTextNeed} onChange={(e) => setFreeTextNeed(e.target.value)} placeholder="Electrician, tap repair, painting..." className="mt-0.5 w-full bg-transparent text-sm font-semibold text-[#22231F] outline-none placeholder:font-normal placeholder:text-[#AAA89F] dark:text-white" />
+              </span>
+              {freeTextNeed && <button type="button" onClick={() => setFreeTextNeed("")} aria-label="Clear search" className="rounded-full p-1 text-[#8C8A82] hover:bg-black/5"><X size={15}/></button>}
+            </label>
+            <label className="flex min-w-0 items-center gap-3 rounded-xl border-t border-[#EFEEE9] px-3 py-2.5 dark:border-white/10 sm:border-l sm:border-t-0">
+              <MapPin size={18} className="shrink-0 text-[#77766F]" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#929087]">Location</span>
+                <input value={locality} onChange={(e) => handleLocalityChange(e.target.value)} placeholder="Your area or city" className="mt-0.5 w-full bg-transparent text-sm font-semibold text-[#22231F] outline-none placeholder:font-normal placeholder:text-[#AAA89F] dark:text-white" />
+              </span>
+            </label>
+            <button type="button" onClick={handleQuickGps} disabled={gpsDetecting} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#20211E] px-5 text-sm font-bold text-white transition hover:bg-black disabled:opacity-60 dark:bg-white dark:text-[#191A18] dark:hover:bg-neutral-200">
+              <MapPin size={15}/>{gpsDetecting ? "Locating..." : "Use my location"}
+            </button>
+          </div>
 
-              return (
-                <motion.button
-                  key={cat.name}
-                  type="button"
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleCategoryChange(cat.name)}
-                  className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${
-                    isSelected
-                      ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
-                      : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500"
-                  }`}
-                >
-                  <Icon
-                    size={13}
-                    className={
-                      isSelected
-                        ? "text-current"
-                        : "text-[#71717A] dark:text-[#A1A1AA]"
-                    }
-                  />
-                  <span>{cat.label}</span>
-                </motion.button>
-              );
-            })}
+          <div className="mt-5">
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="text-xs font-bold text-[#68675F] dark:text-[#A1A1AA]">BROWSE BY SERVICE</span>
+              <button type="button" onClick={() => handleCategoryChange("All")} className="text-xs font-semibold text-[#77766F] underline underline-offset-4 hover:text-black dark:hover:text-white">View all</button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {categoryList.map((cat) => {
+                const Icon = cat.icon;
+                const active = category === cat.name;
+                return <button key={cat.name} type="button" onClick={() => handleCategoryChange(cat.name)} className={`inline-flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2.5 text-xs font-semibold transition ${active ? "border-[#252620] bg-[#252620] text-white dark:border-white dark:bg-white dark:text-[#20211E]" : "border-[#E5E3DC] bg-white/70 text-[#57574F] hover:border-[#B8B5AA] dark:border-white/10 dark:bg-white/5 dark:text-[#D4D4D8]"}`}>
+                  <Icon size={15}/>{cat.label}
+                </button>;
+              })}
+            </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* 2. COMPACT TOOLBAR & FILTER STRIP */}
-      <div className="mb-5 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        {/* Count and quick filters */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Active Standard Location Pill with GPS trigger */}
-          <button
-            type="button"
-            onClick={handleQuickGps}
-            disabled={gpsDetecting}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
-              locality
-                ? "border border-neutral-400 dark:border-neutral-600 bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA]"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA] hover:border-neutral-400"
-            }`}
-            title="Current search location (Click to refresh via GPS)"
-          >
-            <MapPin
-              size={12}
-              className={locality ? "text-current" : "text-[#71717A]"}
-            />
-            <span>
-              {gpsDetecting
-                ? "Detecting GPS..."
-                : locality
-                  ? locality
-                  : "All Locations (Tap GPS)"}
-            </span>
-          </button>
-
-          {/* Quick Filter Pill Buttons */}
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setOnlyAvailableToday(!onlyAvailableToday)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
-              onlyAvailableToday
-                ? "bg-emerald-600 text-white shadow-md"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-emerald-400"
-            }`}
-          >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-emerald-500 animate-pulse"}`}
-            />
-            <span>Available Today</span>
-          </motion.button>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setOnlyVerified(!onlyVerified)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
-              onlyVerified
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400"
-            }`}
-          >
-            <BadgeCheck
-              size={12}
-              className={onlyVerified ? "text-current" : "text-[#71717A]"}
-            />
-            <span>Verified</span>
-          </motion.button>
-
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setMinRating4Plus(!minRating4Plus)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
-              minRating4Plus
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400"
-            }`}
-          >
-            <Star
-              size={11}
-              className={
-                minRating4Plus
-                  ? "fill-amber-400 text-amber-400"
-                  : "fill-amber-400 text-amber-400"
-              }
-            />
-            <span>4.5+ Rating</span>
-          </motion.button>
-
-          {/* Quick Filter Reset */}
-          {hasActiveFilters && (
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.95 }}
-              onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] underline cursor-pointer ml-1"
-            >
-              <RotateCcw size={11} />
-              <span>Reset</span>
-            </motion.button>
-          )}
+      <section className="mb-5">
+        <div className="flex flex-col gap-3 border-b border-[#EAE9E4] pb-4 dark:border-white/10 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-bold text-[#252620] dark:text-white">Refine results</span>
+            <button type="button" onClick={() => setOnlyAvailableToday(!onlyAvailableToday)} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${onlyAvailableToday ? "border-emerald-600 bg-emerald-600 text-white" : "border-[#E5E3DC] bg-white text-[#57574F] dark:border-white/10 dark:bg-[#202125] dark:text-[#D4D4D8]"}`}>Available today</button>
+            <button type="button" onClick={() => setOnlyVerified(!onlyVerified)} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${onlyVerified ? "border-[#252620] bg-[#252620] text-white dark:border-white dark:bg-white dark:text-[#20211E]" : "border-[#E5E3DC] bg-white text-[#57574F] dark:border-white/10 dark:bg-[#202125] dark:text-[#D4D4D8]"}`}><BadgeCheck size={13}/> Verified</button>
+            <button type="button" onClick={() => setMinRating4Plus(!minRating4Plus)} className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${minRating4Plus ? "border-[#252620] bg-[#252620] text-white dark:border-white dark:bg-white dark:text-[#20211E]" : "border-[#E5E3DC] bg-white text-[#57574F] dark:border-white/10 dark:bg-[#202125] dark:text-[#D4D4D8]"}`}><Star size={13}/> 4.5+ rated</button>
+            <button type="button" onClick={handleQuickGps} disabled={gpsDetecting} className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E3DC] bg-white px-3 py-1.5 text-xs font-semibold text-[#57574F] dark:border-white/10 dark:bg-[#202125] dark:text-[#D4D4D8]"><MapPin size={13}/>{locality || "Detect area"}</button>
+            {hasActiveFilters && <button type="button" onClick={handleResetFilters} className="inline-flex items-center gap-1 px-2 py-1.5 text-xs font-semibold text-[#77766F] hover:text-black dark:hover:text-white"><RotateCcw size={12}/> Clear</button>}
+          </div>
+          <div className="inline-flex w-full rounded-xl border border-[#E5E3DC] bg-white p-1 text-xs dark:border-white/10 dark:bg-[#202125] sm:w-auto">
+            <button type="button" onClick={() => handleTypeChange("all")} className={`flex-1 rounded-lg px-4 py-2 font-bold transition sm:flex-none ${searchType === "all" ? "bg-[#252620] text-white dark:bg-white dark:text-[#20211E]" : "text-[#77766F]"}`}>All <span className="opacity-70">{matchingWorkers.length + matchingAgencies.length}</span></button>
+            <button type="button" onClick={() => handleTypeChange("workers")} className={`flex-1 rounded-lg px-4 py-2 font-bold transition sm:flex-none ${searchType === "workers" ? "bg-[#252620] text-white dark:bg-white dark:text-[#20211E]" : "text-[#77766F]"}`}>Pros <span className="opacity-70">{matchingWorkers.length}</span></button>
+            <button type="button" onClick={() => handleTypeChange("agencies")} className={`flex-1 rounded-lg px-4 py-2 font-bold transition sm:flex-none ${searchType === "agencies" ? "bg-[#252620] text-white dark:bg-white dark:text-[#20211E]" : "text-[#77766F]"}`}>Teams <span className="opacity-70">{matchingAgencies.length}</span></button>
+          </div>
         </div>
-
-        {/* Segmented Type Switcher (All / Workers / Agencies) */}
-        <div className="inline-flex w-full max-w-full rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-0.5 text-xs shadow-sm sm:w-auto">
-          <button
-            type="button"
-            onClick={() => handleTypeChange("all")}
-            className={`flex-1 rounded-full px-3 py-2 text-center font-semibold transition cursor-pointer sm:flex-none sm:py-1 ${
-              searchType === "all"
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
-            }`}
-          >
-            All ({matchingWorkers.length + matchingAgencies.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTypeChange("workers")}
-            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
-              searchType === "workers"
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
-            }`}
-          >
-            Pros ({matchingWorkers.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTypeChange("agencies")}
-            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
-              searchType === "agencies"
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
-            }`}
-          >
-            Agencies ({matchingAgencies.length})
-          </button>
+        <div className="flex items-center justify-between pt-4">
+          <div><h2 className="text-lg font-extrabold tracking-tight text-[#252620] dark:text-white">{searchType === "agencies" ? "Service teams" : searchType === "workers" ? "Independent professionals" : "Recommended near you"}</h2><p className="mt-0.5 text-xs text-[#85847D]">{combined.length} {combined.length === 1 ? "result" : "results"}{targetLocality ? ` · ${targetLocality}` : " · Across all locations"}</p></div>
+          <span className="hidden text-xs font-medium text-[#85847D] sm:block">Profiles update as availability changes</span>
         </div>
-      </div>
+      </section>
 
       {/* 3. WORKER & AGENCY LISTINGS — Smooth layout transition & fade animation */}
       <section>
