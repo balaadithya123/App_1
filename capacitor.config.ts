@@ -4,10 +4,9 @@ const config: CapacitorConfig = {
   appId: "com.balaadithya123.app1",
   appName: "Builderco",
   webDir: "dist/spa",
-  // Load the live Builderco web app in Capacitor's WebView so authenticated
-  // sessions and /api requests continue to use the hosted backend.
+  // Stable branch alias: always serves the latest successful app-redesign deployment.
   server: {
-    url: "https://builderco.vercel.app",
+    url: "https://newapp-1-git-app-redesign-balaadithya74-5139s-projects.vercel.app",
     cleartext: false,
   },
 };
