@@ -162,8 +162,14 @@ export default function AgencyDashboard() {
   const loadProjects = async (agencyId: string) => {
     try {
       setProjectsLoading(true);
+      const { data: sessionData } = await supabase?.auth.getSession();
+      const token = sessionData?.session?.access_token;
       const res = await fetch(
         `/api/agencies/projects?agencyId=${encodeURIComponent(agencyId || "agency-admin")}`,
+        {
+          cache: "no-store",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
       );
       if (res.ok) {
         const data = await res.json();
@@ -287,9 +293,15 @@ export default function AgencyDashboard() {
     if (!workerToRemove) return;
     setRemoveWorkerLoading(true);
     try {
+      const { data: sessionData } = await supabase?.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Your session expired. Please sign in again.");
       const res = await fetch("/api/agencies/remove-worker", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           workerId: workerToRemove.id,
           phone: workerToRemove.phone,
@@ -336,10 +348,14 @@ export default function AgencyDashboard() {
     if (!projectToDelete) return;
     setDeleteProjectLoading(true);
     try {
+      const { data: sessionData } = await supabase?.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Your session expired. Please sign in again.");
       const res = await fetch(
         `/api/agencies/projects/${encodeURIComponent(projectToDelete.id)}`,
         {
           method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
       const data = await res.json().catch(() => null);
@@ -380,9 +396,15 @@ export default function AgencyDashboard() {
       const assignedWorker = dashboard?.workers.find(
         (w) => w.id === newProjectForm.worker_id,
       );
+      const { data: sessionData } = await supabase?.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("Your session expired. Please sign in again.");
       const res = await fetch("/api/agencies/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           ...newProjectForm,
           worker_name: assignedWorker?.name || "Specialist",
