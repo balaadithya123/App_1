@@ -570,9 +570,12 @@ export default function Index() {
             </div>
           )}
         </section>
-        <Link to="/materials" className="flex items-center justify-between gap-4 overflow-hidden rounded-[24px] bg-[#202124] px-5 py-5 text-white">
+        <div className="flex items-center justify-between gap-4 overflow-hidden rounded-[24px] bg-[#202124] px-5 py-5 text-white">
           <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F4512C]"><ShieldCheck size={23}/></span><div><p className="font-semibold">Trusted & verified professionals</p><p className="mt-0.5 text-xs text-white/65">Quality help for your home and projects</p></div></div>
-          <ChevronRight size={20} className="shrink-0 text-white/70"/>
+          <ShieldCheck size={20} className="shrink-0 text-white/70"/>
+        </div>
+        <Link to="/materials" className="flex items-center justify-between rounded-[22px] border border-[#F0E2DA] dark:border-[#342A27] bg-white dark:bg-[#171719] px-5 py-4 text-sm font-semibold text-[#262326] dark:text-white">
+          <span>Building materials & suppliers</span><ChevronRight size={18} className="text-[#E94F2B]"/>
         </Link>
       </main>
       <NavBar />
