@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import "./global.css";
 
@@ -53,8 +52,13 @@ const queryClient = new QueryClient();
 
 function RouteLoadingFallback() {
   return (
-    <div className="flex min-h-[50vh] items-center justify-center p-6 text-muted-foreground">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div className="flex min-h-[50vh] items-center justify-center bg-[#FAFAFA] p-6 dark:bg-[#09090B]">
+      <div className="w-full max-w-xs space-y-3" role="status" aria-label="Loading Builderco">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#09090B] text-lg font-extrabold text-white dark:bg-white dark:text-[#09090B]">B</div>
+        <div className="h-2.5 animate-pulse rounded-full bg-[#E4E4E7] dark:bg-[#27272A]" />
+        <div className="mx-auto h-2 w-2/3 animate-pulse rounded-full bg-[#E4E4E7] dark:bg-[#27272A]" />
+        <p className="pt-1 text-center text-xs font-medium text-[#71717A] dark:text-[#A1A1AA]">Loading Builderco…</p>
+      </div>
     </div>
   );
 }
