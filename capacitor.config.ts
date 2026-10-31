@@ -2,10 +2,10 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.balaadithya123.app1",
-  appName: "Local Worker Discovery",
+  appName: "Builderco",
   webDir: "dist/spa",
   server: {
-    url: "https://builderco.vercel.app/",
+    url: "https://newapp-1-git-app-redesign-balaadithya74-5139s-projects.vercel.app/",
     cleartext: false,
   },
 };
