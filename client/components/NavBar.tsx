@@ -172,71 +172,25 @@ export default function NavBar() {
     );
   }
 
-  // Customer / Visitor Bottom Island with Clean Search Icon
+  // Customer mobile navigation — four clear destinations.
   const customerTabs = [
-    {
-      name: "Home",
-      path: "/home",
-      icon: Home,
-      isActive:
-        location.pathname === "/home" ||
-        location.pathname === "/app" ||
-        location.pathname === "/",
-    },
-    {
-      name: "Search Pros",
-      path: "/search",
-      icon: Search,
-      isActive: location.pathname === "/search",
-    },
-    {
-      name: "My Circle",
-      path: "/saved",
-      icon: Heart,
-      isActive:
-        location.pathname === "/saved" || location.pathname === "/my-circle",
-    },
-    {
-      name: "Inbox & Reminders",
-      path: "/inbox",
-      icon: Clock,
-      isActive: location.pathname === "/inbox",
-      badge: dueCount,
-    },
-    {
-      name: "Profile",
-      path: loggedIn ? "/profile" : "/login",
-      icon: UserRound,
-      isActive:
-        location.pathname === "/profile" || location.pathname === "/login",
-    },
+    { name: "Home", path: "/home", icon: Home, isActive: location.pathname === "/home" || location.pathname === "/app" || location.pathname === "/" },
+    { name: "Search", path: "/search", icon: Search, isActive: location.pathname === "/search" },
+    { name: "Saved", path: "/saved", icon: Heart, isActive: location.pathname === "/saved" || location.pathname === "/my-circle" },
+    { name: "Inbox", path: "/inbox", icon: Clock, isActive: location.pathname === "/inbox", badge: dueCount },
   ];
-
   return (
-    <nav
-      aria-label="Customer Bottom Navigation"
-      className="md:hidden fixed bottom-5 inset-x-0 mx-auto w-fit z-40 rounded-full border border-black/20 dark:border-white/25 bg-white/98 dark:bg-[#16161A]/98 backdrop-blur-2xl px-3.5 py-1.5 shadow-[0_16px_36px_-4px_rgba(0,0,0,0.28),0_6px_16px_rgba(0,0,0,0.14)] dark:shadow-[0_20px_48px_-4px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.15)] ring-1 ring-black/10 dark:ring-white/20 flex items-center gap-2"
-    >
+    <nav aria-label="Customer bottom navigation" className="md:hidden fixed bottom-3 left-3 right-3 z-40 mx-auto flex max-w-lg items-center justify-around rounded-[26px] border border-[#EDE2DC] dark:border-white/10 bg-white/95 dark:bg-[#171719]/95 px-2 py-2 shadow-[0_12px_35px_rgba(43,30,24,0.16)] backdrop-blur-xl">
       {customerTabs.map((tab) => {
         const Icon = tab.icon;
         return (
-          <Link
-            key={tab.name}
-            to={tab.path}
-            state={tab.name === "Profile" ? { from: "main" } : undefined}
-            aria-label={tab.name}
-            className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all cursor-pointer ${
-              tab.isActive
-                ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-[#52525B] hover:text-[#09090B] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
-            }`}
-          >
-            <Icon size={18} strokeWidth={tab.isActive ? 2.2 : 2} />
-            {tab.badge && tab.badge > 0 ? (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white shadow-xs">
-                {tab.badge > 9 ? "9+" : tab.badge}
-              </span>
-            ) : null}
+          <Link key={tab.name} to={tab.path} aria-label={tab.name} className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 text-[10px] font-semibold transition ${tab.isActive ? "text-[#F4512C]" : "text-[#77716D] dark:text-[#A1A1AA]"}`}>
+            <span className={`relative flex h-7 w-9 items-center justify-center rounded-full ${tab.isActive ? "bg-[#FCE4D8] dark:bg-[#42251D]" : ""}`}>
+              <Icon size={19} strokeWidth={tab.isActive ? 2.4 : 2}/>
+              {tab.badge && tab.badge > 0 ? <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#F4512C] px-1 text-[9px] font-bold text-white">{tab.badge > 9 ? "9+" : tab.badge}</span> : null}
+            </span>
+            <span>{tab.name}</span>
+            {tab.isActive && <span className="absolute bottom-0 h-0.5 w-5 rounded-full bg-[#F4512C]"/>}
           </Link>
         );
       })}
