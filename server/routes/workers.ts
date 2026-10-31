@@ -5,7 +5,7 @@ import type {
   WorkerRegistrationSuccessResponse,
   WorkersResponse,
 } from "../../shared/api";
-import { staticWorkers, type Worker } from "../../shared/workers";
+import type { Worker } from "../../shared/workers";
 import {
   checkProfilePhotoDuplicates,
   checkProfileTextSimilarity,
@@ -89,10 +89,7 @@ export const createWorker = (
   urgent_today: false,
 });
 
-export const getAllWorkers = async () => [
-  ...staticWorkers,
-  ...(await readRegisteredWorkers()),
-];
+export const getAllWorkers = async () => readRegisteredWorkers();
 
 export const handleGetWorkers: RequestHandler = async (_req, res) => {
   try {
