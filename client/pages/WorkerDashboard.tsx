@@ -121,15 +121,22 @@ export default function WorkerDashboard() {
     setError("");
     setSaving(true);
     try {
-      const { data: fnData, error: fnError } = await supabase.functions.invoke(
-        "worker-availability-notify",
-        {
-          body: changes,
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session?.access_token) {
+        throw new Error("Your session expired. Please sign in again.");
+      }
+      const response = await fetch("/api/workers/availability", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sessionData.session.access_token}`,
         },
-      );
-      if (fnError)
-        throw new Error(fnError.message || "Could not save availability.");
-      if (fnData?.message && !fnData.worker) throw new Error(fnData.message);
+        body: JSON.stringify(changes),
+      });
+      const fnData = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(fnData?.message || "Could not save availability.");
+      }
       setUser((current: any) =>
         current
           ? {
