@@ -201,7 +201,7 @@ export default function SearchResults() {
     setLocality(l);
 
     const n = searchParams.get("need") || searchParams.get("q") || "";
-    if (n) setFreeTextNeed(n);
+    setFreeTextNeed(n);
   }, [searchParams]);
 
   const load = useCallback(async () => {
@@ -832,19 +832,17 @@ export default function SearchResults() {
           >
             Pros ({matchingWorkers.length})
           </button>
-          {matchingAgencies.length > 0 && (
-            <button
-              type="button"
-              onClick={() => handleTypeChange("agencies")}
-              className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
-                searchType === "agencies"
-                  ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                  : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
-              }`}
-            >
-              Agencies ({matchingAgencies.length})
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => handleTypeChange("agencies")}
+            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+              searchType === "agencies"
+                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
+                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
+            }`}
+          >
+            Agencies ({matchingAgencies.length})
+          </button>
         </div>
       </div>
 
