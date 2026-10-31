@@ -553,9 +553,9 @@ export default function AgencyDashboard() {
 
   return (
     <PageShell hideBack hideHome containerWidth="lg">
-      <div className="space-y-6">
+      <div className="mx-auto max-w-6xl space-y-5 sm:space-y-6">
         {/* Agency Profile Header Card */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <section className="rounded-2xl border border-border bg-card p-4 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary font-bold text-foreground text-xl">
@@ -644,8 +644,8 @@ export default function AgencyDashboard() {
         )}
 
         {/* Overview Stats */}
-        <section className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-border bg-card p-4">
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
             <span className="text-[11px] font-semibold text-muted-foreground">
               Total Workers
             </span>
@@ -741,7 +741,7 @@ export default function AgencyDashboard() {
         <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-3">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-base font-bold text-foreground">
                   Worker Team Details
                 </h2>
