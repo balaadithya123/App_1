@@ -105,36 +105,12 @@ export default function TrustStripWorkerCard({
         tabIndex={0}
         role="button"
         aria-label={`View profile of ${worker.name}`}
-        className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-4.5 shadow-xs flex flex-col justify-between hover:border-neutral-400 dark:hover:border-neutral-600 hover:shadow-md transition-all duration-200 group w-[240px] sm:w-[260px] md:w-full shrink-0 snap-start h-full cursor-pointer select-none"
+        className="rounded-[22px] border border-[#F0E2DA] dark:border-[#342A27] bg-white dark:bg-[#171719] p-4 shadow-[0_4px_16px_rgba(67,44,32,0.05)] flex flex-col justify-between hover:border-[#F4A58E] transition-all duration-200 group w-full h-full cursor-pointer select-none"
       >
         <div>
           {/* Header with Avatar, Name, Verification, Rating & Bookmark */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3 min-w-0">
-              <div
-                className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] font-bold text-sm shadow-xs overflow-hidden"
-              >
-                {worker.photo_url ? (
-                  <img
-                    src={worker.photo_url}
-                    alt={worker.name}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <span>
-                    {worker.initials || worker.name.slice(0, 2).toUpperCase()}
-                  </span>
-                )}
-                {isAvailableToday && (
-                  <span
-                    title="Available Today"
-                    className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#141416] bg-emerald-500"
-                  />
-                )}
-              </div>
-
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <h4
@@ -146,14 +122,14 @@ export default function TrustStripWorkerCard({
                   <BadgeCheck size={15} className="text-emerald-500 shrink-0" />
                 </div>
                 <p className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] truncate mt-0.5">
-                  {worker.category} · {worker.experience || "5+ yrs exp"}
+                  {worker.category}{worker.experience ? ` · ${worker.experience}` : ""}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
               {/* Clickable Customer Rating System */}
-              <button
+              {ratingStats.reviewsCount > 0 && <button
                 type="button"
                 onClick={handleRateClick}
                 title="Click to rate this professional"
@@ -165,7 +141,7 @@ export default function TrustStripWorkerCard({
                 <span className="text-[11px] font-normal opacity-80">
                   ({ratingStats.reviewsCount})
                 </span>
-              </button>
+              </button>}
 
               {/* Heart Bookmark */}
               <button
@@ -187,7 +163,7 @@ export default function TrustStripWorkerCard({
             <div className="flex items-center justify-between text-[#52525B] dark:text-[#A1A1AA] text-xs">
               <span className="flex items-center gap-1.5 font-medium truncate max-w-[150px]">
                 <MapPin size={12} className="shrink-0 text-[#71717A]" />
-                <span className="truncate">{worker.locality || "Local area"}</span>
+                <span className="truncate">{worker.locality || "Location not provided"}</span>
               </span>
               <span
                 className={`font-semibold inline-flex items-center gap-1 ${
@@ -201,9 +177,7 @@ export default function TrustStripWorkerCard({
               </span>
             </div>
 
-            <p className="text-xs text-[#52525B] dark:text-[#D4D4D8] line-clamp-1 leading-relaxed">
-              {worker.about || "Verified home service professional with guaranteed workmanship."}
-            </p>
+            {worker.about && <p className="text-xs text-[#52525B] dark:text-[#D4D4D8] line-clamp-1 leading-relaxed">{worker.about}</p>}
           </div>
 
           {/* Services Tags */}
