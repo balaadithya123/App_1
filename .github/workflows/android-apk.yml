@@ -1,4 +1,5 @@
 name: Build Builderco Android APK
+# Build from bundled Capacitor assets so Android stays inside the app.
 
 on:
   push:
