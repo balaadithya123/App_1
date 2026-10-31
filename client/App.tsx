@@ -117,8 +117,9 @@ function RootRoute() {
     return <RouteLoadingFallback />;
   }
 
-  // Native apps open the product UI directly; the marketing landing page is web-only.
-  return Capacitor.isNativePlatform() ? <Index /> : <LandingPage />;
+  // Use the responsive product UI on every platform. The old marketing landing page
+  // is intentionally not used as the public entry point anymore.
+  return <Index />;
 }
 
 function NavigationOriginTracker() {
