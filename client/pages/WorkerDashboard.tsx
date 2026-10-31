@@ -246,7 +246,7 @@ export default function WorkerDashboard() {
 
   if (loading) {
     return (
-      <PageShell hideBack hideHome>
+      <PageShell hideBack hideHome containerWidth="lg">
         <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center shadow-soft">
           <p className="text-sm font-medium text-[#67696D]">
             Loading your worker portal...
@@ -266,7 +266,7 @@ export default function WorkerDashboard() {
 
   return (
     <PageShell hideBack hideHome>
-      <div className="mx-auto max-w-4xl space-y-4">
+      <div className="mx-auto max-w-5xl space-y-4 sm:space-y-5">
         {/* Worker Profile Header Card */}
         <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
