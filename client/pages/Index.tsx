@@ -218,8 +218,8 @@ export default function Index() {
       const bVer = b.phone_verified ? 1 : 0;
       if (bVer !== aVer) return bVer - aVer;
 
-      const aRating = Number(a.avg_rating || a.rating || 4.8);
-      const bRating = Number(b.avg_rating || b.rating || 4.8);
+      const aRating = Number(a.avg_rating || a.rating || 0);
+      const bRating = Number(b.avg_rating || b.rating || 0);
       if (bRating !== aRating) return bRating - aRating;
 
       if (b.available_today && !a.available_today) return 1;
@@ -519,181 +519,63 @@ export default function Index() {
         </div>
       </header>
 
-      {/* MAIN CONTENT — Clean max-w-5xl Desktop Canvas */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 sm:px-6 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
-        {/* 1. "VERIFIED PROS NEAR YOU" SECTION */}
-        <section aria-labelledby="verified-pros-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-0.5">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2
-                  id="verified-pros-heading"
-                  className="text-lg sm:text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]"
-                >
-                  Verified pros near you
-                </h2>
-                {location && (
-                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-white/10 px-2.5 py-0.5 text-xs font-medium text-[#52525B] dark:text-[#D4D4D8]">
-                    <MapPin size={11} className="text-neutral-500" />
-                    <span>{location}</span>
-                  </span>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Top-rated background-checked specialists ready for direct booking
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleGps}
-                disabled={gpsLoading}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3 py-1 text-xs font-medium text-[#52525B] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white hover:border-neutral-500 transition shadow-2xs cursor-pointer"
-                title="Refresh location via GPS"
-              >
-                <Navigation size={12} className={gpsLoading ? "animate-spin text-current" : "text-current"} />
-                <span>{gpsLoading ? "Locating..." : "Refresh GPS"}</span>
-              </button>
-
-              <Link
-                to={
-                  location
-                    ? `/search?location=${encodeURIComponent(location)}`
-                    : "/search"
-                }
-                className="text-xs sm:text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:underline inline-flex items-center gap-0.5 transition"
-              >
-                <span>View all</span>
-                <ChevronRight size={14} />
-              </Link>
-            </div>
+      {/* MOBILE APP HOME — premium editorial layout */}
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 sm:px-6 lg:px-8 pt-5 sm:pt-7 pb-8 space-y-8 sm:space-y-10">
+        <section className="relative overflow-hidden rounded-[30px] bg-[#FFF1E8] dark:bg-[#241A17] px-5 sm:px-8 pt-7 sm:pt-10 pb-6 sm:pb-8">
+          <div className="pointer-events-none absolute -right-10 -top-8 h-64 w-64 rounded-full border-[24px] border-[#F8D8C7]/70 dark:border-[#5A3025]/50" />
+          <div className="pointer-events-none absolute right-5 bottom-0 text-[#E9B49B]/60 dark:text-[#8A5140]/40"><Building2 size={150} strokeWidth={0.7} /></div>
+          <div className="relative z-10 max-w-xl">
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#C84A2D]">BUILDERCO • HOME SERVICES</p>
+            <h1 className="max-w-[520px] text-[34px] sm:text-5xl font-bold leading-[1.06] tracking-[-0.045em] text-[#17191E] dark:text-[#FFF8F4]">The right people.<br /><span className="text-[#F05A36]">The right help.</span></h1>
+            <p className="mt-3 max-w-sm text-sm sm:text-base leading-relaxed text-[#5F5551] dark:text-[#D9C5BC]">Find trusted professionals for every job, right around you.</p>
           </div>
-
-          {!isExactLocationMatch && location && displayPros.length > 0 && (
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-2.5 text-xs text-[#52525B] dark:text-[#A1A1AA]">
-              <span>
-                No pros registered strictly inside <strong>{location}</strong> yet. Showing top verified professionals nearby:
-              </span>
-              <button
-                type="button"
-                onClick={handleGps}
-                disabled={gpsLoading}
-                className="ml-2 shrink-0 text-xs font-bold text-[#09090B] dark:text-white underline cursor-pointer"
-              >
-                Re-check GPS
-              </button>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-5 overflow-x-auto pb-2 scrollbar-none snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-[240px] sm:w-[260px] md:w-full shrink-0 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 shadow-sm animate-pulse space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
-                      <div className="space-y-1.5">
-                        <div className="h-4 w-24 rounded bg-zinc-100 dark:bg-zinc-800" />
-                        <div className="h-3 w-16 rounded bg-zinc-100 dark:bg-zinc-800" />
-                      </div>
-                    </div>
-                    <div className="h-6 w-12 rounded bg-zinc-100 dark:bg-zinc-800" />
-                  </div>
-                  <div className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800" />
-                  <div className="flex gap-2 pt-2 border-t border-[#E4E4E7] dark:border-[#27272A]">
-                    <div className="h-7 flex-1 rounded bg-zinc-100 dark:bg-zinc-800" />
-                    <div className="h-7 flex-1 rounded bg-zinc-100 dark:bg-zinc-800" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : displayPros.length > 0 ? (
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-5 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-none snap-x snap-mandatory md:snap-none -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0 md:[&>article]:w-full md:[&>article]:max-w-none">
-              {displayPros.map((worker) => (
-                <TrustStripWorkerCard key={worker.id} worker={worker} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center shadow-xs">
-              <p className="text-sm font-normal text-[#71717A] dark:text-[#A1A1AA]">
-                No verified professionals found near{" "}
-                <span className="font-semibold text-[#09090B] dark:text-white">
-                  {location || "your area"}
-                </span>
-                .
-              </p>
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleGps}
-                  disabled={gpsLoading}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-4 py-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer shadow-xs"
-                >
-                  <Navigation
-                    size={13}
-                    className={gpsLoading ? "animate-spin" : ""}
-                  />
-                  <span>Check GPS</span>
-                </button>
-                <Link
-                  to="/search"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] dark:hover:bg-neutral-200 px-4.5 py-2 text-xs font-semibold shadow-xs"
-                >
-                  <span>Browse all workers</span>
-                </Link>
-              </div>
-            </div>
-          )}
+          <form onSubmit={handleSearchSubmit} className="relative z-10 mt-6 flex items-center gap-2 rounded-full border border-[#E8DAD2] dark:border-white/10 bg-white dark:bg-[#171719] p-1.5 pl-4 shadow-[0_12px_30px_rgba(115,65,43,0.12)]">
+            <Search size={19} className="shrink-0 text-[#81756F]" />
+            <input type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search for services..." aria-label="Search for services" className="min-w-0 flex-1 bg-transparent py-2 text-sm text-[#17191E] dark:text-white outline-none placeholder:text-[#958A84]" />
+            <button type="submit" aria-label="Search" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F4512C] text-white transition hover:bg-[#D94322] active:scale-95"><ChevronRight size={23} /></button>
+          </form>
         </section>
-
-        {/* 2. "EXPLORE BY CATEGORY" SECTION */}
         <section aria-labelledby="categories-heading">
-          <div className="flex items-center justify-between mb-4 px-0.5">
-            <div>
-              <h2
-                id="categories-heading"
-                className="text-lg sm:text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]"
-              >
-                Explore by trade category
-              </h2>
-              <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Choose a specialized service to find available neighborhood technicians
-              </p>
-            </div>
+          <div className="mb-4 flex items-end justify-between">
+            <div><h2 id="categories-heading" className="text-xl sm:text-2xl font-bold tracking-tight text-[#17191E] dark:text-white">Explore services</h2><p className="mt-1 text-xs sm:text-sm text-[#77716D] dark:text-[#A1A1AA]">Choose what you need help with</p></div>
+            <button type="button" onClick={() => handleCategoryClick("All Services")} className="inline-flex items-center gap-1 text-sm font-semibold text-[#E94F2B]">View all <ChevronRight size={16} /></button>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
-            {categories.map(({ name, icon: Icon, countText }) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => handleCategoryClick(name)}
-                className="group flex items-start sm:items-center gap-3.5 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-4.5 text-left shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99] cursor-pointer"
-              >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-[#09090B] dark:text-[#FAFAFA] transition group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black border border-black/[0.04] dark:border-white/[0.06]">
-                  <Icon size={19} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition-colors">
-                    {name}
-                  </span>
-                  <span className="text-xs text-[#71717A] dark:text-[#A1A1AA] line-clamp-1 mt-0.5 font-normal">
-                    {countText}
-                  </span>
-                </div>
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+            {categories.filter(({name})=>name!=="Materials & Suppliers").map(({name,icon:Icon})=>(
+              <button key={name} type="button" onClick={()=>handleCategoryClick(name)} className="group flex min-h-[112px] flex-col items-center justify-center gap-3 rounded-[22px] border border-[#F0E2DA] dark:border-[#342A27] bg-[#FFF9F5] dark:bg-[#171719] px-2 py-4 text-center shadow-[0_3px_10px_rgba(67,44,32,0.035)] transition hover:-translate-y-0.5 hover:border-[#F4A58E] hover:bg-[#FFF1E8] dark:hover:bg-[#241A17]">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FCE4D8] dark:bg-[#42251D] text-[#F05A36]"><Icon size={21} strokeWidth={2.1}/></span>
+                <span className="text-xs sm:text-sm font-semibold text-[#262326] dark:text-[#F4EEEA]">{name==="All Services"?"More":name==="Painter"?"Painting":name==="Cleaner"?"Cleaning":name}</span>
               </button>
             ))}
           </div>
         </section>
+        <section aria-labelledby="verified-pros-heading">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div><h2 id="verified-pros-heading" className="text-xl sm:text-2xl font-bold tracking-tight text-[#17191E] dark:text-white">Professionals near you</h2><p className="mt-1 text-xs sm:text-sm text-[#77716D] dark:text-[#A1A1AA]">Real profiles from registered service providers</p></div>
+            <Link to={location? `/search?location=${encodeURIComponent(location)}`:"/search"} className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-[#E94F2B]">See all <ChevronRight size={16}/></Link>
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">{[1,2,3].map(i=><div key={i} className="h-36 animate-pulse rounded-[22px] bg-[#F4ECE7] dark:bg-[#1C1C20]"/>)}</div>
+          ) : displayPros.length>0 ? (
+            <>
+              {!isExactLocationMatch && location && <p className="mb-3 rounded-xl bg-[#FFF4E8] dark:bg-[#302319] px-3 py-2 text-xs text-[#8A5A36] dark:text-[#E7BE93]">No professionals registered in {location} yet. Showing other verified profiles nearby.</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">{displayPros.map(worker=><TrustStripWorkerCard key={worker.id} worker={worker}/>)}</div>
+            </>
+          ) : (
+            <div className="rounded-[24px] border border-[#F0E2DA] dark:border-[#342A27] bg-[#FFF9F5] dark:bg-[#171719] px-5 py-8 text-center">
+              <ShieldCheck size={28} className="mx-auto mb-3 text-[#E95A37]"/>
+              <h3 className="text-base font-semibold text-[#262326] dark:text-white">No professionals listed yet</h3>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-[#77716D] dark:text-[#A1A1AA]">New registered professionals will appear here when they join your area.</p>
+              <Link to="/search" className="mt-4 inline-flex rounded-full bg-[#F4512C] px-5 py-2.5 text-sm font-semibold text-white">Browse services</Link>
+            </div>
+          )}
+        </section>
+        <Link to="/materials" className="flex items-center justify-between gap-4 overflow-hidden rounded-[24px] bg-[#202124] px-5 py-5 text-white">
+          <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#F4512C]"><ShieldCheck size={23}/></span><div><p className="font-semibold">Trusted & verified professionals</p><p className="mt-0.5 text-xs text-white/65">Quality help for your home and projects</p></div></div>
+          <ChevronRight size={20} className="shrink-0 text-white/70"/>
+        </Link>
       </main>
-
-      {/* BOTTOM NAVIGATION (Mobile floating island) */}
       <NavBar />
-
       {/* Post a Need Modal */}
       <PostNeedModal
         isOpen={postNeedOpen}
