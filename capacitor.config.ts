@@ -4,12 +4,8 @@ const config: CapacitorConfig = {
   appId: "com.balaadithya123.app1",
   appName: "Builderco",
   webDir: "dist/spa",
-  // The Android app is a lightweight native shell for the live responsive website.
-  // Website deployments update the app's content without rebuilding the APK.
-  server: {
-    url: "https://builderco.vercel.app",
-    cleartext: false,
-  },
+  // Use the bundled responsive app instead of a remote URL. This avoids a blank
+  // screen when the hosted site is unavailable and keeps app navigation native.
 };
 
 export default config;
