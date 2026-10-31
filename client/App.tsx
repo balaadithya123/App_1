@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useState, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import { Capacitor } from "@capacitor/core";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -64,7 +65,10 @@ function RootRoute() {
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
+    const isNativeApp = Capacitor.isNativePlatform();
+
     if (!supabase) {
+      if (isNativeApp) navigate("/home", { replace: true });
       setChecking(false);
       return;
     }
@@ -80,6 +84,9 @@ function RootRoute() {
         } else {
           navigate("/home", { replace: true });
         }
+      } else if (isNativeApp) {
+        navigate("/home", { replace: true });
+        setChecking(false);
       } else {
         setChecking(false);
       }
@@ -98,6 +105,7 @@ function RootRoute() {
         }
       } else {
         setIsAuth(false);
+        if (isNativeApp) navigate("/home", { replace: true });
         setChecking(false);
       }
     });
@@ -109,7 +117,8 @@ function RootRoute() {
     return <RouteLoadingFallback />;
   }
 
-  return <LandingPage />;
+  // Native apps open the product UI directly; the marketing landing page is web-only.
+  return Capacitor.isNativePlatform() ? <Index /> : <LandingPage />;
 }
 
 function NavigationOriginTracker() {
