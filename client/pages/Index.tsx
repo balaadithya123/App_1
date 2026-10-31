@@ -275,7 +275,7 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#09090B] text-[#141518] dark:text-[#FAFAFA] flex flex-col selection:bg-[#F7C7B7] dark:selection:bg-neutral-800 pb-28 md:pb-10 font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#09090B] text-[#141518] dark:text-[#FAFAFA] flex flex-col selection:bg-[#F7C7B7] dark:selection:bg-neutral-800 pb-28 lg:pb-10 font-sans">
       {/* TOP HEADER — Clean, Polished Translucent Header */}
       <header className="sticky top-0 z-40 w-full border-b border-[#E8E2D9] dark:border-[#27272A] bg-[#FAF8F5]/90 dark:bg-[#09090B]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-3 lg:gap-6 px-4 sm:px-6 lg:px-8 relative">
@@ -468,7 +468,7 @@ export default function Index() {
             )}
 
             {/* Mobile / Tablet Menu */}
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <MobileMenu />
             </div>
           </div>
