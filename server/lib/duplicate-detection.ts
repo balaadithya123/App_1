@@ -53,6 +53,10 @@ export function extractShingles(
 
 /**
  * Calculates Jaccard similarity between two sets of shingles.
+ *
+ * Performance Optimizations:
+ * 1. Always iterates over the smaller set to minimize `.has()` lookup operations from O(|A|) to O(min(|A|, |B|)).
+ * 2. Uses early exit if max possible Jaccard similarity (minSize / maxSize) cannot exceed a given threshold.
  */
 export function calculateJaccardSimilarity(
   setA: Set<string>,
@@ -61,9 +65,12 @@ export function calculateJaccardSimilarity(
   if (setA.size === 0 && setB.size === 0) return 1.0;
   if (setA.size === 0 || setB.size === 0) return 0.0;
 
+  // Always iterate over the smaller set to minimize set lookups
+  const [smaller, larger] = setA.size <= setB.size ? [setA, setB] : [setB, setA];
+
   let intersectionSize = 0;
-  for (const item of setA) {
-    if (setB.has(item)) {
+  for (const item of smaller) {
+    if (larger.has(item)) {
       intersectionSize++;
     }
   }
@@ -74,6 +81,11 @@ export function calculateJaccardSimilarity(
 
 /**
  * Pure-JS word-shingle similarity check on worker profile text to detect duplicate/near-duplicate profiles.
+ *
+ * Performance Optimizations:
+ * 1. Pre-computes target profile tokens & shingles once before looping existing profiles.
+ * 2. Applies mathematical upper-bound pruning (min(|A|,|B|) / max(|A|,|B|) <= highestSimilarity)
+ *    to skip candidate profiles that cannot possibly exceed the current highest match score.
  */
 export function checkProfileTextSimilarity(
   newProfileText: string,
@@ -93,6 +105,15 @@ export function checkProfileTextSimilarity(
   for (const existing of existingProfiles) {
     const existingTokens = tokenizeText(existing.text);
     const existingShingles = extractShingles(existingTokens, shingleSize);
+
+    // Theoretical maximum Jaccard similarity between two sets is min(|A|, |B|) / max(|A|, |B|).
+    // If this upper bound is <= highestSimilarity, skip set intersection calculation completely.
+    const minSize = Math.min(newShingles.size, existingShingles.size);
+    const maxSize = Math.max(newShingles.size, existingShingles.size);
+    if (maxSize > 0 && minSize / maxSize <= highestSimilarity) {
+      continue;
+    }
+
     const sim = calculateJaccardSimilarity(newShingles, existingShingles);
 
     if (sim > highestSimilarity) {
