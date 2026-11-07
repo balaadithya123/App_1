@@ -131,21 +131,24 @@ export function computeDueDate(
 /**
  * Generates status details for a home maintenance item.
  * Items enter the active daily reminder window 1 week (7 days) before the due date.
+ *
+ * Performance Optimization:
+ * - Reuses normalized midnight Date instance if referenceDate is already normalized,
+ *   avoiding redundant Date allocations.
  */
 export function getReminderStatus(
   item: Pick<HomeItem, "last_serviced_date" | "interval_months">,
   referenceDate?: Date,
 ): ReminderStatus {
-  const ref = referenceDate ? new Date(referenceDate) : new Date();
-  const today = new Date(
-    ref.getFullYear(),
-    ref.getMonth(),
-    ref.getDate(),
-    0,
-    0,
-    0,
-    0,
-  );
+  const ref = referenceDate || new Date();
+  const today =
+    ref.getHours() === 0 &&
+    ref.getMinutes() === 0 &&
+    ref.getSeconds() === 0 &&
+    ref.getMilliseconds() === 0
+      ? ref
+      : new Date(ref.getFullYear(), ref.getMonth(), ref.getDate(), 0, 0, 0, 0);
+
   const dueDate = computeDueDate(item.last_serviced_date, item.interval_months);
   const dueDateStr = formatDateIso(dueDate);
 
@@ -242,6 +245,11 @@ export function getPresetLastServicedDate(
  *   - Due today items
  *   - 7-day daily reminder items sorted closest to due date first
  * Upcoming: sorted soonest-due first
+ *
+ * Performance Optimization:
+ * - Single-pass linear traversal partitions items into `dueOrOverdue` and `upcoming` arrays.
+ * - Normalizes reference date once outside loop.
+ * - Tracks counts inline to eliminate 4 temporary array allocations per call.
  */
 export function getDueAndUpcomingHomeItems(
   items: HomeItem[],
@@ -253,32 +261,49 @@ export function getDueAndUpcomingHomeItems(
   strictlyDueCount: number;
   reminderWindowCount: number;
 } {
-  const decorated: HomeItemWithStatus[] = items.map((item) => ({
-    ...item,
-    status: getReminderStatus(item, referenceDate),
-  }));
+  const ref = referenceDate || new Date();
+  const normalizedToday =
+    ref.getHours() === 0 &&
+    ref.getMinutes() === 0 &&
+    ref.getSeconds() === 0 &&
+    ref.getMilliseconds() === 0
+      ? ref
+      : new Date(ref.getFullYear(), ref.getMonth(), ref.getDate(), 0, 0, 0, 0);
 
-  const dueOrOverdue = decorated
-    .filter((item) => item.status.isReminderActive)
-    .sort((a, b) => {
-      // Overdue-first: largest diffDays first (most overdue)
-      if (b.status.diffDays !== a.status.diffDays) {
-        return b.status.diffDays - a.status.diffDays;
+  const dueOrOverdue: HomeItemWithStatus[] = [];
+  const upcoming: HomeItemWithStatus[] = [];
+  let strictlyDueCount = 0;
+  let reminderWindowCount = 0;
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const status = getReminderStatus(item, normalizedToday);
+    const itemWithStatus: HomeItemWithStatus = { ...item, status };
+
+    if (status.isReminderActive) {
+      dueOrOverdue.push(itemWithStatus);
+      if (status.isDue) {
+        strictlyDueCount++;
+      } else {
+        reminderWindowCount++;
       }
-      return a.label.localeCompare(b.label);
-    });
+    } else {
+      upcoming.push(itemWithStatus);
+    }
+  }
 
-  const upcoming = decorated
-    .filter((item) => !item.status.isReminderActive)
-    .sort((a, b) => {
-      // Soonest-due first: earliest due date (closest to today, least negative diffDays)
-      return a.status.dueDate.getTime() - b.status.dueDate.getTime();
-    });
+  // Overdue-first: largest diffDays first (most overdue)
+  dueOrOverdue.sort((a, b) => {
+    if (b.status.diffDays !== a.status.diffDays) {
+      return b.status.diffDays - a.status.diffDays;
+    }
+    return a.label.localeCompare(b.label);
+  });
 
-  const strictlyDueCount = decorated.filter((item) => item.status.isDue).length;
-  const reminderWindowCount = decorated.filter(
-    (item) => item.status.isReminderActive && !item.status.isDue,
-  ).length;
+  // Soonest-due first: earliest due date (closest to today, least negative diffDays)
+  upcoming.sort((a, b) => {
+    return a.status.dueDate.getTime() - b.status.dueDate.getTime();
+  });
 
   return {
     dueOrOverdue,
