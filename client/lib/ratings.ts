@@ -10,21 +10,61 @@ export interface CustomerRating {
 
 const STORAGE_KEY = "localworker_customer_ratings";
 
+// In-memory cache to avoid repeated localStorage read & JSON parse overhead
+let ratingsCache: CustomerRating[] | null = null;
+
+// Listen for window storage events to invalidate cache if changed across tabs
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key === STORAGE_KEY || e.key === null) {
+      ratingsCache = null;
+    }
+  });
+}
+
+/**
+ * Performance Optimization:
+ * Caches customer ratings in memory to avoid repetitive localStorage.getItem and JSON.parse
+ * operations when rendering worker list items and computing worker ratings.
+ */
 function getAllStoredRatings(): CustomerRating[] {
   if (typeof window === "undefined") return [];
+  if (ratingsCache !== null) {
+    return ratingsCache;
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) {
+      ratingsCache = [];
+      return ratingsCache;
+    }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    ratingsCache = Array.isArray(parsed) ? parsed : [];
+    return ratingsCache;
   } catch {
-    return [];
+    ratingsCache = [];
+    return ratingsCache;
   }
+}
+
+/**
+ * Invalidates the in-memory ratings cache (useful for testing or manual cache reset).
+ */
+export function clearRatingsCache(): void {
+  ratingsCache = null;
 }
 
 export function getCustomerRatings(workerId: string): CustomerRating[] {
   const all = getAllStoredRatings();
-  return all.filter((r) => r.workerId === workerId);
+  if (all.length === 0) return [];
+
+  const matched: CustomerRating[] = [];
+  for (let i = 0; i < all.length; i++) {
+    if (all[i].workerId === workerId) {
+      matched.push(all[i]);
+    }
+  }
+  return matched;
 }
 
 export function saveCustomerRating(data: {
@@ -46,6 +86,7 @@ export function saveCustomerRating(data: {
   };
 
   const updated = [newEntry, ...all];
+  ratingsCache = updated;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch (err) {
