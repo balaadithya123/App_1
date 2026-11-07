@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -287,11 +287,11 @@ export default function SearchResults() {
     });
   }, [requestedService, requestedLocation, searchType]);
 
-  const handleToggleSaved = (id: string, e: React.MouseEvent) => {
+  const handleToggleSaved = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     toggleSavedWorker(id);
     setSavedIds(getSavedWorkerIds());
-  };
+  }, []);
 
   const handleTypeChange = (newType: SearchType) => {
     setSearchType(newType);
@@ -441,39 +441,57 @@ export default function SearchResults() {
 
   const matchingWorkers = useMemo(() => {
     const qLower = freeTextNeed.trim().toLowerCase();
+    const targetCatLower = targetCategory.toLowerCase();
+    const targetCatStem = stemWord(targetCategory);
 
     return availableWorkers.filter((w) => {
-      const catMatched =
-        !targetCategory ||
-        targetCategory === "All" ||
-        w.category.toLowerCase().includes(targetCategory.toLowerCase()) ||
-        targetCategory.toLowerCase().includes(w.category.toLowerCase()) ||
-        stemWord(w.category) === stemWord(targetCategory);
+      let catMatched = !targetCategory || targetCategory === "All";
+      if (!catMatched) {
+        const wCatLower = w.category.toLowerCase();
+        catMatched =
+          wCatLower.includes(targetCatLower) ||
+          targetCatLower.includes(wCatLower) ||
+          stemWord(w.category) === targetCatStem;
+      }
+
+      if (!catMatched) return false;
 
       const locMatched =
         !targetLocality ||
         isLocationMatch(w.locality, targetLocality);
 
+      if (!locMatched) return false;
+
       const availMatched = !onlyAvailableToday || Boolean(w.available_today);
+      if (!availMatched) return false;
+
       const verifiedMatched = !onlyVerified || Boolean(w.phone_verified);
+      if (!verifiedMatched) return false;
+
       const ratingMatched =
         !minRating4Plus || Number(w.avg_rating || w.rating || 4.8) >= 4.5;
+      if (!ratingMatched) return false;
 
-      const qMatched =
-        !qLower ||
+      if (!qLower) return true;
+
+      if (
         w.name.toLowerCase().includes(qLower) ||
         w.category.toLowerCase().includes(qLower) ||
-        (w.locality || "").toLowerCase().includes(qLower) ||
-        (w.services || []).some((s) => s.toLowerCase().includes(qLower));
+        (w.locality || "").toLowerCase().includes(qLower)
+      ) {
+        return true;
+      }
 
-      return (
-        catMatched &&
-        locMatched &&
-        qMatched &&
-        availMatched &&
-        verifiedMatched &&
-        ratingMatched
-      );
+      const services = w.services;
+      if (services) {
+        for (let i = 0; i < services.length; i++) {
+          if (services[i].toLowerCase().includes(qLower)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
     });
   }, [
     availableWorkers,
@@ -551,64 +569,78 @@ export default function SearchResults() {
     });
   }, [matchingWorkers, rankingMap, targetLocality]);
 
-  const matchingAgencies = agencies.filter((a) => {
+  const matchingAgencies = useMemo(() => {
     const qLower = freeTextNeed.trim().toLowerCase();
+    const targetCatLower = targetCategory.toLowerCase();
+    const targetCatStem = stemWord(targetCategory);
+    const targetLocLower = targetLocality.toLowerCase();
 
-    const catMatched =
-      !targetCategory ||
-      targetCategory === "All" ||
-      (a.categories || []).some((c) =>
-        String(c).toLowerCase().includes(targetCategory.toLowerCase()),
-      ) ||
-      (a.categories || []).some(
-        (c) => stemWord(String(c)) === stemWord(targetCategory),
-      );
+    return agencies.filter((a) => {
+      const verifiedMatched = !onlyVerified || Boolean(a.verified);
+      if (!verifiedMatched) return false;
 
-    const locMatched =
-      !targetLocality ||
-      (a.service_locations || []).some((l) =>
-        String(l).toLowerCase().includes(targetLocality.toLowerCase()),
-      ) ||
-      Boolean(
-        a.location &&
-        String(a.location).toLowerCase().includes(targetLocality.toLowerCase()),
-      );
+      const catMatched =
+        !targetCategory ||
+        targetCategory === "All" ||
+        (a.categories || []).some((c) => {
+          const strC = String(c).toLowerCase();
+          return (
+            strC.includes(targetCatLower) || stemWord(strC) === targetCatStem
+          );
+        });
 
-    const qMatched =
-      !qLower ||
-      a.name.toLowerCase().includes(qLower) ||
-      (a.categories || []).some((c) =>
-        String(c).toLowerCase().includes(qLower),
-      ) ||
-      (a.service_locations || []).some((l) =>
-        String(l).toLowerCase().includes(qLower),
-      );
+      if (!catMatched) return false;
 
-    const verifiedMatched = !onlyVerified || Boolean(a.verified);
+      const locMatched =
+        !targetLocality ||
+        (a.service_locations || []).some((l) =>
+          String(l).toLowerCase().includes(targetLocLower),
+        ) ||
+        Boolean(
+          a.location &&
+          String(a.location).toLowerCase().includes(targetLocLower),
+        );
 
-    return catMatched && locMatched && qMatched && verifiedMatched;
-  });
+      if (!locMatched) return false;
+
+      const qMatched =
+        !qLower ||
+        a.name.toLowerCase().includes(qLower) ||
+        (a.categories || []).some((c) =>
+          String(c).toLowerCase().includes(qLower),
+        ) ||
+        (a.service_locations || []).some((l) =>
+          String(l).toLowerCase().includes(qLower),
+        );
+
+      return qMatched;
+    });
+  }, [agencies, targetCategory, targetLocality, freeTextNeed, onlyVerified]);
 
   // Combine or filter strictly according to selected searchType
-  const combined: Array<
-    { type: "agency"; data: Agency } | { type: "worker"; data: Worker }
-  > = [];
+  const combined = useMemo(() => {
+    const list: Array<
+      { type: "agency"; data: Agency } | { type: "worker"; data: Worker }
+    > = [];
 
-  if (searchType === "agencies") {
-    matchingAgencies.forEach((a) => combined.push({ type: "agency", data: a }));
-  } else if (searchType === "workers") {
-    sortedWorkers.forEach((w) => combined.push({ type: "worker", data: w }));
-  } else {
-    let wi = 0,
-      ai = 0;
-    while (wi < sortedWorkers.length || ai < matchingAgencies.length) {
-      if (ai < matchingAgencies.length)
-        combined.push({ type: "agency", data: matchingAgencies[ai++] });
-      for (let n = 0; n < 2 && wi < sortedWorkers.length; n++) {
-        combined.push({ type: "worker", data: sortedWorkers[wi++] });
+    if (searchType === "agencies") {
+      matchingAgencies.forEach((a) => list.push({ type: "agency", data: a }));
+    } else if (searchType === "workers") {
+      sortedWorkers.forEach((w) => list.push({ type: "worker", data: w }));
+    } else {
+      let wi = 0,
+        ai = 0;
+      while (wi < sortedWorkers.length || ai < matchingAgencies.length) {
+        if (ai < matchingAgencies.length)
+          list.push({ type: "agency", data: matchingAgencies[ai++] });
+        for (let n = 0; n < 2 && wi < sortedWorkers.length; n++) {
+          list.push({ type: "worker", data: sortedWorkers[wi++] });
+        }
       }
     }
-  }
+
+    return list;
+  }, [searchType, matchingAgencies, sortedWorkers]);
 
   const hasActiveFilters =
     category !== "All" ||
@@ -878,7 +910,7 @@ export default function SearchResults() {
                       navigate={navigate}
                       rankInfo={rankingMap[item.data.id]}
                       isSaved={savedIds.includes(item.data.id)}
-                      onToggleSaved={(e) => handleToggleSaved(item.data.id, e)}
+                      onToggleSaved={handleToggleSaved}
                     />
                   )}
                 </motion.div>
@@ -980,7 +1012,7 @@ export default function SearchResults() {
   );
 }
 
-function AgencyCard({ agency }: { agency: Agency }) {
+const AgencyCard = memo(function AgencyCard({ agency }: { agency: Agency }) {
   const phone = String(agency.phone || "").replace(/\D/g, "");
   const whatsappUrl = phone
     ? `https://wa.me/${phone.length === 10 ? `91${phone}` : phone}`
@@ -1084,9 +1116,9 @@ function AgencyCard({ agency }: { agency: Agency }) {
       </div>
     </article>
   );
-}
+});
 
-function WorkerCard({
+const WorkerCard = memo(function WorkerCard({
   worker,
   navigate,
   rankInfo,
@@ -1097,7 +1129,7 @@ function WorkerCard({
   navigate: (to: string) => void;
   rankInfo?: { rank: number; score: number; reason: string };
   isSaved: boolean;
-  onToggleSaved: (e: React.MouseEvent) => void;
+  onToggleSaved: (id: string, e: React.MouseEvent) => void;
 }) {
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
   const [ratingStats, setRatingStats] = useState(() =>
@@ -1227,7 +1259,7 @@ function WorkerCard({
               </button>
               <button
                 type="button"
-                onClick={onToggleSaved}
+                onClick={(e) => onToggleSaved(worker.id, e)}
                 className="text-[#71717A] hover:text-rose-500 transition p-1 cursor-pointer"
                 aria-label={isSaved ? `Unsave ${worker.name}` : `Save ${worker.name}`}
               >
@@ -1308,4 +1340,4 @@ function WorkerCard({
       />
     </>
   );
-}
+});
