@@ -253,32 +253,43 @@ export function getDueAndUpcomingHomeItems(
   strictlyDueCount: number;
   reminderWindowCount: number;
 } {
-  const decorated: HomeItemWithStatus[] = items.map((item) => ({
-    ...item,
-    status: getReminderStatus(item, referenceDate),
-  }));
+  const dueOrOverdue: HomeItemWithStatus[] = [];
+  const upcoming: HomeItemWithStatus[] = [];
+  let strictlyDueCount = 0;
+  let reminderWindowCount = 0;
 
-  const dueOrOverdue = decorated
-    .filter((item) => item.status.isReminderActive)
-    .sort((a, b) => {
-      // Overdue-first: largest diffDays first (most overdue)
-      if (b.status.diffDays !== a.status.diffDays) {
-        return b.status.diffDays - a.status.diffDays;
+  // Bolt optimization: Single O(N) pass to decorate items and compute category counters,
+  // preventing multiple array allocations (.map and 4x .filter traversals).
+  const len = items.length;
+  for (let i = 0; i < len; i++) {
+    const item = items[i];
+    const status = getReminderStatus(item, referenceDate);
+    const decorated: HomeItemWithStatus = { ...item, status };
+
+    if (status.isDue) {
+      strictlyDueCount++;
+    }
+
+    if (status.isReminderActive) {
+      dueOrOverdue.push(decorated);
+      if (!status.isDue) {
+        reminderWindowCount++;
       }
-      return a.label.localeCompare(b.label);
-    });
+    } else {
+      upcoming.push(decorated);
+    }
+  }
 
-  const upcoming = decorated
-    .filter((item) => !item.status.isReminderActive)
-    .sort((a, b) => {
-      // Soonest-due first: earliest due date (closest to today, least negative diffDays)
-      return a.status.dueDate.getTime() - b.status.dueDate.getTime();
-    });
+  // Sort dueOrOverdue: largest diffDays first (most overdue)
+  dueOrOverdue.sort((a, b) => {
+    if (b.status.diffDays !== a.status.diffDays) {
+      return b.status.diffDays - a.status.diffDays;
+    }
+    return a.label.localeCompare(b.label);
+  });
 
-  const strictlyDueCount = decorated.filter((item) => item.status.isDue).length;
-  const reminderWindowCount = decorated.filter(
-    (item) => item.status.isReminderActive && !item.status.isDue,
-  ).length;
+  // Sort upcoming: soonest-due first (earliest due date, least negative diffDays)
+  upcoming.sort((a, b) => a.status.dueDate.getTime() - b.status.dueDate.getTime());
 
   return {
     dueOrOverdue,
