@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SupplierSkeleton() {
   return (
-    <div className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4">
+    <div className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4">
       <div className="flex items-center gap-3">
         <Skeleton className="h-11 w-11 rounded-xl" />
         <div className="flex-1 space-y-2">

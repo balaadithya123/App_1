@@ -51,42 +51,48 @@ export default function Report() {
 
   return (
     <PageShell backTo="/search" backLabel="Back">
-      <section className="rounded-[16px] border border-[#dcece7] bg-[#edf7f3] px-5 py-7 sm:px-8 sm:py-9">
-        <h1 className="text-[30px] font-extrabold leading-tight tracking-[-0.045em] text-navy sm:text-4xl">
+      <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] px-6 py-7 sm:px-8 sm:py-9 shadow-sm">
+        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+          Community Trust
+        </span>
+        <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight text-[#141210] dark:text-[#FAFAFA]">
           Report or Give Feedback
         </h1>
-        <p className="mt-3 text-[14px] leading-6 text-slate">
-          Help us keep LocalWorker useful for everyone.
+        <p className="mt-2 text-sm leading-relaxed text-[#6B645F] dark:text-[#9E958F]">
+          Help us keep Builderco accurate, safe, and useful for everyone.
         </p>
       </section>
 
       {submitted ? (
-        <section className="mt-6 rounded-[13px] border border-[#b9ddd4] bg-mint p-5 text-center">
-          <h2 className="font-extrabold text-navy">
+        <section className="mt-6 rounded-[24px] border border-[#0F8A73]/30 bg-[#0F8A73]/10 p-6 text-center shadow-sm">
+          <h2 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
             Thank you. Your feedback has been submitted.
           </h2>
+          <p className="mt-1 text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">
+            Our moderation team reviews reports carefully to maintain verified listings.
+          </p>
         </section>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mt-7 rounded-[13px] border border-line bg-white p-5 shadow-[0_5px_18px_rgba(24,55,62,0.04)] sm:p-7"
+          className="mt-6 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 shadow-sm sm:p-7"
         >
           <fieldset>
-            <legend className="text-[13px] font-bold text-navy">
+            <legend className="text-xs font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F]">
               What would you like to report?
             </legend>
-            <div className="mt-4 space-y-3">
+            <div className="mt-3.5 space-y-2.5">
               {options.map((option) => (
                 <label
                   key={option}
-                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-[9px] border border-line px-3 text-[13px] text-navy hover:bg-mint/50"
+                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 text-sm font-medium text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/40 transition"
                 >
                   <input
                     type="radio"
                     name="reason"
                     value={option}
                     required
-                    className="h-4 w-4 accent-[#168b83]"
+                    className="h-4 w-4 accent-[#F4512C]"
                   />
                   {option}
                 </label>
@@ -95,7 +101,7 @@ export default function Report() {
           </fieldset>
           <label
             htmlFor="feedback"
-            className="mt-6 block text-[13px] font-bold text-navy"
+            className="mt-6 block text-xs font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F]"
           >
             Additional details
           </label>
@@ -105,16 +111,16 @@ export default function Report() {
             required
             rows={5}
             placeholder="Tell us what happened..."
-            className="mt-2 w-full resize-none rounded-[9px] border border-line bg-[#fbfcfc] px-3 py-3 text-sm text-navy outline-none placeholder:text-slate/80 focus:border-teal focus:ring-2 focus:ring-teal/15"
+            className="mt-2 w-full resize-none rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-3 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none placeholder:text-[#6B645F]/70 focus:border-[#F4512C] transition"
           />
           {error ? (
-            <p className="mt-4 text-[13px] font-bold text-red-600">{error}</p>
+            <p className="mt-4 text-xs font-bold text-rose-600 dark:text-rose-400">{error}</p>
           ) : null}
           <button
             type="submit"
             disabled={isSubmitting}
             aria-busy={isSubmitting}
-            className="mt-5 flex h-12 w-full items-center justify-center rounded-[10px] bg-navy text-sm font-bold text-white shadow-[0_5px_12px_rgba(18,63,75,0.18)] transition-colors hover:bg-[#234b59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-5 flex h-11 w-full items-center justify-center rounded-full bg-[#F4512C] text-sm font-bold text-white shadow-sm transition hover:bg-[#E04320] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F4512C] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer active:scale-[0.99]"
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </button>

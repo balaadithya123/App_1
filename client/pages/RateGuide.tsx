@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import PageShell from "@/components/PageShell";
+import { RateGuideSkeleton } from "@/components/PageSkeletons";
 import { getStandardLocation } from "@/lib/location";
 import { TRADE_CATEGORIES, formatRupees, passbookApi } from "@/lib/passbook";
 import { RATE_UNIT_LABEL, type RateGuideResponse } from "@shared/passbook";
+import { useLanguage } from "@/lib/i18n";
 
 const inputClass =
-  "w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0D0D10] px-3 py-2.5 text-sm outline-none transition focus:border-neutral-500";
+  "w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none transition focus:border-[#F4512C]";
 
 export default function RateGuide() {
+  const { t, translateCategory } = useLanguage();
   const [category, setCategory] = useState<string>(TRADE_CATEGORIES[0]);
   const [location, setLocation] = useState(() => getStandardLocation());
   const [query, setQuery] = useState({ category: TRADE_CATEGORIES[0] as string, location: getStandardLocation() });
@@ -45,14 +48,19 @@ export default function RateGuide() {
   }`;
 
   return (
-    <PageShell backTo="/home" backLabel="Home" containerWidth="md">
-      <div className="space-y-5 pb-24">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Fair Rate Guide</h1>
-          <p className="mt-0.5 text-sm text-[#71717A]">
-            See what jobs usually cost in your area before you call a worker.
+    <PageShell backTo="/home" backLabel={t("nav.home")} containerWidth="md">
+      <div className="space-y-6 pb-24">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 sm:p-7 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            {t("rate.eyebrow")}
+          </span>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+            {t("rate.title")}
+          </h1>
+          <p className="mt-1.5 text-sm text-[#6B645F] dark:text-[#9E958F]">
+            {t("rate.sub")}
           </p>
-        </div>
+        </section>
 
         <form
           onSubmit={(e) => {
@@ -64,50 +72,51 @@ export default function RateGuide() {
           <select className={inputClass} value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Trade">
             {TRADE_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {translateCategory(c)}
               </option>
             ))}
           </select>
-          <input className={inputClass} value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Area or city" aria-label="Area or city" />
-          <button type="submit" className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-black px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-black">
-            <Search size={14} /> Show
+          <input className={inputClass} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("rate.areaPlaceholder")} aria-label={t("rate.areaPlaceholder")} />
+          <button type="submit" className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition cursor-pointer active:scale-95">
+            <Search size={14} /> {t("rate.showRates")}
           </button>
         </form>
 
         {loading ? (
-          <div className="flex min-h-[20vh] items-center justify-center" aria-busy="true">
-            <Loader2 className="h-7 w-7 animate-spin" />
-          </div>
+          <RateGuideSkeleton />
         ) : error ? (
-          <p className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] p-8 text-center text-sm text-[#71717A]">{error}</p>
+          <p className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center text-sm text-[#6B645F] dark:text-[#9E958F]">{error}</p>
         ) : result && result.groups.length > 0 ? (
           <div className="space-y-3">
             {result.groups.map((g) => (
-              <article key={g.unit} className="space-y-1 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#71717A]">{RATE_UNIT_LABEL[g.unit]}</p>
-                <p className="text-2xl font-bold tracking-tight">
+              <article key={g.unit} className="space-y-1.5 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 shadow-sm">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">{RATE_UNIT_LABEL[g.unit]}</p>
+                <p className="text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
                   {formatRupees(g.low ?? 0)} – {formatRupees(g.high ?? 0)}
                 </p>
-                <p className="text-sm text-[#52525B] dark:text-[#A1A1AA]">
-                  Middle price about {formatRupees(g.typical ?? 0)}
+                <p className="text-sm font-medium text-[#6B645F] dark:text-[#9E958F]">
+                  {t("rate.middlePrice")}{" "}
+                  <span className="font-bold text-[#141210] dark:text-[#FAFAFA]">
+                    {formatRupees(g.typical ?? 0)}
+                  </span>
                 </p>
-                <p className="text-xs text-[#71717A]">
+                <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                   {g.source === "jobs"
                     ? `Based on ${g.sample_size} jobs confirmed by customers in the last year`
                     : `Based on rates listed by ${g.sample_size} workers. It will use real confirmed jobs as they build up`}
                 </p>
               </article>
             ))}
-            <p className="px-1 text-[11px] text-[#71717A]">
-              This is a guide, not a fixed price. The final rate depends on the job, materials and distance, so always agree it with the worker first.
+            <p className="px-1 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+              {t("rate.disclaimer")}
             </p>
           </div>
         ) : (
-          <div className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] p-8 text-center">
-            <p className="text-sm text-[#71717A]">
+          <div className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center shadow-sm">
+            <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
               Not enough prices yet for {query.category.toLowerCase()}s{query.location.trim() ? ` in ${query.location.trim()}` : ""}. Try a wider area.
             </p>
-            <Link to={searchHref} className="inline-block text-xs font-semibold underline">
+            <Link to={searchHref} className="inline-flex items-center gap-1.5 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-4 py-2 text-xs font-bold hover:opacity-90 transition">
               Browse {query.category.toLowerCase()}s instead
             </Link>
           </div>

@@ -5,8 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { RouteAppShellSkeleton } from "@/components/PageSkeletons";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { LanguageProvider } from "@/lib/i18n";
+import { VoiceAssistantProvider } from "@/lib/voice-assistant-context";
+import VoiceAssistantCall from "@/components/VoiceAssistantCall";
+import FloatingChatButton from "@/components/FloatingChatButton";
+import { registerSW } from "virtual:pwa-register";
 import "./global.css";
 
 import Index from "./pages/Index";
@@ -51,11 +57,7 @@ const RateGuide = lazy(() => import("./pages/RateGuide"));
 const queryClient = new QueryClient();
 
 function RouteLoadingFallback() {
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center p-6 text-muted-foreground">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  );
+  return <RouteAppShellSkeleton />;
 }
 
 function RootRoute() {
@@ -109,7 +111,7 @@ function RootRoute() {
     return <RouteLoadingFallback />;
   }
 
-  return <LandingPage />;
+  return <Index />;
 }
 
 function NavigationOriginTracker() {
@@ -143,100 +145,121 @@ export default function App() {
     applyTheme(initial);
   }, []);
 
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    try {
+      registerSW({
+        immediate: true,
+        onRegisterError(error) {
+          console.warn("[PWA] Service worker registration error:", error);
+        },
+      });
+    } catch (err) {
+      console.warn("[PWA] Service worker setup skipped:", err);
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <NavigationOriginTracker />
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <Routes>
-              {/* Authenticated Aware Root & Landing Routes */}
-              <Route path="/" element={<RootRoute />} />
-              <Route path="/home" element={<Index />} />
-              <Route path="/app" element={<Index />} />
-              <Route path="/explore" element={<Index />} />
-              <Route path="/landing" element={<RootRoute />} />
-              <Route path="/overview" element={<RootRoute />} />
-              <Route path="/about" element={<RootRoute />} />
-              <Route path="/voice-onboarding" element={<VoiceOnboarding />} />
-              <Route path="/voice" element={<VoiceOnboarding />} />
-              <Route path="/search" element={<SearchResults />} />
-              <Route path="/assistant" element={<ChatAssistantPage />} />
-              <Route path="/chat" element={<ChatAssistantPage />} />
-              <Route path="/saved" element={<SavedWorkers />} />
-              <Route path="/my-circle" element={<SavedWorkers />} />
-              <Route path="/recently-viewed" element={<RecentlyViewed />} />
-              <Route
-                path="/profile-completeness"
-                element={<ProfileCompleteness />}
-              />
-              <Route path="/worker" element={<WorkerProfile />} />
-              <Route path="/worker/:id" element={<WorkerProfile />} />
-              <Route path="/workers/:id" element={<WorkerProfile />} />
-              <Route path="/agency-profile" element={<AgencyProfile />} />
-              <Route path="/agency/:id" element={<AgencyProfile />} />
-              <Route path="/agencies/:id" element={<AgencyProfile />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/register-agency" element={<AgencyRegister />} />
-              <Route path="/agency" element={<AgencyDashboard />} />
-              <Route path="/agency/dashboard" element={<AgencyDashboard />} />
-              <Route
-                path="/agency/profile/edit"
-                element={<AgencyProfileEdit />}
-              />
-              <Route
-                path="/agency/profile-completeness"
-                element={<AgencyProfileCompleteness />}
-              />
-              <Route path="/join" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/worker-dashboard" element={<WorkerDashboard />} />
-              <Route
-                path="/worker-commitments"
-                element={<WorkerCommitments />}
-              />
-              <Route
-                path="/callback-requests"
-                element={<WorkerCallbackRequests />}
-              />
-              <Route path="/inbox" element={<Inbox />} />
-              <Route
-                path="/portfolio-screen"
-                element={<PortfolioModeration />}
-              />
-              <Route
-                path="/portfolio-screening"
-                element={<PortfolioModeration />}
-              />
-              <Route
-                path="/portfolio-moderation"
-                element={<PortfolioModeration />}
-              />
-              <Route
-                path="/admin/portfolio"
-                element={<PortfolioModeration />}
-              />
-              <Route path="/ranking-engine" element={<SearchResults />} />
-              <Route path="/ranking" element={<SearchResults />} />
-              <Route path="/worker-ranking" element={<SearchResults />} />
-              <Route path="/admin/ranking" element={<SearchResults />} />
-              <Route path="/admin/analytics" element={<AdminDashboard />} />
-              <Route path="/materials" element={<Materials />} />
-              <Route path="/materials/:id" element={<SupplierProfile />} />
-              <Route path="/admin/suppliers" element={<AdminSuppliers />} />
-              <Route path="/worker-passbook" element={<WorkerPassbook />} />
-              <Route path="/job/:token" element={<JobSlip />} />
-              <Route path="/rate-guide" element={<RateGuide />} />
-              <Route path="/register-supplier" element={<SupplierRegister />} />
-              <Route path="/report" element={<Report />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <VoiceAssistantProvider>
+              <NavigationOriginTracker />
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <Routes>
+                  {/* Authenticated Aware Root & Landing Routes */}
+                  <Route path="/" element={<RootRoute />} />
+                  <Route path="/home" element={<Index />} />
+                  <Route path="/app" element={<Index />} />
+                  <Route path="/explore" element={<Index />} />
+                  <Route path="/landing" element={<RootRoute />} />
+                  <Route path="/overview" element={<RootRoute />} />
+                  <Route path="/about" element={<RootRoute />} />
+                  <Route path="/voice-onboarding" element={<VoiceOnboarding />} />
+                  <Route path="/voice" element={<VoiceOnboarding />} />
+                  <Route path="/search" element={<SearchResults />} />
+                  <Route path="/assistant" element={<ChatAssistantPage />} />
+                  <Route path="/chat" element={<ChatAssistantPage />} />
+                  <Route path="/saved" element={<SavedWorkers />} />
+                  <Route path="/my-circle" element={<SavedWorkers />} />
+                  <Route path="/recently-viewed" element={<RecentlyViewed />} />
+                  <Route
+                    path="/profile-completeness"
+                    element={<ProfileCompleteness />}
+                  />
+                  <Route path="/worker" element={<WorkerProfile />} />
+                  <Route path="/worker/:id" element={<WorkerProfile />} />
+                  <Route path="/workers/:id" element={<WorkerProfile />} />
+                  <Route path="/agency-profile" element={<AgencyProfile />} />
+                  <Route path="/agency/:id" element={<AgencyProfile />} />
+                  <Route path="/agencies/:id" element={<AgencyProfile />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/register-agency" element={<AgencyRegister />} />
+                  <Route path="/agency" element={<AgencyDashboard />} />
+                  <Route path="/agency/dashboard" element={<AgencyDashboard />} />
+                  <Route
+                    path="/agency/profile/edit"
+                    element={<AgencyProfileEdit />}
+                  />
+                  <Route
+                    path="/agency/profile-completeness"
+                    element={<AgencyProfileCompleteness />}
+                  />
+                  <Route path="/join" element={<Register />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/worker-dashboard" element={<WorkerDashboard />} />
+                  <Route
+                    path="/worker-commitments"
+                    element={<WorkerCommitments />}
+                  />
+                  <Route
+                    path="/callback-requests"
+                    element={<WorkerCallbackRequests />}
+                  />
+                  <Route path="/inbox" element={<Inbox />} />
+                  <Route
+                    path="/portfolio-screen"
+                    element={<PortfolioModeration />}
+                  />
+                  <Route
+                    path="/portfolio-screening"
+                    element={<PortfolioModeration />}
+                  />
+                  <Route
+                    path="/portfolio-moderation"
+                    element={<PortfolioModeration />}
+                  />
+                  <Route
+                    path="/admin/portfolio"
+                    element={<PortfolioModeration />}
+                  />
+                  <Route path="/ranking-engine" element={<SearchResults />} />
+                  <Route path="/ranking" element={<SearchResults />} />
+                  <Route path="/worker-ranking" element={<SearchResults />} />
+                  <Route path="/admin/ranking" element={<SearchResults />} />
+                  <Route path="/admin/analytics" element={<AdminDashboard />} />
+                  <Route path="/materials" element={<Materials />} />
+                  <Route path="/materials/:id" element={<SupplierProfile />} />
+                  <Route path="/admin/suppliers" element={<AdminSuppliers />} />
+                  <Route path="/worker-passbook" element={<WorkerPassbook />} />
+                  <Route path="/job/:token" element={<JobSlip />} />
+                  <Route path="/rate-guide" element={<RateGuide />} />
+                  <Route path="/register-supplier" element={<SupplierRegister />} />
+                  <Route path="/report" element={<Report />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <OfflineIndicator />
+              <FloatingChatButton />
+              <VoiceAssistantCall />
+            </VoiceAssistantProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

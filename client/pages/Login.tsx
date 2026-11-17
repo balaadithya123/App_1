@@ -94,10 +94,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#141210] dark:text-[#FAFAFA] flex flex-col selection:bg-[#F4512C]/20">
       {/* Minimal Top Bar: ONLY Logo + Name and Back Button */}
-      <header className="sticky top-0 z-30 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-white/80 dark:bg-[#141416]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-14 sm:h-16 w-full max-w-5xl items-center justify-between px-4 sm:px-6">
+      <header className="sticky top-0 z-30 w-full border-b border-[#EAE2DC] dark:border-white/10 bg-white/95 dark:bg-[#0B0A09]/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Logo & Name */}
           <button
             type="button"
@@ -112,7 +112,7 @@ export default function Login() {
           <button
             type="button"
             onClick={handleBack}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:border-neutral-400 dark:hover:border-neutral-500 transition shadow-xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition shadow-xs cursor-pointer active:scale-95"
             aria-label={isFromLanding ? "Back to Landing Page" : "Back to Home"}
           >
             <ArrowLeft size={15} />
@@ -124,15 +124,18 @@ export default function Login() {
       {/* Main Area: ONLY the Login Box */}
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
         <div className="w-full max-w-[420px]">
-          <section className="rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 shadow-sm sm:p-8">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-[14px] bg-black text-white dark:bg-white dark:text-black shadow-sm">
+          <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-sm sm:p-8">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
               <UserRound size={22} />
             </div>
 
-            <h1 className="text-2xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+              Account Access
+            </span>
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
               Welcome back
             </h1>
-            <p className="mt-1.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+            <p className="mt-1.5 text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F]">
               Sign in to manage your worker profile, bookmarks, and requests.
             </p>
 
@@ -140,7 +143,7 @@ export default function Login() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]"
+                  className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]"
                 >
                   Email Address
                 </label>
@@ -151,14 +154,14 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3.5 text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] focus:border-neutral-400 dark:focus:border-neutral-500 focus:outline-none transition shadow-sm"
+                  className="h-11 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 text-sm text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F]/70 focus:border-[#F4512C] focus:outline-none transition"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="login-password"
-                  className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]"
+                  className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]"
                 >
                   Password
                 </label>
@@ -170,12 +173,12 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Your account password"
-                    className="h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3.5 pr-11 text-sm text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A] focus:border-neutral-400 dark:focus:border-neutral-500 focus:outline-none transition shadow-sm"
+                    className="h-11 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 pr-11 text-sm text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F]/70 focus:border-[#F4512C] focus:outline-none transition"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-[#71717A] hover:text-[#09090B] dark:hover:text-[#FAFAFA] cursor-pointer"
+                    className="absolute right-2.5 top-2.5 flex h-6 w-6 items-center justify-center text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA] cursor-pointer"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
@@ -186,12 +189,12 @@ export default function Login() {
               </div>
 
               <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 text-xs font-semibold text-[#71717A] dark:text-[#A1A1AA] cursor-pointer">
+                <label className="flex items-center gap-2 text-xs font-semibold text-[#6B645F] dark:text-[#9E958F] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded accent-black dark:accent-white"
+                    className="h-4 w-4 rounded accent-[#F4512C]"
                   />
                   Remember me
                 </label>
@@ -200,7 +203,7 @@ export default function Login() {
               {error && (
                 <p
                   role="alert"
-                  className="rounded-[12px] border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-900/60 px-3.5 py-2.5 text-xs font-semibold text-rose-600 dark:text-rose-400"
+                  className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/40 dark:border-rose-900/60 px-3.5 py-2.5 text-xs font-semibold text-rose-600 dark:text-rose-400"
                 >
                   {error}
                 </p>
@@ -209,7 +212,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-60 cursor-pointer active:scale-[0.99]"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#F4512C] text-white text-sm font-bold shadow-sm hover:bg-[#E04320] transition disabled:opacity-60 cursor-pointer active:scale-[0.99]"
               >
                 {loading ? (
                   <>
@@ -222,20 +225,20 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="mt-6 border-t border-[#E4E4E7] dark:border-[#27272A] pt-5 text-center">
-              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
+            <div className="mt-6 border-t border-[#EAE2DC] dark:border-white/10 pt-5 text-center">
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                 Don't have an account yet?
               </p>
               <div className="mt-3 flex items-center justify-center gap-2">
                 <Link
                   to="/join"
-                  className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-2 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500 transition shadow-sm"
+                  className="inline-flex rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-5 py-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition"
                 >
                   Join as Worker
                 </Link>
                 <Link
                   to="/register-agency"
-                  className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-2 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500 transition shadow-sm"
+                  className="inline-flex rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-5 py-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition"
                 >
                   Join as Agency
                 </Link>

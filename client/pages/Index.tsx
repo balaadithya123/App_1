@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import BrandLogo from "@/components/BrandLogo";
 import {
   MapPin,
   ChevronDown,
@@ -13,26 +12,23 @@ import {
   ChevronRight,
   Navigation,
   X,
-  Sparkles,
-  Heart,
-  UserRound,
   ShieldCheck,
   CheckCircle2,
-  Clock,
-  Building2,
   Package,
   IndianRupee,
+  ArrowRight,
+  Mic,
 } from "lucide-react";
 import type { Worker } from "@shared/workers";
 import type { WorkersResponse } from "@shared/api";
 import { logAnalyticsEvent } from "@/lib/analytics";
 import TrustStripWorkerCard from "@/components/TrustStripWorkerCard";
+import { WorkerCardSkeleton } from "@/components/PageSkeletons";
 import NavBar from "@/components/NavBar";
-import { getCategoryMeta } from "@/components/materials/categoryMeta";
 import PostNeedModal from "@/components/PostNeedModal";
-import ThemeToggle from "@/components/ThemeToggle";
-import MobileMenu from "@/components/MobileMenu";
-import { getStoredDueBadgeCount, getLiveDueBadgeCount } from "@/lib/home-items";
+import TopBar from "@/components/TopBar";
+import { useLanguage } from "@/lib/i18n";
+import { useVoiceAssistant } from "@/lib/voice-assistant-context";
 import {
   getStandardLocation,
   setStandardLocation,
@@ -42,24 +38,59 @@ import {
 import { supabase } from "@/lib/supabase";
 
 const categories = [
-  { name: "Electrician", icon: Zap, countText: "Wiring, switchboards, inverter & fan repairs" },
-  { name: "Plumber", icon: Wrench, countText: "Pipes, leakage, taps, geyser & motors" },
-  { name: "Carpenter", icon: Hammer, countText: "Furniture assembly, door lock & wood repair" },
-  { name: "Painter", icon: Paintbrush, countText: "Interior wall, exterior & waterproofing" },
-  { name: "Cleaner", icon: Brush, countText: "Deep cleaning, kitchen, sofa & bathroom" },
-  { name: "All Services", icon: ChevronRight, countText: "Browse all verified trade specialists" },
+  {
+    name: "Electrician",
+    icon: Zap,
+    countText: "Wiring, switchboards, inverter & fan repairs",
+  },
+  {
+    name: "Plumber",
+    icon: Wrench,
+    countText: "Pipes, leakage, taps, geyser & motors",
+  },
+  {
+    name: "Carpenter",
+    icon: Hammer,
+    countText: "Furniture assembly, door lock & wood repair",
+  },
+  {
+    name: "Painter",
+    icon: Paintbrush,
+    countText: "Interior wall, exterior & waterproofing",
+  },
+  {
+    name: "Cleaner",
+    icon: Brush,
+    countText: "Deep cleaning, kitchen, sofa & bathroom",
+  },
+  {
+    name: "All Services",
+    icon: ChevronRight,
+    countText: "Browse all verified trade specialists",
+  },
 ];
 
 export default function Index() {
   const navigate = useNavigate();
   const routerLocation = useLocation();
+  const { t, translateCategory } = useLanguage();
+  const { openCall } = useVoiceAssistant();
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<any>(null);
-  const [dueCount, setDueCount] = useState<number>(0);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [location, setLocation] = useState(() => getStandardLocation());
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [customLocationInput, setCustomLocationInput] = useState("");
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [postNeedOpen, setPostNeedOpen] = useState(false);
+  const [postNeedInitialCategory, setPostNeedInitialCategory] = useState<string | undefined>(undefined);
+  const locationPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (routerLocation.state && (routerLocation.state as any).openPostNeed) {
+    const state = routerLocation.state as any;
+    if (state?.openPostNeed) {
+      if (state.initialCategory) setPostNeedInitialCategory(state.initialCategory);
       setPostNeedOpen(true);
     }
   }, [routerLocation.state]);
@@ -67,7 +98,6 @@ export default function Index() {
   useEffect(() => {
     if (!supabase) return;
     void supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
       const role = data.session?.user?.user_metadata?.role;
       if (role === "worker") {
         navigate("/worker-dashboard", { replace: true });
@@ -77,7 +107,6 @@ export default function Index() {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
       const role = s?.user?.user_metadata?.role;
       if (role === "worker") {
         navigate("/worker-dashboard", { replace: true });
@@ -87,24 +116,6 @@ export default function Index() {
     });
     return () => listener.subscription.unsubscribe();
   }, [navigate]);
-
-  useEffect(() => {
-    const updateDue = () => {
-      setDueCount(getStoredDueBadgeCount(session?.user?.id));
-      void getLiveDueBadgeCount(session?.user?.id).then((c) => setDueCount(c));
-    };
-    updateDue();
-    window.addEventListener("home-items-changed", updateDue);
-    return () => window.removeEventListener("home-items-changed", updateDue);
-  }, [session?.user?.id]);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [location, setLocation] = useState(() => getStandardLocation());
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [customLocationInput, setCustomLocationInput] = useState("");
-  const [gpsLoading, setGpsLoading] = useState(false);
-  const [postNeedOpen, setPostNeedOpen] = useState(false);
-  const locationPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleLocationChange = (e: Event) => {
@@ -238,7 +249,6 @@ export default function Index() {
       return { displayPros: matched.slice(0, 6), isExactLocationMatch: true };
     }
 
-    // Fallback to top verified pros if exact locality has no registered workers yet
     return { displayPros: sorted.slice(0, 6), isExactLocationMatch: false };
   }, [workers, location]);
 
@@ -275,99 +285,257 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800 pb-24 font-sans">
-      {/* TOP HEADER — Clean, Polished Translucent Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 lg:gap-6 px-4 sm:px-6 lg:px-8 relative">
-          {/* Left: Brand Logo & Location Chip */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <Link
-              to="/home"
-              className="flex items-center gap-2.5 shrink-0 group"
-              aria-label="Builderco Home"
-            >
-              <BrandLogo className="h-7 w-auto transition-transform group-hover:scale-105" />
-            </Link>
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#141210] dark:text-[#FAFAFA] flex flex-col selection:bg-[#F4512C]/20 pb-24 font-sans">
+      <TopBar onPostNeed={() => setPostNeedOpen(true)} />
 
-            {/* Subtle Divider */}
-            <div className="hidden sm:block h-5 w-px bg-[#E4E4E7] dark:bg-[#27272A] shrink-0" />
+      {/* MAIN CONTENT */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-12 sm:space-y-14">
+        {/* 1. HERO BANNER CARD */}
+        <section
+          aria-label="Find local professionals"
+          className="relative overflow-hidden rounded-[28px] border border-[#EEDFD6] dark:border-white/10 bg-gradient-to-br from-[#FFF6F2] via-[#FAF1EB] to-[#F3E5DC] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-7 sm:p-11 lg:p-14"
+        >
+          {/* Minimalist Architectural Home Illustration (Right Background) */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 520 420"
+            fill="none"
+            className="pointer-events-none select-none hidden md:block absolute right-0 bottom-0 h-full w-auto opacity-80 dark:opacity-100"
+          >
+            {/* Sun / Moon Circle */}
+            <circle
+              cx="450"
+              cy="92"
+              r="34"
+              className="fill-[#E9D7CC] dark:fill-[#493D37]"
+            />
+            {/* House Body */}
+            <path
+              d="M110 210L275 88L440 210V420H110V210Z"
+              className="fill-[#E7D8CE] dark:fill-[#443B37]"
+            />
+            {/* Roof Overhang */}
+            <path
+              d="M92 216L275 80L458 216"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="stroke-[#D5C0B3] dark:stroke-[#594A42]"
+            />
+            {/* Arched Doorway */}
+            <path
+              d="M210 420V296C210 264 236 240 275 240C314 240 340 264 340 296V420H210Z"
+              className="fill-[#D6C2B6] dark:fill-[#54463E]"
+            />
+            {/* Left Window */}
+            <rect
+              x="140"
+              y="246"
+              width="48"
+              height="48"
+              rx="4"
+              className="fill-[#F3E7E0] dark:fill-[#393330]"
+            />
+            <line
+              x1="164"
+              y1="246"
+              x2="164"
+              y2="294"
+              strokeWidth="2"
+              className="stroke-[#D6C2B6] dark:stroke-[#54463E]"
+            />
+            <line
+              x1="140"
+              y1="270"
+              x2="188"
+              y2="270"
+              strokeWidth="2"
+              className="stroke-[#D6C2B6] dark:stroke-[#54463E]"
+            />
+            {/* Right Window */}
+            <rect
+              x="362"
+              y="246"
+              width="48"
+              height="48"
+              rx="4"
+              className="fill-[#F3E7E0] dark:fill-[#393330]"
+            />
+            <line
+              x1="386"
+              y1="246"
+              x2="386"
+              y2="294"
+              strokeWidth="2"
+              className="stroke-[#D6C2B6] dark:stroke-[#54463E]"
+            />
+            <line
+              x1="362"
+              y1="270"
+              x2="410"
+              y2="270"
+              strokeWidth="2"
+              className="stroke-[#D6C2B6] dark:stroke-[#54463E]"
+            />
+            {/* Left Foliage Bushes */}
+            <path
+              d="M24 420C24 365 56 320 92 320C128 320 156 365 156 420H24Z"
+              className="fill-[#CAD5C0] dark:fill-[#3C4134]"
+            />
+            <path
+              d="M84 420C84 378 106 346 132 346C158 346 180 378 180 420H84Z"
+              className="fill-[#D4DFCA] dark:fill-[#494E3E]"
+            />
+            {/* Right Foliage Bushes */}
+            <path
+              d="M370 420C370 365 402 320 438 320C474 320 506 365 506 420H370Z"
+              className="fill-[#CAD5C0] dark:fill-[#3C4134]"
+            />
+            <path
+              d="M346 420C346 378 368 346 394 346C420 346 442 378 442 420H346Z"
+              className="fill-[#D4DFCA] dark:fill-[#494E3E]"
+            />
+          </svg>
 
-            {/* Location Chip Selector */}
-            <div className="relative shrink-0" ref={locationPickerRef}>
-              <button
-                type="button"
-                onClick={() => {
-                  setCustomLocationInput(location);
-                  setShowLocationPicker((prev) => !prev);
-                }}
-                aria-label="Select location area"
-                className="inline-flex h-9 items-center gap-1.5 sm:gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-[#141416] px-3 sm:px-3.5 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 active:scale-95 cursor-pointer max-w-[130px] sm:max-w-[180px] shadow-2xs"
+          {/* Left Column Content */}
+          <div className="relative z-10 max-w-xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#F4512C]/30 bg-[#F4512C]/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[#D84E2B] dark:text-[#EA7352]">
+              <ShieldCheck size={13} />
+              <span>{t("hero.badge")}</span>
+            </div>
+
+            <h1 className="mt-6 text-4xl sm:text-5xl lg:text-[54px] font-extrabold tracking-tight leading-[1.06]">
+              <span className="block text-[#141210] dark:text-white">
+                {t("hero.titleLine1")}
+              </span>
+              <span className="block text-[#F4512C]">{t("hero.titleLine2")}</span>
+            </h1>
+
+            <p className="mt-4 text-sm sm:text-base text-[#6B645F] dark:text-[#A19994] max-w-md leading-relaxed">
+              {t("hero.subtitle")}
+            </p>
+
+            {/* Hero Search & Area Selector Bar */}
+            <div className="relative mt-7 max-w-2xl" ref={locationPickerRef}>
+              <form
+                onSubmit={handleSearchSubmit}
+                className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-0 rounded-2xl sm:rounded-full border border-[#E2D6CE] dark:border-white/10 bg-white dark:bg-[#131211] p-1.5 pl-4 shadow-sm focus-within:border-[#F4512C]/60 transition"
               >
-                <MapPin size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="truncate">{location || "Select Area"}</span>
-                <ChevronDown
-                  size={13}
-                  className={`text-[#71717A] dark:text-[#A1A1AA] shrink-0 transition-transform duration-200 ${
-                    showLocationPicker ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
+                <div className="flex flex-1 items-center min-w-[180px]">
+                  <Search
+                    size={16}
+                    className="text-[#8C847E] dark:text-[#766F6A] shrink-0 mr-2.5"
+                  />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t("hero.searchPlaceholder")}
+                    aria-label={t("hero.searchPlaceholder")}
+                    className="flex-1 bg-transparent text-sm text-[#141210] dark:text-white placeholder:text-[#8C847E] dark:placeholder:text-[#766F6A] outline-none min-w-0 py-1.5 sm:py-0"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="mr-1.5 p-1 text-[#8C847E] hover:text-[#141210] dark:hover:text-white cursor-pointer"
+                      aria-label="Clear search"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
 
-              {/* Location Selector Popover */}
+                <div className="hidden sm:block h-5 w-px bg-[#EAE2DC] dark:bg-white/10 mx-2 shrink-0" />
+
+                <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-1.5 border-t border-[#EAE2DC]/70 dark:border-white/10 sm:border-t-0 pt-1.5 sm:pt-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCustomLocationInput(location);
+                      setShowLocationPicker((prev) => !prev);
+                    }}
+                    aria-label={t("hero.selectArea")}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-[#141210] dark:text-[#FAFAFA] hover:bg-[#FAF8F5] dark:hover:bg-[#242220] transition cursor-pointer max-w-[175px]"
+                  >
+                    <MapPin size={13} className="text-[#F4512C] shrink-0" />
+                    <span className="truncate">{location || t("hero.selectArea")}</span>
+                    <ChevronDown
+                      size={13}
+                      className={`text-[#6B645F] dark:text-[#9E958F] shrink-0 transition-transform duration-200 ${
+                        showLocationPicker ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => openCall(true)}
+                    aria-label={t("hero.voiceCta")}
+                    title={t("hero.voiceCta")}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#1E1C1A] text-[#F4512C] hover:border-[#F4512C]/60 transition active:scale-95 cursor-pointer"
+                  >
+                    <Mic size={15} />
+                  </button>
+
+                  <button
+                    type="submit"
+                    aria-label={t("nav.search")}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white transition active:scale-95 cursor-pointer"
+                  >
+                    <ArrowRight size={17} />
+                  </button>
+                </div>
+              </form>
+
               {showLocationPicker && (
-                <div className="absolute left-0 top-11 z-50 w-72 sm:w-80 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 shadow-xl animate-in fade-in zoom-in-95 duration-150">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-[#E4E4E7] dark:border-[#27272A] mb-3">
-                    <span className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                      Select Your Area
+                <div className="absolute right-0 sm:right-12 top-full mt-2 z-50 w-72 sm:w-80 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-[#EAE2DC] dark:border-white/10 mb-3">
+                    <span className="text-xs font-bold text-[#141210] dark:text-white">
+                      {t("area.title")}
                     </span>
                     <button
                       type="button"
                       onClick={() => setShowLocationPicker(false)}
-                      className="text-[#71717A] hover:text-[#09090B] dark:hover:text-[#FAFAFA] cursor-pointer"
+                      className="text-[#6B645F] hover:text-[#141210] dark:hover:text-white cursor-pointer"
                     >
                       <X size={15} />
                     </button>
                   </div>
 
-                  {/* GPS Auto-Detect */}
                   <button
                     type="button"
                     onClick={handleGps}
                     disabled={gpsLoading}
-                    className="flex w-full items-center justify-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-zinc-50 dark:bg-[#1E1F24] py-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-zinc-100 dark:hover:bg-[#27272A] cursor-pointer disabled:opacity-60 mb-3"
+                    className="flex w-full items-center justify-center gap-2 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] py-2 text-xs font-semibold text-[#141210] dark:text-white transition hover:border-[#F4512C]/50 cursor-pointer disabled:opacity-60 mb-3"
                   >
                     <Navigation
                       size={13}
-                      className={
-                        gpsLoading ? "animate-spin text-current" : "text-current"
-                      }
+                      className={gpsLoading ? "animate-spin text-[#F4512C]" : "text-[#F4512C]"}
                     />
                     <span>
-                      {gpsLoading
-                        ? "Detecting location..."
-                        : "Use Current GPS Location"}
+                      {gpsLoading ? t("area.detecting") : t("area.useGps")}
                     </span>
                   </button>
 
-                  {/* Popular Localities Quick Select */}
                   <div className="mb-3">
-                    <p className="text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA] mb-1.5 uppercase tracking-wider">
-                      Popular Localities
+                    <p className="text-[11px] font-semibold text-[#6B645F] dark:text-[#9E958F] mb-1.5 uppercase tracking-wider">
+                      {t("area.popular")}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {[
+                        "Sriperumbudur",
                         "Indiranagar",
                         "Koramangala",
                         "HSR Layout",
                         "Whitefield",
-                        "Jayanagar",
                         "Coimbatore",
                       ].map((locName) => (
                         <button
                           key={locName}
                           type="button"
                           onClick={() => handleApplyLocation(locName)}
-                          className="rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-[#1B1B1F] hover:bg-neutral-100 dark:hover:bg-[#26262B] px-2.5 py-1 text-[11px] font-medium text-[#09090B] dark:text-[#FAFAFA] transition cursor-pointer"
+                          className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#242220] hover:border-[#F4512C]/50 px-2.5 py-1 text-[11px] font-medium text-[#141210] dark:text-[#FAFAFA] transition cursor-pointer"
                         >
                           {locName}
                         </button>
@@ -375,311 +543,111 @@ export default function Index() {
                     </div>
                   </div>
 
-                  {/* Custom Location Input */}
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleApplyLocation(customLocationInput);
-                    }}
-                    className="space-y-2.5"
-                  >
-                    <div className="flex items-center rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0D0D10] px-3 py-2 focus-within:border-neutral-500 transition">
+                  <div className="space-y-2.5">
+                    <div className="flex items-center rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2 focus-within:border-[#F4512C] transition">
                       <MapPin
                         size={14}
-                        className="text-[#71717A] dark:text-[#A1A1AA] mr-2 shrink-0"
+                        className="text-[#6B645F] dark:text-[#9E958F] mr-2 shrink-0"
                       />
                       <input
                         type="text"
                         value={customLocationInput}
                         onChange={(e) => setCustomLocationInput(e.target.value)}
-                        placeholder="e.g. Indiranagar, Koramangala, Whitefield"
-                        className="w-full bg-transparent text-xs text-[#09090B] dark:text-[#FAFAFA] outline-none placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A]"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleApplyLocation(customLocationInput);
+                          }
+                        }}
+                        placeholder={t("area.placeholder")}
+                        className="w-full bg-transparent text-xs text-[#141210] dark:text-white outline-none placeholder:text-[#8C847E]"
                         autoFocus
                       />
                     </div>
 
                     <div className="flex items-center gap-2 pt-1">
                       <button
-                        type="submit"
-                        className="flex-1 rounded-full bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 py-2 text-xs font-semibold transition cursor-pointer shadow-xs"
+                        type="button"
+                        onClick={() => handleApplyLocation(customLocationInput)}
+                        className="flex-1 rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white py-2 text-xs font-bold transition cursor-pointer"
                       >
-                        Apply Area
+                        {t("area.apply")}
                       </button>
                       {location && (
                         <button
                           type="button"
                           onClick={() => handleApplyLocation("")}
-                          className="rounded-full border border-neutral-200 dark:border-neutral-800 px-3.5 py-2 text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white cursor-pointer"
+                          className="rounded-full border border-[#EAE2DC] dark:border-white/10 px-3.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-white cursor-pointer"
                         >
-                          Reset
+                          {t("area.reset")}
                         </button>
                       )}
                     </div>
-                  </form>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Center: Desktop Search Input (Clean & Sleek) */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="hidden md:flex flex-1 max-w-md min-w-0"
-          >
-            <div className="relative flex items-center w-full">
-              <Search
-                size={14}
-                className="absolute left-3.5 text-[#71717A] dark:text-[#A1A1AA] pointer-events-none"
-              />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search electricians, plumbers, carpenters..."
-                className="h-9.5 w-full rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-[#141416] pl-9.5 pr-8 text-xs font-normal text-[#09090B] dark:text-[#FAFAFA] placeholder:text-[#71717A] dark:placeholder:text-[#A1A1AA] outline-none transition focus:bg-white dark:focus:bg-[#0D0D10] focus:border-neutral-400 dark:focus:border-neutral-600 focus:ring-2 focus:ring-black/5 dark:focus:ring-white/5 shadow-2xs"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 text-[#71717A] hover:text-[#09090B] dark:hover:text-white cursor-pointer"
-                >
-                  <X size={13} />
-                </button>
-              )}
-            </div>
-          </form>
-
-          {/* Right: Actions & Profile */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            {/* Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 text-xs font-semibold text-[#52525B] dark:text-[#A1A1AA]">
-              <Link
-                to="/saved"
-                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-              >
-                <Heart size={14} />
-                <span>Saved</span>
-              </Link>
-              <Link
-                to="/inbox"
-                className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-              >
-                <Clock size={14} />
-                <span>Inbox</span>
-                {dueCount > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white shadow-xs">
-                    {dueCount > 9 ? "9+" : dueCount}
-                  </span>
-                )}
-              </Link>
-            </nav>
-
-            {/* Quick Post Need Action (Desktop) */}
-            <button
-              type="button"
-              onClick={() => setPostNeedOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 px-3.5 py-1.5 text-xs font-semibold shadow-2xs active:scale-95 transition cursor-pointer shrink-0"
-            >
-              <Sparkles size={13} />
-              <span>Post a Need</span>
-            </button>
-
-            {/* Theme Toggle */}
-            <ThemeToggle />
-
-            {/* User Profile or Sign In */}
-            {!session ? (
-              <Link
-                to="/login"
-                state={{ from: "main" }}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/15 bg-black text-white dark:bg-white dark:text-black px-3.5 py-1.5 text-xs font-bold transition hover:opacity-90 shadow-2xs"
-              >
-                Sign In
-              </Link>
-            ) : (
-              <Link
-                to="/profile"
-                aria-label="Profile Settings"
-                title="Profile Settings"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 shadow-2xs"
-              >
-                <UserRound size={15} />
-              </Link>
-            )}
-
-            {/* Mobile / Tablet Menu */}
-            <div className="md:hidden">
-              <MobileMenu />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* MAIN CONTENT — Clean max-w-5xl Desktop Canvas */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 sm:px-6 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
-        {/* 1. "VERIFIED PROS NEAR YOU" SECTION */}
-        <section aria-labelledby="verified-pros-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-0.5">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2
-                  id="verified-pros-heading"
-                  className="text-lg sm:text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]"
-                >
-                  Verified pros near you
-                </h2>
-                {location && (
-                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-white/10 px-2.5 py-0.5 text-xs font-medium text-[#52525B] dark:text-[#D4D4D8]">
-                    <MapPin size={11} className="text-neutral-500" />
-                    <span>{location}</span>
-                  </span>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Top-rated background-checked specialists ready for direct booking
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleGps}
-                disabled={gpsLoading}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-3 py-1 text-xs font-medium text-[#52525B] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-white hover:border-neutral-500 transition shadow-2xs cursor-pointer"
-                title="Refresh location via GPS"
-              >
-                <Navigation size={12} className={gpsLoading ? "animate-spin text-current" : "text-current"} />
-                <span>{gpsLoading ? "Locating..." : "Refresh GPS"}</span>
-              </button>
-
-              <Link
-                to={
-                  location
-                    ? `/search?location=${encodeURIComponent(location)}`
-                    : "/search"
-                }
-                className="text-xs sm:text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:underline inline-flex items-center gap-0.5 transition"
-              >
-                <span>View all</span>
-                <ChevronRight size={14} />
-              </Link>
-            </div>
-          </div>
-
-          {!isExactLocationMatch && location && displayPros.length > 0 && (
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 px-3.5 py-2.5 text-xs text-[#52525B] dark:text-[#A1A1AA]">
-              <span>
-                No pros registered strictly inside <strong>{location}</strong> yet. Showing top verified professionals nearby:
+            {/* Trust Checkmarks */}
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-[#6B645F] dark:text-[#A19994]">
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-[#F4512C]" />
+                <span>{t("hero.trust1")}</span>
               </span>
-              <button
-                type="button"
-                onClick={handleGps}
-                disabled={gpsLoading}
-                className="ml-2 shrink-0 text-xs font-bold text-[#09090B] dark:text-white underline cursor-pointer"
-              >
-                Re-check GPS
-              </button>
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-[#F4512C]" />
+                <span>{t("hero.trust2")}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-[#F4512C]" />
+                <span>{t("hero.trust3")}</span>
+              </span>
             </div>
-          )}
-
-          {loading ? (
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-5 overflow-x-auto pb-2 scrollbar-none snap-x -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="w-[240px] sm:w-[260px] md:w-full shrink-0 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 shadow-sm animate-pulse space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
-                      <div className="space-y-1.5">
-                        <div className="h-4 w-24 rounded bg-zinc-100 dark:bg-zinc-800" />
-                        <div className="h-3 w-16 rounded bg-zinc-100 dark:bg-zinc-800" />
-                      </div>
-                    </div>
-                    <div className="h-6 w-12 rounded bg-zinc-100 dark:bg-zinc-800" />
-                  </div>
-                  <div className="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800" />
-                  <div className="flex gap-2 pt-2 border-t border-[#E4E4E7] dark:border-[#27272A]">
-                    <div className="h-7 flex-1 rounded bg-zinc-100 dark:bg-zinc-800" />
-                    <div className="h-7 flex-1 rounded bg-zinc-100 dark:bg-zinc-800" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : displayPros.length > 0 ? (
-            <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-5 overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-none snap-x snap-mandatory md:snap-none -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0 md:[&>article]:w-full md:[&>article]:max-w-none">
-              {displayPros.map((worker) => (
-                <TrustStripWorkerCard key={worker.id} worker={worker} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center shadow-xs">
-              <p className="text-sm font-normal text-[#71717A] dark:text-[#A1A1AA]">
-                No verified professionals found near{" "}
-                <span className="font-semibold text-[#09090B] dark:text-white">
-                  {location || "your area"}
-                </span>
-                .
-              </p>
-              <div className="mt-4 flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleGps}
-                  disabled={gpsLoading}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D4D4D8] dark:border-[#3F3F46] bg-white dark:bg-[#141416] px-4 py-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer shadow-xs"
-                >
-                  <Navigation
-                    size={13}
-                    className={gpsLoading ? "animate-spin" : ""}
-                  />
-                  <span>Check GPS</span>
-                </button>
-                <Link
-                  to="/search"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-[#09090B] text-white hover:bg-neutral-800 dark:bg-white dark:text-[#09090B] dark:hover:bg-neutral-200 px-4.5 py-2 text-xs font-semibold shadow-xs"
-                >
-                  <span>Browse all workers</span>
-                </Link>
-              </div>
-            </div>
-          )}
+          </div>
         </section>
 
-        {/* 2. "EXPLORE BY CATEGORY" SECTION */}
+        {/* 2. EXPLORE SERVICES */}
         <section aria-labelledby="categories-heading">
-          <div className="flex items-center justify-between mb-4 px-0.5">
-            <div>
-              <h2
-                id="categories-heading"
-                className="text-lg sm:text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA]"
-              >
-                Explore by trade category
-              </h2>
-              <p className="text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Choose a specialized service to find available neighborhood technicians
-              </p>
-            </div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            {t("services.eyebrow")}
+          </p>
+          <div className="mt-1 flex items-center justify-between gap-4">
+            <h2
+              id="categories-heading"
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141210] dark:text-white"
+            >
+              {t("services.heading")}
+            </h2>
+            <Link
+              to={
+                location
+                  ? `/search?location=${encodeURIComponent(location)}`
+                  : "/search"
+              }
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#F4512C] hover:underline shrink-0"
+            >
+              <span>{t("services.viewAll")}</span>
+              <ChevronRight size={15} />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
-            {categories.map(({ name, icon: Icon, countText }) => (
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.map(({ name, icon: Icon }) => (
               <button
                 key={name}
                 type="button"
                 onClick={() => handleCategoryClick(name)}
-                className="group flex items-start sm:items-center gap-3.5 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-4.5 text-left shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99] cursor-pointer"
+                className="group rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 text-left flex flex-col items-start gap-4 hover:border-[#F4512C]/50 transition-all active:scale-[0.99] cursor-pointer shadow-2xs"
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 text-[#09090B] dark:text-[#FAFAFA] transition group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black border border-black/[0.04] dark:border-white/[0.06]">
-                  <Icon size={19} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] transition group-hover:bg-[#F4512C] group-hover:text-white">
+                  <Icon size={18} />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <span className="block truncate text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition-colors">
-                    {name}
+                <div className="min-w-0">
+                  <span className="block text-sm font-bold text-[#141210] dark:text-white">
+                    {translateCategory(name)}
                   </span>
-                  <span className="text-xs text-[#71717A] dark:text-[#A1A1AA] line-clamp-1 mt-0.5 font-normal">
-                    {countText}
+                  <span className="mt-1 block text-xs text-[#6B645F] dark:text-[#9E958F] leading-relaxed line-clamp-2">
+                    {t(`cat.${name}.desc`)}
                   </span>
                 </div>
               </button>
@@ -687,55 +655,174 @@ export default function Index() {
           </div>
         </section>
 
-        {/* Fair Rate Guide: what jobs usually cost, before you call */}
-        <section aria-labelledby="rate-guide-heading">
-          <Link
-            to="/rate-guide"
-            className="group flex items-center gap-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99]"
-          >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-black/[0.04] dark:border-white/[0.06]">
-              <IndianRupee size={19} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 id="rate-guide-heading" className="text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                Fair rate guide
+        {/* 3. PROFESSIONALS NEAR YOU */}
+        <section aria-labelledby="verified-pros-heading">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            {t("pros.eyebrow")}
+          </p>
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2
+                id="verified-pros-heading"
+                className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141210] dark:text-white"
+              >
+                {t("pros.heading")}
               </h2>
-              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                See what a job usually costs in your area before you call
-              </p>
-            </div>
-            <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
-          </Link>
-        </section>
-
-        {/* 3. MATERIALS & SUPPLIERS (separate from worker categories) */}
-        <section aria-labelledby="materials-heading">
-          <Link
-            to="/materials"
-            className="group flex items-center gap-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99]"
-          >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-white/5 border border-black/[0.04] dark:border-white/[0.06]">
-              <Package size={19} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h2 id="materials-heading" className="text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                Need materials?
-              </h2>
-              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-0.5 font-normal">
-                Sand, stone, cement, tools & rentals from verified suppliers
-              </p>
-              <div className="mt-2 flex gap-1.5" aria-hidden="true">
-                {["Sand", "Stone & Aggregates", "Cement", "Bricks & Blocks", "Steel", "Tools & Rental"].map((c) => {
-                  const { icon: CatIcon, tone } = getCategoryMeta(c);
-                  return (
-                    <span key={c} className={`flex h-6 w-6 items-center justify-center rounded-md ${tone}`}>
-                      <CatIcon size={13} />
-                    </span>
-                  );
+              <p className="text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F] mt-1">
+                {t("pros.showingFor", {
+                  area: location || t("pros.yourLocalArea"),
                 })}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGps}
+              disabled={gpsLoading}
+              className="inline-flex h-9 items-center gap-2 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-4 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition cursor-pointer shrink-0"
+              title={t("pros.refreshLocation")}
+            >
+              <Navigation
+                size={13}
+                className={gpsLoading ? "animate-spin text-[#F4512C]" : ""}
+              />
+              <span>
+                {gpsLoading ? t("pros.locating") : t("pros.refreshLocation")}
+              </span>
+            </button>
+          </div>
+
+          {!isExactLocationMatch && location && displayPros.length > 0 && (
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#F4512C]/25 bg-[#FCEAE4]/60 dark:bg-[#3A2018]/40 px-4 py-3 text-xs text-[#524B47] dark:text-[#D4CFCB]">
+              <span>{t("pros.noStrictMatch", { area: location })}</span>
+              <button
+                type="button"
+                onClick={handleGps}
+                disabled={gpsLoading}
+                className="ml-2 shrink-0 text-xs font-bold text-[#F4512C] hover:underline cursor-pointer"
+              >
+                {t("pros.recheckGps")}
+              </button>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <WorkerCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : displayPros.length > 0 ? (
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {displayPros.map((worker) => (
+                <TrustStripWorkerCard key={worker.id} worker={worker} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center">
+              <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
+                {t("pros.noneFound", { area: location || t("pros.yourLocalArea") })}
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleGps}
+                  disabled={gpsLoading}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-semibold cursor-pointer"
+                >
+                  <Navigation
+                    size={13}
+                    className={gpsLoading ? "animate-spin" : ""}
+                  />
+                  <span>{t("pros.checkGps")}</span>
+                </button>
+                <Link
+                  to="/search"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white px-4 py-2 text-xs font-bold"
+                >
+                  <span>{t("pros.browseAll")}</span>
+                </Link>
               </div>
             </div>
-            <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
+          )}
+        </section>
+
+        {/* 4. BUILT AROUND TRUST BANNER */}
+        <section
+          aria-label={t("trust.heading")}
+          className="relative overflow-hidden rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 sm:p-8 flex items-center gap-5 shadow-2xs"
+        >
+          {/* Decorative concentric arcs on the right edge */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none hidden sm:block absolute -right-12 top-1/2 -translate-y-1/2 h-56 w-56 rounded-full border border-[#F4512C]/15"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none hidden sm:block absolute -right-24 top-1/2 -translate-y-1/2 h-72 w-72 rounded-full border border-[#F4512C]/10"
+          />
+
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#F4512C] text-white shadow-sm">
+            <ShieldCheck size={26} />
+          </div>
+          <div className="relative z-10 min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#C87D64] dark:text-[#D98B72]">
+              {t("trust.eyebrow")}
+            </p>
+            <h2 className="mt-0.5 text-xl sm:text-2xl font-extrabold tracking-tight text-[#141210] dark:text-white">
+              {t("trust.heading")}
+            </h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F]">
+              {t("trust.sub")}
+            </p>
+          </div>
+        </section>
+
+        {/* 5. BOTTOM 2-COLUMN UTILITY CARDS (Fair rate guide & Materials & suppliers) */}
+        <section
+          aria-label="Tools and materials"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          <Link
+            to="/rate-guide"
+            className="group flex items-center gap-4 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 transition-all hover:border-[#F4512C]/50 active:scale-[0.99] shadow-2xs"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] transition group-hover:bg-[#F4512C] group-hover:text-white">
+              <IndianRupee size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold text-[#141210] dark:text-white">
+                {t("promo.rateTitle")}
+              </h2>
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F] mt-0.5">
+                {t("promo.rateSub")}
+              </p>
+            </div>
+            <ChevronRight
+              size={18}
+              className="shrink-0 text-[#8C847E] group-hover:text-[#F4512C] transition"
+            />
+          </Link>
+
+          <Link
+            to="/materials"
+            className="group flex items-center gap-4 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 transition-all hover:border-[#F4512C]/50 active:scale-[0.99] shadow-2xs"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] transition group-hover:bg-[#F4512C] group-hover:text-white">
+              <Package size={20} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-bold text-[#141210] dark:text-white">
+                {t("promo.materialsTitle")}
+              </h2>
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F] mt-0.5">
+                {t("promo.materialsSub")}
+              </p>
+            </div>
+            <ChevronRight
+              size={18}
+              className="shrink-0 text-[#8C847E] group-hover:text-[#F4512C] transition"
+            />
           </Link>
         </section>
       </main>
@@ -747,6 +834,7 @@ export default function Index() {
       <PostNeedModal
         isOpen={postNeedOpen}
         onClose={() => setPostNeedOpen(false)}
+        initialCategory={postNeedInitialCategory}
         initialLocation={location}
       />
     </div>

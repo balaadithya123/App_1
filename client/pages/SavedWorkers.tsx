@@ -23,8 +23,14 @@ import {
   setWorkerNote,
 } from "@/lib/favorites";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
+import {
+  loadCachedDirectoryWorkers,
+  saveCachedDirectoryWorkers,
+} from "@/lib/offline-cache";
+import { useLanguage } from "@/lib/i18n";
 
 function WorkerNoteInput({ workerId }: { workerId: string }) {
+  const { t } = useLanguage();
   const [note, setNote] = useState(() => getWorkerNote(workerId));
 
   useEffect(() => {
@@ -40,18 +46,18 @@ function WorkerNoteInput({ workerId }: { workerId: string }) {
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="mt-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 p-3 transition-colors focus-within:border-zinc-950 dark:focus-within:border-white focus-within:bg-white dark:focus-within:bg-zinc-800"
+      className="mt-3 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3 transition-colors focus-within:border-[#F4512C]"
     >
-      <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-700 dark:text-zinc-300">
-        <StickyNote size={13} className="text-zinc-900 dark:text-zinc-100" />
-        <span>Personal Note</span>
+      <div className="flex items-center gap-1.5 text-xs font-bold text-[#F4512C]">
+        <StickyNote size={13} />
+        <span>{t("saved.personalNote")}</span>
       </div>
       <input
         type="text"
         value={note}
         onChange={handleChange}
-        placeholder="Add note (e.g. 'Fixed geyser in May, punctual')..."
-        className="mt-1 w-full bg-transparent text-xs sm:text-sm font-semibold text-zinc-950 dark:text-zinc-50 placeholder:text-zinc-400 focus:outline-none"
+        placeholder={t("saved.notePlaceholder")}
+        className="mt-1 w-full bg-transparent text-xs sm:text-sm font-semibold text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] focus:outline-none"
       />
     </div>
   );
@@ -59,20 +65,28 @@ function WorkerNoteInput({ workerId }: { workerId: string }) {
 
 export default function SavedWorkers() {
   const navigate = useNavigate();
-  const [workers, setWorkers] = useState<Worker[]>(staticWorkers);
+  const { t, translateCategory } = useLanguage();
+  const [workers, setWorkers] = useState<Worker[]>(
+    () => loadCachedDirectoryWorkers<Worker>()?.workers || staticWorkers,
+  );
   const [savedIds, setSavedIds] = useState<string[]>(getSavedWorkerIds);
 
   const refreshSaved = () => setSavedIds(getSavedWorkerIds());
 
   useEffect(() => {
-    fetch("/api/workers", { cache: "no-store" })
+    fetch("/api/workers")
       .then(async (response) =>
         response.ok
           ? ((await response.json()) as WorkersResponse).workers
-          : staticWorkers,
+          : null,
       )
-      .then(setWorkers)
-      .catch(() => setWorkers(staticWorkers));
+      .then((fresh) => {
+        if (fresh && fresh.length > 0) {
+          setWorkers(fresh);
+          saveCachedDirectoryWorkers(fresh);
+        }
+      })
+      .catch(() => {});
 
     window.addEventListener("saved-workers-changed", refreshSaved);
     return () =>
@@ -89,30 +103,33 @@ export default function SavedWorkers() {
   return (
     <PageShell
       backTo="/search"
-      backLabel="Back"
-      headerTitle="My Circle"
+      backLabel={t("callbacks.back")}
+      headerTitle={t("saved.title")}
       containerWidth="lg"
       className="pb-28"
     >
       <div className="space-y-4">
         {/* Header Card */}
-        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 sm:p-6 shadow-xs">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-5 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3.5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 shadow-2xs shrink-0">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4512C] text-white shrink-0">
                 <Heart size={22} className="fill-current" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-zinc-950 dark:text-zinc-50">
-                  My Circle
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                  {t("saved.eyebrow")}
+                </span>
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+                  {t("saved.title")}
                 </h1>
-                <p className="mt-0.5 text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-300">
-                  Your saved directory of trusted local specialists.
+                <p className="mt-0.5 text-xs sm:text-sm font-medium text-[#6B645F] dark:text-[#9E958F]">
+                  {t("saved.sub")}
                 </p>
               </div>
             </div>
-            <span className="rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-3 py-1 text-xs font-extrabold text-zinc-900 dark:text-zinc-100 shrink-0">
-              {savedWorkers.length} saved
+            <span className="rounded-full bg-white/80 dark:bg-[#161514]/80 border border-[#EAE2DC] dark:border-white/10 px-3.5 py-1 text-xs font-extrabold text-[#141210] dark:text-[#FAFAFA] shrink-0">
+              {t("saved.count", { count: savedWorkers.length })}
             </span>
           </div>
         </section>
@@ -162,11 +179,11 @@ export default function SavedWorkers() {
                         `/worker?worker=${encodeURIComponent(worker.id)}`,
                       )
                     }
-                    className="group relative rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 transition-all hover:border-zinc-400 dark:hover:border-zinc-600 shadow-xs cursor-pointer"
+                    className="group relative rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 transition-all hover:border-[#F4512C]/50 cursor-pointer"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                        <div className="flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-800 text-sm font-bold text-zinc-950 dark:text-zinc-50 shadow-2xs">
+                        <div className="flex h-13 w-13 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] text-sm font-bold text-[#F4512C]">
                           {worker.photo_url ? (
                             <img
                               src={worker.photo_url}
@@ -182,15 +199,15 @@ export default function SavedWorkers() {
                         </div>
 
                         <div className="min-w-0 flex-1">
-                          <h2 className="truncate text-base sm:text-lg font-extrabold text-zinc-950 dark:text-zinc-50 transition-colors">
+                          <h2 className="truncate text-base sm:text-lg font-extrabold text-[#141210] dark:text-[#FAFAFA] group-hover:text-[#F4512C] transition-colors">
                             {worker.name}
                           </h2>
                           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                            <span className="font-extrabold text-zinc-900 dark:text-zinc-100">
-                              {worker.category}
+                            <span className="font-bold text-[#6B645F] dark:text-[#9E958F]">
+                              {translateCategory(worker.category)}
                             </span>
-                            <span className="text-zinc-400">·</span>
-                            <div className="inline-flex items-center gap-1 font-bold text-zinc-900 dark:text-zinc-100">
+                            <span className="text-[#6B645F] dark:text-[#9E958F]">·</span>
+                            <div className="inline-flex items-center gap-1 font-bold text-[#141210] dark:text-[#FAFAFA]">
                               <Star
                                 size={12}
                                 className="fill-amber-400 text-amber-400"
@@ -199,10 +216,10 @@ export default function SavedWorkers() {
                             </div>
                           </div>
                           {worker.locality && (
-                            <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-zinc-600 dark:text-zinc-300 truncate">
+                            <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-[#6B645F] dark:text-[#9E958F] truncate">
                               <MapPin
                                 size={13}
-                                className="shrink-0 text-emerald-600 dark:text-emerald-400"
+                                className="shrink-0 text-[#F4512C]"
                               />
                               <span className="truncate">
                                 {worker.locality}
@@ -213,48 +230,43 @@ export default function SavedWorkers() {
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Quick Call */}
                         <button
                           type="button"
                           onClick={handleCall}
                           title={`Call ${worker.name}`}
                           aria-label={`Call ${worker.name}`}
-                          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:border-zinc-400 transition shadow-2xs active:scale-95 cursor-pointer"
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition active:scale-95 cursor-pointer"
                         >
                           <Phone size={14} />
                         </button>
 
-                        {/* Quick WhatsApp */}
                         {whatsappUrl && (
                           <button
                             type="button"
                             onClick={handleWhatsApp}
                             title={`WhatsApp ${worker.name}`}
                             aria-label={`WhatsApp ${worker.name}`}
-                            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#128C7E] hover:bg-[#075E54] text-white transition shadow-2xs active:scale-95 cursor-pointer"
+                            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] text-white transition active:scale-95 cursor-pointer"
                           >
                             <MessageCircle size={14} />
                           </button>
                         )}
 
-                        {/* Remove button */}
                         <button
                           type="button"
                           onClick={(e) => remove(worker.id, e)}
                           title="Remove from My Circle"
                           aria-label={`Remove ${worker.name} from My Circle`}
-                          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer shadow-2xs active:scale-95"
+                          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F] hover:text-rose-500 hover:border-rose-500/40 transition cursor-pointer active:scale-95"
                         >
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
 
-                    {/* Personal Note Field */}
                     <WorkerNoteInput workerId={worker.id} />
 
-                    {/* Action Bar */}
-                    <div className="mt-3.5 pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2.5">
+                    <div className="mt-3.5 pt-3 border-t border-[#EAE2DC] dark:border-white/10 flex items-center gap-2.5">
                       {whatsappUrl && (
                         <a
                           href={whatsappUrl}
@@ -264,18 +276,18 @@ export default function SavedWorkers() {
                             e.stopPropagation();
                             void logContactEvent(worker.id, "whatsapp");
                           }}
-                          className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full bg-[#128C7E] px-4 text-xs sm:text-sm font-bold text-white transition hover:bg-[#075E54] cursor-pointer shadow-2xs"
+                          className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#0F8A73] hover:bg-[#0B6E5B] px-4 text-xs sm:text-sm font-bold text-white transition cursor-pointer"
                         >
                           <MessageCircle size={15} />
-                          <span>WhatsApp</span>
+                          <span>{t("card.whatsapp")}</span>
                         </a>
                       )}
                       <Link
                         to={`/worker?worker=${encodeURIComponent(worker.id)}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="flex-1 inline-flex h-9 sm:h-10 items-center justify-center gap-1.5 rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-4 text-xs sm:text-sm font-bold text-zinc-950 dark:text-zinc-50 transition hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-2xs"
+                        className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-4 text-xs sm:text-sm font-bold transition hover:opacity-90"
                       >
-                        <span>View Profile</span>
+                        <span>{t("saved.viewProfile")}</span>
                         <ArrowRight size={14} />
                       </Link>
                     </div>
@@ -284,22 +296,22 @@ export default function SavedWorkers() {
               })}
             </div>
           ) : (
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-8 sm:p-10 text-center shadow-xs">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-950 dark:text-zinc-50 mb-3.5">
+            <div className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 sm:p-10 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] mb-3.5">
                 <ShieldCheck size={28} />
               </div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-zinc-950 dark:text-zinc-50">
-                Your Circle is Empty
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#141210] dark:text-[#FAFAFA]">
+                {t("saved.emptyTitle")}
               </h2>
-              <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-600 dark:text-zinc-300 max-w-sm mx-auto leading-relaxed">
-                Save pros you contact to easily reach them again.
+              <p className="mt-1 text-xs sm:text-sm font-medium text-[#6B645F] dark:text-[#9E958F] max-w-sm mx-auto leading-relaxed">
+                {t("saved.emptySub")}
               </p>
               <Link
                 to="/search"
-                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-full bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 px-6 text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white px-6 text-xs sm:text-sm font-bold transition cursor-pointer"
               >
                 <Search size={14} />
-                <span>Find Specialists</span>
+                <span>{t("saved.findPros")}</span>
               </Link>
             </div>
           )}

@@ -5,111 +5,112 @@
 
 @layer base {
   :root {
-    /* Explicit Color Tokens — Sleek ChatGPT / Gemini Aesthetic */
-    --color-primary-100: #f4f4f5; /* light zinc container */
-    --color-primary-500: #27272a; /* medium zinc */
-    --color-primary-600: #09090b; /* deep obsidian primary */
+    /* Builderco Warm Ivory & Terracotta Palette (Light Mode) */
+    --color-primary-100: #fceae4;
+    --color-primary-500: #f4512c;
+    --color-primary-600: #141210;
 
-    --color-neutral-300: #a1a1aa; /* placeholder text, disabled states, dividers */
-    --color-neutral-500: #71717a; /* secondary/body text */
-    --color-neutral-900: #09090b; /* headings, primary text */
+    --color-neutral-300: #8c847e;
+    --color-neutral-500: #6b645f;
+    --color-neutral-900: #141210;
 
-    --color-surface: #ffffff; /* cards, sheets, modals */
-    --color-background: #fafafa; /* page background — sleek neutral */
-    --color-border: #e4e4e7; /* crisp hairline borders */
+    --color-surface: #ffffff;
+    --color-background: #faf8f5;
+    --color-border: #eae2dc;
 
     /* WhatsApp Green standard token */
-    --color-whatsapp: #128C7E;
-    --color-whatsapp-hover: #075E54;
+    --color-whatsapp: #0f8a73;
+    --color-whatsapp-hover: #0b6e5b;
 
     /* Theme mappings (HSL) */
-    --background: 0 0% 98%; /* #FAFAFA */
-    --foreground: 240 10% 4%; /* #09090B */
+    --background: 36 33% 97%; /* #FAF8F5 */
+    --foreground: 30 11% 7%; /* #141210 */
 
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 240 10% 4%; /* #09090B */
+    --card-foreground: 30 11% 7%;
 
-    --popover: 0 0% 100%; /* #FFFFFF */
-    --popover-foreground: 240 10% 4%; /* #09090B */
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 11% 7%;
 
-    /* Primary: Deep Obsidian (#09090B) */
-    --primary: 240 10% 4%;
+    /* Primary */
+    --primary: 11 90% 56%; /* #F4512C */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: very soft cool neutral */
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 4%;
+    /* Secondary */
+    --secondary: 26 33% 94%; /* #F5EFEA */
+    --secondary-foreground: 30 11% 7%;
 
     /* Muted */
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 26 33% 94%;
+    --muted-foreground: 24 6% 40%; /* #6B645F */
 
-    --accent: 240 5% 96%;
-    --accent-foreground: 240 10% 4%;
+    --accent: 15 80% 94%; /* #FCEAE4 */
+    --accent-foreground: 11 90% 56%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%; /* #E4E4E7 */
-    --input: 240 6% 90%; /* #E4E4E7 */
-    --ring: 240 10% 4%;
-    --radius: 1rem; /* 16px base card radius */
+    --border: 25 23% 89%; /* #EAE2DC */
+    --input: 25 23% 89%;
+    --ring: 11 90% 56%;
+    --radius: 1rem;
   }
 
   .dark {
-    --color-primary-100: #27272a; /* dark zinc container */
-    --color-primary-500: #e4e4e7; /* light zinc */
-    --color-primary-600: #fafafa; /* crisp off-white primary */
+    /* Builderco Warm Obsidian & Terracotta Palette (Dark Mode) */
+    --color-primary-100: #3a2018;
+    --color-primary-500: #f4512c;
+    --color-primary-600: #fafafa;
 
-    --color-neutral-300: #71717a; /* placeholders & subtle dividers */
-    --color-neutral-500: #a1a1aa; /* secondary text */
-    --color-neutral-900: #fafafa; /* primary text */
+    --color-neutral-300: #766f6a;
+    --color-neutral-500: #9e958f;
+    --color-neutral-900: #fafafa;
 
-    --color-surface: #141416; /* card surface: deep obsidian */
-    --color-background: #09090b; /* page background: sleek dark */
-    --color-border: #27272a; /* hairline border */
+    --color-surface: #161514;
+    --color-background: #0b0a09;
+    --color-border: #262321;
 
     /* WhatsApp Green standard token */
-    --color-whatsapp: #128C7E;
-    --color-whatsapp-hover: #075E54;
+    --color-whatsapp: #0f8a73;
+    --color-whatsapp-hover: #0b6e5b;
 
-    /* Theme mappings (HSL) for Gemini/ChatGPT Dark mode */
-    --background: 240 10% 4%; /* #09090B */
+    /* Theme mappings (HSL) */
+    --background: 30 10% 4%; /* #0B0A09 */
     --foreground: 0 0% 98%; /* #FAFAFA */
 
-    --card: 240 7% 8%; /* #141416 */
-    --card-foreground: 0 0% 98%; /* #FAFAFA */
+    --card: 30 5% 8%; /* #161514 */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 240 7% 8%; /* #141416 */
-    --popover-foreground: 0 0% 98%; /* #FAFAFA */
+    --popover: 30 5% 8%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 0 0% 98%; /* #FAFAFA */
-    --primary-foreground: 240 10% 4%; /* #09090B */
+    --primary: 11 90% 56%; /* #F4512C */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4% 16%; /* #27272A */
+    --secondary: 24 6% 14%; /* #242220 */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 240 4% 16%; /* #27272A */
-    --muted-foreground: 240 5% 65%; /* #A1A1AA */
+    --muted: 24 6% 14%;
+    --muted-foreground: 24 7% 60%; /* #9E958F */
 
-    --accent: 240 4% 16%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 14 41% 16%; /* #3A2018 */
+    --accent-foreground: 11 90% 56%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 4% 16%; /* #27272A */
-    --input: 240 4% 16%; /* #27272A */
-    --ring: 0 0% 98%;
+    --border: 24 7% 15%; /* #262321 */
+    --input: 24 7% 15%;
+    --ring: 11 90% 56%;
 
-    --sidebar-background: 240 10% 4%;
+    --sidebar-background: 30 10% 4%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 240 10% 4%;
-    --sidebar-accent: 240 4% 16%;
+    --sidebar-primary: 11 90% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 24 6% 14%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 0 0% 98%;
+    --sidebar-border: 24 7% 15%;
+    --sidebar-ring: 11 90% 56%;
   }
 
   * {
@@ -294,3 +295,45 @@
   animation: gentleFloat 6s ease-in-out 1.5s infinite;
 }
 
+/* Warm Builderco Skeleton Shimmer */
+@keyframes builderco-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background-color: #f3ece7;
+  background-image: linear-gradient(
+    100deg,
+    #f3ece7 0%,
+    #f3ece7 35%,
+    #fcfaf8 50%,
+    #f3ece7 65%,
+    #f3ece7 100%
+  );
+  background-size: 200% 100%;
+  animation: builderco-shimmer 1.35s ease-in-out infinite;
+}
+
+.dark .skeleton-shimmer {
+  background-color: #211e1c;
+  background-image: linear-gradient(
+    100deg,
+    #211e1c 0%,
+    #211e1c 35%,
+    #2e2a27 50%,
+    #211e1c 65%,
+    #211e1c 100%
+  );
+  background-size: 200% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
+}

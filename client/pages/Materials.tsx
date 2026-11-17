@@ -14,14 +14,16 @@ import {
   savePincode,
   type Supplier,
 } from "@/lib/materials";
+import { useLanguage } from "@/lib/i18n";
 
 // The catalogue tables are not in the generated Supabase types.
 const db = supabase as any;
 
 const inputClass =
-  "w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0D0D10] px-3 py-2.5 text-sm outline-none transition focus:border-neutral-500";
+  "w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none transition focus:border-[#F4512C]";
 
 export default function Materials() {
+  const { t } = useLanguage();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -86,14 +88,19 @@ export default function Materials() {
   };
 
   return (
-    <PageShell backTo="/home" backLabel="Home" containerWidth="lg">
-      <div className="space-y-5 pb-24">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Materials & Suppliers</h1>
-          <p className="mt-0.5 text-sm text-[#71717A] dark:text-[#A1A1AA]">
-            Compare verified suppliers and get quotes on WhatsApp
+    <PageShell backTo="/home" backLabel={t("nav.home")} containerWidth="lg">
+      <div className="space-y-6 pb-24">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 sm:p-7 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            {t("materials.eyebrow")}
+          </span>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+            {t("materials.title")}
+          </h1>
+          <p className="mt-1.5 text-sm text-[#6B645F] dark:text-[#9E958F]">
+            {t("materials.sub")}
           </p>
-        </div>
+        </section>
 
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" role="tablist" aria-label="Material categories">
           {chips.map((c) => {
@@ -108,16 +115,16 @@ export default function Materials() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setCategory(c)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
                   active
-                    ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
-                    : "border-neutral-200 bg-white text-[#52525B] hover:bg-neutral-100 dark:border-neutral-800 dark:bg-[#141416] dark:text-[#A1A1AA] dark:hover:bg-[#1E1F24]"
+                    ? "border-[#F4512C] bg-[#F4512C] text-white shadow-xs"
+                    : "border-[#EAE2DC] bg-white text-[#6B645F] hover:border-[#F4512C]/40 hover:text-[#141210] dark:border-white/10 dark:bg-[#161514] dark:text-[#9E958F] dark:hover:text-[#FAFAFA]"
                 }`}
               >
                 {Icon && <Icon size={13} />}
                 <span>{c}</span>
                 {!loading && !failed && (
-                  <span className={`text-[10px] ${active ? "opacity-70" : "text-[#A1A1AA]"}`}>{count}</span>
+                  <span className={`text-[10px] ${active ? "opacity-85" : "text-[#6B645F] dark:text-[#9E958F]"}`}>{count}</span>
                 )}
               </button>
             );
@@ -126,42 +133,42 @@ export default function Materials() {
 
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <div className="relative">
-            <MapPin size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
+            <MapPin size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B645F] dark:text-[#9E958F]" />
             <input
               className={`${inputClass} pl-9`}
-              placeholder="City or area"
-              aria-label="City or area"
+              placeholder={t("materials.cityPlaceholder")}
+              aria-label={t("materials.cityPlaceholder")}
               value={place}
               onChange={(e) => setPlace(e.target.value)}
             />
           </div>
           <div className="relative">
-            <Truck size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
+            <Truck size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B645F] dark:text-[#9E958F]" />
             <input
               className={`${inputClass} pl-9`}
               inputMode="numeric"
               maxLength={6}
-              placeholder="Delivery pincode"
-              aria-label="Delivery pincode"
+              placeholder={t("materials.pincodePlaceholder")}
+              aria-label={t("materials.pincodePlaceholder")}
               value={pincode}
               onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
             />
           </div>
         </div>
         {pincode !== "" && !isValidPincode(pincode) && (
-          <p className="-mt-3 text-xs text-[#71717A]">Enter all 6 digits to filter by delivery area.</p>
+          <p className="-mt-3 text-xs text-[#6B645F] dark:text-[#9E958F]">Enter all 6 digits to filter by delivery area.</p>
         )}
 
         {!loading && !failed && (
-          <div className="flex items-center justify-between text-xs text-[#71717A]">
-            <span aria-live="polite">
+          <div className="flex items-center justify-between text-xs text-[#6B645F] dark:text-[#9E958F]">
+            <span aria-live="polite" className="font-semibold">
               {visible.length} {visible.length === 1 ? "supplier" : "suppliers"}
             </span>
             {hasFilters && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="inline-flex items-center gap-1 font-semibold text-[#09090B] dark:text-[#FAFAFA]"
+                className="inline-flex items-center gap-1 font-bold text-[#F4512C] hover:underline cursor-pointer"
               >
                 <RotateCcw size={12} /> Clear filters
               </button>
@@ -176,19 +183,19 @@ export default function Materials() {
             ))}
           </div>
         ) : failed ? (
-          <div className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center">
-            <p className="text-sm text-[#71717A]">Couldn't load suppliers. Check your connection and try again.</p>
+          <div className="space-y-3 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center shadow-sm">
+            <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">Couldn't load suppliers. Check your connection and try again.</p>
             <button
               type="button"
               onClick={() => setReloadKey((k) => k + 1)}
-              className="rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-[#1E1F24]"
+              className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition cursor-pointer"
             >
               Try again
             </button>
           </div>
         ) : visible.length === 0 ? (
-          <div className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-8 text-center">
-            <p className="text-sm text-[#71717A]">
+          <div className="space-y-3 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center shadow-sm">
+            <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
               {suppliers.length === 0
                 ? "No verified suppliers are listed yet."
                 : "No suppliers match these filters."}
@@ -197,7 +204,7 @@ export default function Materials() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-[#1E1F24]"
+                className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition cursor-pointer"
               >
                 Clear filters
               </button>
@@ -213,13 +220,13 @@ export default function Materials() {
 
         <Link
           to="/register-supplier"
-          className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 p-4 text-sm font-semibold transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24]"
+          className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-[#EAE2DC] dark:border-white/15 bg-white/70 dark:bg-[#161514]/70 p-4 text-sm font-bold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 hover:bg-[#FFF4EF]/60 dark:hover:bg-[#261B16]/40"
         >
-          <Store size={16} />
+          <Store size={16} className="text-[#F4512C]" />
           <span>Sell materials? List your business</span>
         </Link>
 
-        <p className="px-1 text-[11px] text-[#71717A]">
+        <p className="px-1 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
           Prices are indicative and set by suppliers. Confirm the final price and delivery on WhatsApp.
         </p>
       </div>

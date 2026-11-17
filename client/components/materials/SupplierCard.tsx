@@ -26,7 +26,7 @@ export default function SupplierCard({ supplier, index }: { supplier: Supplier; 
     >
       <Link
         to={`/materials/${supplier.id}`}
-        className="group block space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 shadow-2xs transition-all hover:border-neutral-500 hover:shadow-xs active:scale-[0.99]"
+        className="group block space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 transition-all hover:border-[#F4512C]/40 hover:shadow-md active:scale-[0.99]"
       >
         <div className="flex items-start gap-3">
           <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tone}`}>
@@ -34,18 +34,20 @@ export default function SupplierCard({ supplier, index }: { supplier: Supplier; 
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <h3 className="truncate text-base font-semibold">{supplier.name}</h3>
-              <BadgeCheck size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" aria-label="Verified" />
+              <h3 className="truncate text-base font-bold text-[#141210] dark:text-[#FAFAFA] group-hover:text-[#F4512C] transition-colors">
+                {supplier.name}
+              </h3>
+              <BadgeCheck size={15} className="shrink-0 text-[#0F8A73] dark:text-[#3DD1B3]" aria-label="Verified" />
             </div>
-            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">{supplier.category}</p>
+            <p className="text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">{supplier.category}</p>
           </div>
-          <ChevronRight size={18} className="mt-1 shrink-0 text-[#71717A] transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight size={18} className="mt-1 shrink-0 text-[#8C847E] dark:text-[#766F6A] transition-transform group-hover:translate-x-0.5 group-hover:text-[#F4512C]" />
         </div>
 
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#52525B] dark:text-[#A1A1AA]">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
           {place && (
             <span className="inline-flex items-center gap-1">
-              <MapPin size={12} /> {place}
+              <MapPin size={12} className="text-[#F4512C]" /> {place}
             </span>
           )}
           {supplier.delivery_radius_km ? (
@@ -62,7 +64,7 @@ export default function SupplierCard({ supplier, index }: { supplier: Supplier; 
               return (
                 <span
                   key={p.id}
-                  className="rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-medium text-[#3F3F46] dark:bg-white/5 dark:text-[#D4D4D8]"
+                  className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#242220] px-2.5 py-1 text-[11px] font-medium text-[#141210] dark:text-[#E7E5E4]"
                 >
                   {p.name}
                   {price ? ` · ${price}` : ""}
@@ -70,7 +72,7 @@ export default function SupplierCard({ supplier, index }: { supplier: Supplier; 
               );
             })}
             {products.length > PREVIEW_COUNT && (
-              <span className="rounded-full px-2 py-1 text-[11px] font-medium text-[#71717A]">
+              <span className="rounded-full px-2 py-1 text-[11px] font-medium text-[#6B645F] dark:text-[#9E958F]">
                 +{products.length - PREVIEW_COUNT} more
               </span>
             )}
@@ -78,7 +80,7 @@ export default function SupplierCard({ supplier, index }: { supplier: Supplier; 
         )}
 
         {stale && (
-          <p className="text-[11px] text-amber-600 dark:text-amber-400">Prices may be outdated</p>
+          <p className="text-[11px] font-medium text-amber-600 dark:text-amber-400">Prices may be outdated</p>
         )}
       </Link>
     </motion.div>

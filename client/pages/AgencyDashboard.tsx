@@ -40,6 +40,10 @@ import { Link, useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import { supabase } from "@/lib/supabase";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import {
+  CompactSectionSkeleton,
+  DashboardSkeleton,
+} from "@/components/PageSkeletons";
 
 type Worker = {
   id: string;
@@ -459,12 +463,7 @@ export default function AgencyDashboard() {
   if (loading) {
     return (
       <PageShell hideBack hideHome containerWidth="lg">
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-            <span>Loading agency dashboard...</span>
-          </div>
-        </div>
+        <DashboardSkeleton statCount={4} cardCount={2} />
       </PageShell>
     );
   }
@@ -472,25 +471,27 @@ export default function AgencyDashboard() {
   if (notAnAgency) {
     return (
       <PageShell hideBack hideHome containerWidth="lg">
-        <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 text-center">
-          <Building2 size={36} className="mx-auto text-foreground" />
-          <h1 className="mt-3 text-lg font-bold text-foreground">
+        <div className="mx-auto max-w-md rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-7 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+            <Building2 size={24} />
+          </div>
+          <h1 className="mt-4 text-lg font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
             Agency Portal
           </h1>
-          <p className="mt-1.5 text-xs text-muted-foreground">
+          <p className="mt-1.5 text-xs leading-relaxed text-[#6B645F] dark:text-[#9E958F]">
             This account is currently registered as a {userRole || "client"}. To
             manage a team of workers, please register an agency profile.
           </p>
-          <div className="mt-5 flex flex-col gap-2">
+          <div className="mt-5 flex flex-col gap-2.5">
             <Link
               to="/agency/register"
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-4 text-xs font-semibold text-background hover:bg-neutral-800 dark:hover:bg-neutral-200 transition"
+              className="inline-flex h-10 items-center justify-center rounded-full bg-[#F4512C] px-5 text-xs font-semibold text-white hover:bg-[#E04320] transition"
             >
               Register Agency Profile
             </Link>
             <Link
               to="/"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-secondary px-4 text-xs font-semibold text-foreground hover:bg-secondary/80 transition"
+              className="inline-flex h-10 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition"
             >
               Return to Home
             </Link>
@@ -503,12 +504,12 @@ export default function AgencyDashboard() {
   if (error || !dashboard) {
     return (
       <PageShell hideBack hideHome containerWidth="lg">
-        <div className="mx-auto max-w-md rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center">
-          <ShieldAlert size={36} className="mx-auto text-destructive" />
-          <h1 className="mt-3 text-base font-bold text-foreground">
+        <div className="mx-auto max-w-md rounded-[24px] border border-rose-500/20 bg-rose-500/5 p-7 text-center">
+          <ShieldAlert size={36} className="mx-auto text-rose-500" />
+          <h1 className="mt-3 text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
             Error Loading Dashboard
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
             {error || "Unable to retrieve agency information."}
           </p>
           <button
@@ -517,7 +518,7 @@ export default function AgencyDashboard() {
               setError("");
               void load();
             }}
-            className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-4 text-xs font-semibold text-background cursor-pointer"
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-full bg-[#F4512C] px-5 text-xs font-semibold text-white hover:bg-[#E04320] transition cursor-pointer"
           >
             Retry
           </button>
@@ -532,11 +533,11 @@ export default function AgencyDashboard() {
   return (
     <PageShell hideBack hideHome containerWidth="lg">
       <div className="space-y-6">
-        {/* Agency Profile Header Card */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Agency Profile Hero Header Card */}
+        <section className="relative overflow-hidden rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-5 sm:p-7">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-secondary font-bold text-foreground text-xl">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#F4512C] font-bold text-white text-xl shadow-sm">
                 {dashboard.agency.logo_url ? (
                   <img
                     src={dashboard.agency.logo_url}
@@ -544,49 +545,52 @@ export default function AgencyDashboard() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <Building2 size={24} className="text-foreground" />
+                  <Building2 size={26} className="text-white" />
                 )}
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-lg font-bold text-foreground sm:text-xl">
-                    {dashboard.agency.name}
-                  </h1>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                    Agency Management Hub
+                  </span>
                   {dashboard.agency.verified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 shadow-sm">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-2.5 py-0.5 text-[11px] font-semibold text-[#0F8A73]">
                       <BadgeCheck size={13} /> Verified Agency
                     </span>
                   )}
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                <h1 className="mt-1 text-xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA] sm:text-2xl">
+                  {dashboard.agency.name}
+                </h1>
+                <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-[#6B645F] dark:text-[#9E958F]">
                   {dashboard.agency.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin size={12} /> {dashboard.agency.location}
+                      <MapPin size={12} className="text-[#F4512C]" /> {dashboard.agency.location}
                     </span>
                   )}
                   {dashboard.agency.phone && (
                     <span className="flex items-center gap-1">
-                      <Phone size={12} /> {dashboard.agency.phone}
+                      <Phone size={12} className="text-[#F4512C]" /> {dashboard.agency.phone}
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <Users size={12} /> {dashboard.workers.length} Team Members
+                    <Users size={12} className="text-[#F4512C]" /> {dashboard.workers.length} Team Members
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
               <Link
                 to={`/agency/${dashboard.agency.id}`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-sm transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
+                className="inline-flex h-10 items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white/80 dark:bg-[#161514]/80 px-4 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50"
               >
                 <ExternalLink size={13} />
                 <span>Public Page</span>
               </Link>
               <Link
                 to="/agency/edit"
-                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-4 text-xs font-semibold shadow-sm transition hover:bg-neutral-800 dark:hover:bg-neutral-200"
+                className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-5 text-xs font-semibold transition hover:opacity-90"
               >
                 <span>Edit Profile</span>
               </Link>
@@ -597,17 +601,17 @@ export default function AgencyDashboard() {
         {/* Notification Banner */}
         {bannerMessage && (
           <div
-            className={`flex items-center justify-between rounded-[16px] border p-4 text-xs font-medium shadow-soft ${
+            className={`flex items-center justify-between rounded-2xl border p-4 text-xs font-medium ${
               bannerMessage.type === "success"
-                ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border-rose-200 bg-rose-50 text-rose-800"
+                ? "border-[#0F8A73]/30 bg-[#0F8A73]/10 text-[#0F8A73]"
+                : "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
             }`}
           >
             <div className="flex items-center gap-2">
               {bannerMessage.type === "success" ? (
-                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                <CheckCircle2 size={16} className="text-[#0F8A73] shrink-0" />
               ) : (
-                <AlertTriangle size={16} className="text-rose-600 shrink-0" />
+                <AlertTriangle size={16} className="text-rose-500 shrink-0" />
               )}
               <span>{bannerMessage.text}</span>
             </div>
@@ -622,60 +626,77 @@ export default function AgencyDashboard() {
         )}
 
         {/* Overview Stats */}
-        <section className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <span className="text-[11px] font-semibold text-muted-foreground">
-              Total Workers
-            </span>
-            <p className="mt-1 text-2xl font-bold text-foreground">
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 transition hover:border-[#F4512C]/40">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#6B645F] dark:text-[#9E958F]">
+                Total Workers
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                <Users size={15} />
+              </span>
+            </div>
+            <p className="mt-2 text-3xl font-extrabold text-[#141210] dark:text-[#FAFAFA]">
               {dashboard.stats.linkedWorkers}
             </p>
-            <div className="mt-2 text-[11px] text-muted-foreground">
-              Under agency code
+            <div className="mt-1.5 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+              Linked under agency code
             </div>
           </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <span className="text-[11px] font-semibold text-muted-foreground">
-              Client Contacts (7d)
-            </span>
-            <p className="mt-1 text-2xl font-bold text-foreground">
+
+          <div className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 transition hover:border-[#F4512C]/40">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#6B645F] dark:text-[#9E958F]">
+                Client Contacts (7d)
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                <MessageCircle size={15} />
+              </span>
+            </div>
+            <p className="mt-2 text-3xl font-extrabold text-[#141210] dark:text-[#FAFAFA]">
               {dashboard.stats.whatsappClicks7d}
             </p>
-            <div className="mt-2 text-[11px] text-muted-foreground">
-              Direct inquiries
+            <div className="mt-1.5 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+              Direct customer inquiries
             </div>
           </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <span className="text-[11px] font-semibold text-muted-foreground">
-              Callbacks (7d)
-            </span>
-            <p className="mt-1 text-2xl font-bold text-foreground">
+
+          <div className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 transition hover:border-[#F4512C]/40">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#6B645F] dark:text-[#9E958F]">
+                Callbacks (7d)
+              </span>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                <Phone size={15} />
+              </span>
+            </div>
+            <p className="mt-2 text-3xl font-extrabold text-[#141210] dark:text-[#FAFAFA]">
               {dashboard.stats.callbacks7d}
             </p>
-            <div className="mt-2 text-[11px] text-muted-foreground">
+            <div className="mt-1.5 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
               {pending} pending resolution
             </div>
           </div>
         </section>
 
         {/* Worker Recruitment / Invite Code Card */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex items-center justify-between">
+        <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
                 Recruit & Link Workers
               </span>
-              <h2 className="mt-0.5 text-sm font-bold text-foreground">
+              <h2 className="mt-0.5 text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                 Your Agency Invite Code
               </h2>
             </div>
-            <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            <span className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#F5EFEA] dark:bg-[#242220] px-3 py-1 text-[11px] font-semibold text-[#6B645F] dark:text-[#9E958F]">
               Share with workers
             </span>
           </div>
 
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="flex h-10 flex-1 items-center justify-center rounded-lg border border-border bg-background px-4 font-mono text-lg font-bold tracking-widest text-foreground select-all">
+          <div className="mt-4 flex flex-col gap-2.5 sm:flex-row sm:items-center">
+            <div className="flex h-11 flex-1 items-center justify-center rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 font-mono text-lg font-bold tracking-widest text-[#141210] dark:text-[#FAFAFA] select-all">
               {dashboard.agency.agency_code || "CODE UNAVAILABLE"}
             </div>
 
@@ -683,10 +704,10 @@ export default function AgencyDashboard() {
               type="button"
               onClick={() => copy("code", dashboard.agency.agency_code || "")}
               disabled={!dashboard.agency.agency_code}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] disabled:opacity-50 cursor-pointer shadow-xs"
+              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 disabled:opacity-50 cursor-pointer"
             >
               {copied === "code" ? (
-                <Check size={14} className="text-emerald-500" />
+                <Check size={14} className="text-[#0F8A73]" />
               ) : (
                 <Copy size={14} />
               )}
@@ -697,7 +718,7 @@ export default function AgencyDashboard() {
               type="button"
               onClick={() => copy("link", shareUrl)}
               disabled={!shareUrl}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-black text-white dark:bg-white dark:text-black px-4 text-xs font-semibold shadow-xs transition hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50 cursor-pointer"
+              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white px-5 text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
             >
               {copied === "link" ? (
                 <Check size={14} />
@@ -709,40 +730,40 @@ export default function AgencyDashboard() {
               </span>
             </button>
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">
+          <p className="mt-2.5 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
             Workers enter this code during registration or from their dashboard
             to link under your agency.
           </p>
         </section>
 
         {/* Complete Worker Roster Section */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-3">
+        <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#EAE2DC] dark:border-white/10 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">
+                <h2 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                   Worker Team Details
                 </h2>
-                <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                <span className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#F5EFEA] dark:bg-[#242220] px-2.5 py-0.5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]">
                   {dashboard.workers.length} active
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F] mt-0.5">
                 Full profile details, direct phone contacts, skill
                 specializations, and daily status of your workers.
               </p>
             </div>
 
-            {/* View Mode Toggle & Search */}
+            {/* View Mode Toggle */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-lg border border-border bg-secondary/50 p-0.5">
+              <div className="flex items-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-1">
                 <button
                   type="button"
                   onClick={() => setViewMode("cards")}
-                  className={`flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium transition cursor-pointer ${
+                  className={`flex h-7 items-center gap-1 rounded-full px-3 text-xs font-semibold transition cursor-pointer ${
                     viewMode === "cards"
-                      ? "bg-card text-foreground shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                      : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
                   }`}
                   title="Card View"
                 >
@@ -752,10 +773,10 @@ export default function AgencyDashboard() {
                 <button
                   type="button"
                   onClick={() => setViewMode("table")}
-                  className={`flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium transition cursor-pointer ${
+                  className={`flex h-7 items-center gap-1 rounded-full px-3 text-xs font-semibold transition cursor-pointer ${
                     viewMode === "table"
-                      ? "bg-card text-foreground shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                      : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
                   }`}
                   title="Table View"
                 >
@@ -768,22 +789,22 @@ export default function AgencyDashboard() {
 
           {/* Search Filter Bar */}
           {dashboard.workers.length > 0 && (
-            <div className="mt-3.5 flex items-center rounded-lg bg-secondary/40 px-3 py-1.5 focus-within:bg-secondary">
+            <div className="mt-4 flex items-center rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2 focus-within:border-[#F4512C]">
               <Search
                 size={14}
-                className="mr-2 text-muted-foreground shrink-0"
+                className="mr-2.5 text-[#6B645F] dark:text-[#9E958F] shrink-0"
               />
               <input
                 value={workerSearch}
                 onChange={(e) => setWorkerSearch(e.target.value)}
                 placeholder="Search workers by name, trade, phone or locality..."
-                className="w-full bg-transparent text-xs text-foreground outline-hidden placeholder:text-muted-foreground"
+                className="w-full bg-transparent text-xs text-[#141210] dark:text-[#FAFAFA] outline-hidden placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F]"
               />
               {workerSearch && (
                 <button
                   type="button"
                   onClick={() => setWorkerSearch("")}
-                  className="text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="text-xs font-semibold text-[#F4512C] hover:underline cursor-pointer"
                 >
                   Clear
                 </button>
@@ -794,8 +815,7 @@ export default function AgencyDashboard() {
           {/* Render Workers */}
           {filteredWorkers.length > 0 ? (
             viewMode === "cards" ? (
-              /* Rich Card Grid: Shows all details */
-              <div className="mt-4 grid gap-3.5 sm:grid-cols-2">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 {filteredWorkers.map((w) => {
                   const servicesList = Array.isArray(w.services)
                     ? w.services
@@ -806,13 +826,12 @@ export default function AgencyDashboard() {
                   return (
                     <div
                       key={w.id}
-                      className="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition hover:border-foreground/30 hover:shadow-2xs"
+                      className="group flex flex-col justify-between rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5]/60 dark:bg-[#0B0A09]/60 p-4 transition hover:border-[#F4512C]/50"
                     >
                       <div>
-                        {/* Top: Avatar, Name, Verification & Category */}
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-sm">
+                            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] font-bold text-[#F4512C] text-sm">
                               {w.photo_url ? (
                                 <img
                                   src={w.photo_url}
@@ -825,95 +844,88 @@ export default function AgencyDashboard() {
                             </div>
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <h3 className="text-sm font-bold text-foreground">
+                                <h3 className="text-sm font-bold text-[#141210] dark:text-[#FAFAFA]">
                                   {w.name}
                                 </h3>
                                 {w.phone_verified && (
                                   <span title="Verified Worker">
                                     <BadgeCheck
                                       size={14}
-                                      className="text-emerald-500"
+                                      className="text-[#0F8A73]"
                                     />
                                   </span>
                                 )}
                               </div>
-                              <span className="inline-block rounded-md bg-secondary px-2 py-0.5 text-[11px] font-semibold text-foreground">
+                              <span className="mt-0.5 inline-block rounded-md bg-[#F5EFEA] dark:bg-[#242220] px-2 py-0.5 text-[11px] font-semibold text-[#6B645F] dark:text-[#9E958F]">
                                 {w.category || "General Specialist"}
                               </span>
                             </div>
                           </div>
 
-                          {/* Availability Badge */}
                           {w.available_today ? (
-                            <span className="flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="flex items-center gap-1 rounded-full bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-2.5 py-0.5 text-[10px] font-bold text-[#0F8A73]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#0F8A73] animate-pulse" />
                               Available
                             </span>
                           ) : (
-                            <span className="rounded-full bg-secondary border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            <span className="rounded-full bg-[#F5EFEA] dark:bg-[#242220] border border-[#EAE2DC] dark:border-white/10 px-2.5 py-0.5 text-[10px] font-medium text-[#6B645F] dark:text-[#9E958F]">
                               Off-duty
                             </span>
                           )}
                         </div>
 
-                        {/* Middle: Details Grid */}
                         <div className="mt-3.5 grid grid-cols-2 gap-2 text-xs">
-                          {/* Phone */}
-                          <div className="rounded-lg bg-secondary/30 p-2">
-                            <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                              <Phone size={10} /> Phone
+                          <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                            <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1">
+                              <Phone size={10} className="text-[#F4512C]" /> Phone
                             </span>
-                            <p className="mt-0.5 font-semibold text-foreground select-all">
+                            <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] select-all">
                               {w.phone ? `+91 ${w.phone}` : "No phone listed"}
                             </p>
                           </div>
 
-                          {/* Locality */}
-                          <div className="rounded-lg bg-secondary/30 p-2">
-                            <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                              <MapPin size={10} /> Location
+                          <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                            <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1">
+                              <MapPin size={10} className="text-[#F4512C]" /> Location
                             </span>
-                            <p className="mt-0.5 font-semibold text-foreground truncate">
+                            <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] truncate">
                               {w.locality || "All locations"}
                             </p>
                           </div>
 
-                          {/* Experience */}
-                          <div className="rounded-lg bg-secondary/30 p-2">
-                            <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                              <Briefcase size={10} /> Experience
+                          <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                            <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1">
+                              <Briefcase size={10} className="text-[#F4512C]" /> Experience
                             </span>
-                            <p className="mt-0.5 font-semibold text-foreground">
+                            <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA]">
                               {w.experience
                                 ? `${w.experience} yrs`
                                 : "Experienced"}
                             </p>
                           </div>
 
-                          {/* Inquiries */}
-                          <div className="rounded-lg bg-secondary/30 p-2">
-                            <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                              <MessageSquare size={10} /> Inquiries
+                          <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                            <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1">
+                              <MessageSquare size={10} className="text-[#F4512C]" /> Inquiries
                             </span>
-                            <p className="mt-0.5 font-semibold text-foreground">
+                            <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA]">
                               {w.contact_events_count || 0} leads
                             </p>
                           </div>
                         </div>
 
-                        {/* Services List */}
                         {servicesList.length > 0 && (
                           <div className="mt-2.5 flex flex-wrap gap-1">
                             {servicesList.slice(0, 3).map((s, idx) => (
                               <span
                                 key={idx}
-                                className="rounded-md border border-border/80 bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                className="rounded-md border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2 py-0.5 text-[10px] text-[#6B645F] dark:text-[#9E958F]"
                               >
                                 {s}
                               </span>
                             ))}
                             {servicesList.length > 3 && (
-                              <span className="rounded-md border border-border/80 bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                              <span className="rounded-md border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2 py-0.5 text-[10px] text-[#6B645F] dark:text-[#9E958F]">
                                 +{servicesList.length - 3} more
                               </span>
                             )}
@@ -921,12 +933,11 @@ export default function AgencyDashboard() {
                         )}
                       </div>
 
-                      {/* Bottom Action Buttons */}
-                      <div className="mt-4 flex items-center gap-1.5 border-t border-border/70 pt-3">
+                      <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-[#EAE2DC] dark:border-white/10 pt-3">
                         {w.phone && (
                           <a
                             href={`tel:+91${w.phone}`}
-                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A]"
+                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-2.5 text-xs font-semibold transition hover:opacity-90"
                             title="Call worker"
                           >
                             <Phone size={12} />
@@ -941,7 +952,7 @@ export default function AgencyDashboard() {
                             )}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-lg bg-[#128C7E] px-2 text-xs font-semibold text-white transition hover:bg-[#075E54]"
+                            className="flex-1 inline-flex h-8 items-center justify-center gap-1 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] px-2.5 text-xs font-semibold text-white transition"
                             title="WhatsApp worker"
                           >
                             <MessageCircle size={12} />
@@ -952,7 +963,7 @@ export default function AgencyDashboard() {
                         <button
                           type="button"
                           onClick={() => setSelectedWorker(w)}
-                          className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] cursor-pointer"
+                          className="inline-flex h-8 items-center justify-center gap-1 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2.5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 cursor-pointer"
                           title="View all worker details"
                         >
                           <Eye size={12} />
@@ -962,7 +973,7 @@ export default function AgencyDashboard() {
                         <button
                           type="button"
                           onClick={() => setWorkerToRemove(w)}
-                          className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-destructive/30 bg-destructive/5 px-2 text-xs font-medium text-destructive transition hover:bg-destructive hover:text-white cursor-pointer"
+                          className="inline-flex h-8 items-center justify-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 text-xs font-medium text-rose-600 dark:text-rose-400 transition hover:bg-rose-600 hover:text-white cursor-pointer"
                           title={`Remove ${w.name} from agency roster`}
                         >
                           <UserMinus size={13} />
@@ -971,7 +982,7 @@ export default function AgencyDashboard() {
 
                         <Link
                           to={`/worker?worker=${w.id}`}
-                          className="inline-flex h-8 items-center justify-center rounded-lg border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2 text-[#71717A] dark:text-[#A1A1AA] transition hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#6B645F] dark:text-[#9E958F] transition hover:text-[#F4512C]"
                           title="Public Profile"
                         >
                           <ExternalLink size={12} />
@@ -986,7 +997,7 @@ export default function AgencyDashboard() {
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[750px] text-left text-xs">
                   <thead>
-                    <tr className="border-b border-border text-muted-foreground">
+                    <tr className="border-b border-[#EAE2DC] dark:border-white/10 text-[#6B645F] dark:text-[#9E958F]">
                       <th className="pb-2.5 font-semibold">Worker</th>
                       <th className="pb-2.5 font-semibold">Contact Phone</th>
                       <th className="pb-2.5 font-semibold">
@@ -1000,15 +1011,15 @@ export default function AgencyDashboard() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/60">
+                  <tbody className="divide-y divide-[#EAE2DC] dark:divide-white/10">
                     {filteredWorkers.map((w) => (
                       <tr
                         key={w.id}
-                        className="text-foreground hover:bg-secondary/20"
+                        className="text-[#141210] dark:text-[#FAFAFA] hover:bg-[#FAF8F5] dark:hover:bg-[#0B0A09]/50"
                       >
                         <td className="py-3">
                           <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-xs">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] font-bold text-[#F4512C] text-xs">
                               {w.photo_url ? (
                                 <img
                                   src={w.photo_url}
@@ -1025,11 +1036,11 @@ export default function AgencyDashboard() {
                                 {w.phone_verified && (
                                   <BadgeCheck
                                     size={12}
-                                    className="text-emerald-500"
+                                    className="text-[#0F8A73]"
                                   />
                                 )}
                               </p>
-                              <p className="text-[11px] text-muted-foreground">
+                              <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                                 {w.locality || "—"}
                               </p>
                             </div>
@@ -1039,49 +1050,49 @@ export default function AgencyDashboard() {
                           {w.phone ? (
                             <a
                               href={`tel:+91${w.phone}`}
-                              className="hover:underline text-foreground"
+                              className="hover:underline text-[#141210] dark:text-[#FAFAFA]"
                             >
                               +91 {w.phone}
                             </a>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-[#6B645F] dark:text-[#9E958F]">—</span>
                           )}
                         </td>
                         <td className="py-3">
-                          <span className="font-semibold text-foreground">
+                          <span className="font-semibold text-[#141210] dark:text-[#FAFAFA]">
                             {w.category || "General"}
                           </span>
                           {Array.isArray(w.services) &&
                             w.services.length > 0 && (
-                              <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+                              <p className="text-[10px] text-[#6B645F] dark:text-[#9E958F] truncate max-w-[150px]">
                                 {w.services.join(", ")}
                               </p>
                             )}
                         </td>
                         <td className="py-3">
                           {w.available_today ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500">
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{" "}
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F8A73]">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#0F8A73]" />{" "}
                               Available
                             </span>
                           ) : (
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                               Off-duty
                             </span>
                           )}
                         </td>
-                        <td className="py-3 text-muted-foreground">
+                        <td className="py-3 text-[#6B645F] dark:text-[#9E958F]">
                           {w.experience ? `${w.experience} yrs` : "—"}
                         </td>
                         <td className="py-3 font-semibold">
                           {w.contact_events_count || 0}
                         </td>
                         <td className="py-3 text-right">
-                          <div className="inline-flex items-center gap-1">
+                          <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => setSelectedWorker(w)}
-                              className="rounded-md border border-border bg-secondary px-2 py-1 text-[11px] font-semibold text-foreground hover:bg-foreground hover:text-background cursor-pointer"
+                              className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-2.5 py-1 text-[11px] font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 cursor-pointer"
                             >
                               Details
                             </button>
@@ -1090,7 +1101,7 @@ export default function AgencyDashboard() {
                                 href={`https://wa.me/91${w.phone.replace(/\D/g, "")}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700"
+                                className="rounded-full bg-[#0F8A73] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-[#0B6E5B]"
                               >
                                 WhatsApp
                               </a>
@@ -1098,7 +1109,7 @@ export default function AgencyDashboard() {
                             <button
                               type="button"
                               onClick={() => setWorkerToRemove(w)}
-                              className="rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-[11px] font-medium text-destructive hover:bg-destructive hover:text-destructive-foreground cursor-pointer"
+                              className="rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-[11px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white cursor-pointer"
                               title="Remove from roster"
                             >
                               Remove
@@ -1112,7 +1123,7 @@ export default function AgencyDashboard() {
               </div>
             )
           ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+            <div className="mt-4 rounded-xl border border-dashed border-[#EAE2DC] dark:border-white/10 p-6 text-center text-xs text-[#6B645F] dark:text-[#9E958F]">
               {workerSearch
                 ? "No workers matching your search."
                 : "No workers linked yet. Share your agency invite code to add workers."}
@@ -1121,18 +1132,18 @@ export default function AgencyDashboard() {
         </section>
 
         {/* Active Project Assignments Section */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/80 pb-3">
+        <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#EAE2DC] dark:border-white/10 pb-4">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">
+                <h2 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                   Active Project Assignments
                 </h2>
-                <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+                <span className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#F5EFEA] dark:bg-[#242220] px-2.5 py-0.5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]">
                   {projects.length} assigned
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F] mt-0.5">
                 Manage ongoing client contracts, assigned team specialists, and
                 delivery timelines.
               </p>
@@ -1141,7 +1152,7 @@ export default function AgencyDashboard() {
             <button
               type="button"
               onClick={() => setShowNewProjectModal(true)}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-foreground px-3.5 text-xs font-semibold text-background transition hover:opacity-90 cursor-pointer self-start sm:self-auto"
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] px-4 text-xs font-semibold text-white transition cursor-pointer self-start sm:self-auto"
             >
               <Plus size={14} />
               <span>Assign New Project</span>
@@ -1149,85 +1160,76 @@ export default function AgencyDashboard() {
           </div>
 
           {projectsLoading ? (
-            <div className="mt-4 flex items-center justify-center p-8 text-xs text-muted-foreground">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent mr-2" />
-              Loading project assignments...
-            </div>
+            <CompactSectionSkeleton variant="grid" />
           ) : projects.length > 0 ? (
-            <div className="mt-4 grid gap-3.5 sm:grid-cols-2">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {projects.map((p) => (
                 <div
                   key={p.id}
-                  className="flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition hover:border-foreground/30 hover:shadow-2xs"
+                  className="flex flex-col justify-between rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5]/60 dark:bg-[#0B0A09]/60 p-4 transition hover:border-[#F4512C]/50"
                 >
                   <div>
-                    {/* Top: Project Title & Status */}
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="inline-block rounded-md bg-secondary px-2 py-0.5 text-[10px] font-bold text-foreground uppercase tracking-wide">
+                        <span className="inline-block rounded-md bg-[#FCEAE4] dark:bg-[#3A2018] px-2 py-0.5 text-[10px] font-bold text-[#F4512C] uppercase tracking-wide">
                           {p.service || "Contract"}
                         </span>
-                        <h3 className="mt-1 text-sm font-bold text-foreground">
+                        <h3 className="mt-1.5 text-sm font-bold text-[#141210] dark:text-[#FAFAFA]">
                           {p.title}
                         </h3>
                       </div>
-                      <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 capitalize">
+                      <span className="rounded-full bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-2.5 py-0.5 text-[10px] font-bold text-[#0F8A73] capitalize">
                         {p.status.replace("_", " ")}
                       </span>
                     </div>
 
-                    {/* Details Grid */}
                     <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                      {/* Client */}
-                      <div className="rounded-lg bg-secondary/30 p-2">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                      <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                        <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F]">
                           Client
                         </span>
-                        <p className="mt-0.5 font-semibold text-foreground truncate">
+                        <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] truncate">
                           {p.client_name}
                         </p>
                         {p.client_phone && (
                           <a
                             href={`tel:${p.client_phone}`}
-                            className="mt-0.5 block text-[11px] text-muted-foreground hover:underline"
+                            className="mt-0.5 block text-[11px] text-[#6B645F] dark:text-[#9E958F] hover:underline"
                           >
                             {p.client_phone}
                           </a>
                         )}
                       </div>
 
-                      {/* Assigned Specialist */}
-                      <div className="rounded-lg bg-secondary/30 p-2">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground">
+                      <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                        <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F]">
                           Assigned To
                         </span>
-                        <p className="mt-0.5 font-semibold text-foreground truncate">
+                        <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] truncate">
                           {p.worker_name}
                         </p>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[10px] text-[#6B645F] dark:text-[#9E958F]">
                           Specialist
                         </span>
                       </div>
 
-                      {/* Location */}
                       {p.location && (
-                        <div className="rounded-lg bg-secondary/30 p-2">
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                            <MapPin size={10} /> Location
+                        <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                          <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1">
+                            <MapPin size={10} className="text-[#F4512C]" /> Location
                           </span>
-                          <p className="mt-0.5 font-semibold text-foreground truncate">
+                          <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] truncate">
                             {p.location}
                           </p>
                         </div>
                       )}
 
-                      {/* Due Date */}
                       {p.deadline && (
-                        <div className="rounded-lg bg-secondary/30 p-2">
-                          <span className="text-[10px] uppercase font-bold text-muted-foreground flex items-center gap-1">
-                            <Clock size={10} /> Target Date
+                        <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5">
+                          <span className="text-[10px] uppercase font-bold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1">
+                            <Clock size={10} className="text-[#F4512C]" /> Target Date
                           </span>
-                          <p className="mt-0.5 font-semibold text-foreground truncate">
+                          <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] truncate">
                             {p.deadline}
                           </p>
                         </div>
@@ -1235,16 +1237,15 @@ export default function AgencyDashboard() {
                     </div>
                   </div>
 
-                  {/* Actions Bar */}
-                  <div className="mt-3.5 flex items-center justify-between border-t border-border/70 pt-2.5">
-                    <span className="text-[10px] text-muted-foreground">
+                  <div className="mt-3.5 flex items-center justify-between border-t border-[#EAE2DC] dark:border-white/10 pt-2.5">
+                    <span className="text-[10px] text-[#6B645F] dark:text-[#9E958F]">
                       Created {new Date(p.created_at).toLocaleDateString()}
                     </span>
 
                     <button
                       type="button"
                       onClick={() => setProjectToDelete(p)}
-                      className="inline-flex h-7 items-center gap-1 rounded-md border border-destructive/30 bg-destructive/5 px-2 text-xs font-semibold text-destructive transition hover:bg-destructive hover:text-destructive-foreground cursor-pointer"
+                      className="inline-flex h-7 items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 text-xs font-semibold text-rose-600 dark:text-rose-400 transition hover:bg-rose-600 hover:text-white cursor-pointer"
                       title="Delete project assignment"
                     >
                       <Trash2 size={12} />
@@ -1255,46 +1256,46 @@ export default function AgencyDashboard() {
               ))}
             </div>
           ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
-              No active project assignments. Click "Assign New Project" to
+            <div className="mt-4 rounded-xl border border-dashed border-[#EAE2DC] dark:border-white/10 p-6 text-center text-xs text-[#6B645F] dark:text-[#9E958F]">
+              No active project assignments. Click &ldquo;Assign New Project&rdquo; to
               dispatch your specialists to client sites.
             </div>
           )}
         </section>
 
         {/* Callback Requests Section */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <div className="flex items-center justify-between border-b border-border/80 pb-3">
+        <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+          <div className="flex items-center justify-between border-b border-[#EAE2DC] dark:border-white/10 pb-4">
             <div>
-              <h2 className="text-base font-bold text-foreground">
+              <h2 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                 Client Callback Requests
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                 Direct service leads submitted by customers for your workers.
               </p>
             </div>
-            <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-foreground">
+            <span className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] px-3 py-0.5 text-xs font-bold text-[#F4512C]">
               {pending} pending
             </span>
           </div>
 
           {dashboard.callbacks.length ? (
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-4 space-y-3">
               {dashboard.callbacks.map((c) => (
                 <div
                   key={c.id}
-                  className="rounded-lg border border-border bg-secondary/30 p-3.5"
+                  className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-xs font-bold text-foreground">
+                      <p className="text-sm font-bold text-[#141210] dark:text-[#FAFAFA]">
                         {c.client_name}
                       </p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      <p className="mt-0.5 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                         {c.service_needed} · Preferred: {c.preferred_time}
                       </p>
-                      <p className="mt-1 flex items-center gap-1 text-xs font-medium text-foreground">
-                        <Phone size={12} className="text-muted-foreground" />
+                      <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]">
+                        <Phone size={12} className="text-[#F4512C]" />
                         <a
                           href={`tel:${c.client_phone}`}
                           className="hover:underline"
@@ -1303,25 +1304,25 @@ export default function AgencyDashboard() {
                         </a>
                       </p>
                     </div>
-                    <span className="rounded-md border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground uppercase">
+                    <span className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2.5 py-0.5 text-[10px] font-bold text-[#6B645F] dark:text-[#9E958F] uppercase">
                       {c.status}
                     </span>
                   </div>
 
                   {c.notes && (
-                    <p className="mt-2.5 rounded-md border border-border bg-background p-2.5 text-[11px] text-muted-foreground">
+                    <p className="mt-2.5 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-3 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                       {c.notes}
                     </p>
                   )}
 
-                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-2.5">
-                    <span className="text-[11px] text-muted-foreground">
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#EAE2DC] dark:border-white/10 pt-3">
+                    <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                       {new Date(c.created_at).toLocaleDateString()}
                     </span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <a
                         href={`tel:${c.client_phone}`}
-                        className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-semibold text-foreground transition hover:bg-secondary"
+                        className="rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-3.5 py-1.5 text-xs font-semibold transition hover:opacity-90"
                       >
                         Call Client
                       </a>
@@ -1329,7 +1330,7 @@ export default function AgencyDashboard() {
                         <button
                           disabled={updating === c.id}
                           onClick={() => void updateStatus(c.id, "contacted")}
-                          className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-semibold text-foreground transition hover:bg-secondary cursor-pointer disabled:opacity-50"
+                          className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-1.5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 cursor-pointer disabled:opacity-50"
                         >
                           Mark Contacted
                         </button>
@@ -1338,7 +1339,7 @@ export default function AgencyDashboard() {
                         <button
                           disabled={updating === c.id}
                           onClick={() => void updateStatus(c.id, "closed")}
-                          className="rounded-md bg-foreground px-2.5 py-1 text-xs font-semibold text-background transition hover:opacity-90 cursor-pointer disabled:opacity-50"
+                          className="rounded-full bg-[#F4512C] hover:bg-[#E04320] px-3.5 py-1.5 text-xs font-semibold text-white transition cursor-pointer disabled:opacity-50"
                         >
                           Mark Resolved
                         </button>
@@ -1349,7 +1350,7 @@ export default function AgencyDashboard() {
               ))}
             </div>
           ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+            <div className="mt-4 rounded-xl border border-dashed border-[#EAE2DC] dark:border-white/10 p-6 text-center text-xs text-[#6B645F] dark:text-[#9E958F]">
               No callback requests received yet. Client inquiries will appear
               here.
             </div>
@@ -1357,35 +1358,35 @@ export default function AgencyDashboard() {
         </section>
 
         {/* Agency Profile Details */}
-        <section className="rounded-xl border border-border bg-card p-5 sm:p-6">
-          <h2 className="text-base font-bold text-foreground">
+        <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+          <h2 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
             Agency Information
           </h2>
-          <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
-            <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <span className="text-[11px] text-muted-foreground">
+          <div className="mt-3.5 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3.5">
+              <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                 Contact Phone
               </span>
-              <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                <Phone size={13} />
+              <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                <Phone size={13} className="text-[#F4512C]" />
                 {dashboard.agency.phone || "Not set"}
               </p>
             </div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <span className="text-[11px] text-muted-foreground">
+            <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3.5">
+              <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                 Team Size Band
               </span>
-              <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                <Users size={13} />
+              <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                <Users size={13} className="text-[#F4512C]" />
                 {dashboard.agency.team_size_band || "1-5 workers"}
               </p>
             </div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3">
-              <span className="text-[11px] text-muted-foreground">
+            <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3.5">
+              <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                 Specializations
               </span>
-              <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-foreground truncate">
-                <Wrench size={13} className="shrink-0" />
+              <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] truncate">
+                <Wrench size={13} className="shrink-0 text-[#F4512C]" />
                 <span className="truncate">
                   {categories.length ? categories.join(", ") : "All Trades"}
                 </span>
@@ -1400,7 +1401,7 @@ export default function AgencyDashboard() {
             await supabase?.auth.signOut();
             navigate("/", { replace: true });
           }}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs font-bold text-destructive transition hover:bg-destructive/15 cursor-pointer"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs font-bold text-rose-600 dark:text-rose-400 transition hover:bg-rose-500/15 cursor-pointer"
         >
           <LogOut size={15} />
           <span>Log out of Agency Account</span>
@@ -1410,15 +1411,14 @@ export default function AgencyDashboard() {
       {/* Worker Full Details Modal */}
       {selectedWorker && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            {/* Modal Header */}
-            <div className="flex items-start justify-between gap-3 border-b border-border pb-4">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-[#EAE2DC] dark:border-white/10 pb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-base">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] font-bold text-[#F4512C] text-base">
                   {selectedWorker.photo_url ? (
                     <img
                       src={selectedWorker.photo_url}
@@ -1432,16 +1432,16 @@ export default function AgencyDashboard() {
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <h3 className="text-base font-bold text-foreground">
+                    <h3 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                       {selectedWorker.name}
                     </h3>
                     {selectedWorker.phone_verified && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-2 py-0.5 text-[10px] font-bold text-[#0F8A73]">
                         <BadgeCheck size={11} /> Verified
                       </span>
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-foreground">
+                  <p className="text-xs font-semibold text-[#F4512C]">
                     {selectedWorker.category || "Specialist"}
                   </p>
                 </div>
@@ -1450,20 +1450,18 @@ export default function AgencyDashboard() {
               <button
                 type="button"
                 onClick={() => setSelectedWorker(null)}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer"
+                className="rounded-full p-1.5 text-[#6B645F] dark:text-[#9E958F] hover:bg-[#F5EFEA] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-[#FAFAFA] cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="mt-4 space-y-4 text-xs">
-              {/* Quick Contact Bar */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {selectedWorker.phone && (
                   <a
                     href={`tel:+91${selectedWorker.phone}`}
-                    className="flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-secondary font-semibold text-foreground hover:bg-foreground hover:text-background transition"
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] font-semibold hover:opacity-90 transition"
                   >
                     <Phone size={13} />
                     <span>Call (+91 {selectedWorker.phone})</span>
@@ -1476,7 +1474,7 @@ export default function AgencyDashboard() {
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#128C7E] font-semibold text-white hover:bg-[#075E54] transition"
+                    className="flex h-10 items-center justify-center gap-1.5 rounded-full bg-[#0F8A73] font-semibold text-white hover:bg-[#0B6E5B] transition"
                   >
                     <MessageCircle size={13} />
                     <span>WhatsApp</span>
@@ -1484,13 +1482,12 @@ export default function AgencyDashboard() {
                 )}
               </div>
 
-              {/* Complete Information Grid */}
-              <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-border bg-secondary/20 p-3.5">
+              <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
                     Mobile Phone
                   </span>
-                  <p className="mt-0.5 font-semibold text-foreground select-all">
+                  <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA] select-all">
                     {selectedWorker.phone
                       ? `+91 ${selectedWorker.phone}`
                       : "Not listed"}
@@ -1498,19 +1495,19 @@ export default function AgencyDashboard() {
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
                     Service Locality
                   </span>
-                  <p className="mt-0.5 font-semibold text-foreground">
+                  <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA]">
                     {selectedWorker.locality || "All local areas"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
                     Work Experience
                   </span>
-                  <p className="mt-0.5 font-semibold text-foreground">
+                  <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA]">
                     {selectedWorker.experience
                       ? `${selectedWorker.experience} Years`
                       : "Experienced"}
@@ -1518,34 +1515,34 @@ export default function AgencyDashboard() {
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Today's Availability
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
+                    Today&apos;s Availability
                   </span>
                   <p className="mt-0.5 font-semibold">
                     {selectedWorker.available_today ? (
-                      <span className="text-emerald-500 font-bold">
+                      <span className="text-[#0F8A73] font-bold">
                         ● Available Today
                       </span>
                     ) : (
-                      <span className="text-muted-foreground">Off-duty</span>
+                      <span className="text-[#6B645F] dark:text-[#9E958F]">Off-duty</span>
                     )}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
                     Customer Inquiries
                   </span>
-                  <p className="mt-0.5 font-semibold text-foreground">
+                  <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA]">
                     {selectedWorker.contact_events_count || 0} direct leads
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
                     Urgent Work Ready
                   </span>
-                  <p className="mt-0.5 font-semibold text-foreground">
+                  <p className="mt-0.5 font-semibold text-[#141210] dark:text-[#FAFAFA]">
                     {selectedWorker.urgent_today
                       ? "Yes (Emergency jobs)"
                       : "Standard jobs"}
@@ -1553,22 +1550,20 @@ export default function AgencyDashboard() {
                 </div>
               </div>
 
-              {/* Bio / About */}
               {(selectedWorker.about || selectedWorker.bio) && (
-                <div className="rounded-xl border border-border bg-secondary/10 p-3.5">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    About & Bio
+                <div className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
+                    About &amp; Bio
                   </span>
-                  <p className="mt-1 text-xs leading-relaxed text-foreground">
+                  <p className="mt-1 text-xs leading-relaxed text-[#141210] dark:text-[#FAFAFA]">
                     {selectedWorker.about || selectedWorker.bio}
                   </p>
                 </div>
               )}
 
-              {/* Full Services List */}
               {selectedWorker.services && (
-                <div className="rounded-xl border border-border bg-secondary/10 p-3.5">
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                <div className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
+                  <span className="text-[10px] font-bold uppercase text-[#6B645F] dark:text-[#9E958F]">
                     All Services Offered
                   </span>
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1578,7 +1573,7 @@ export default function AgencyDashboard() {
                     ).map((s, idx) => (
                       <span
                         key={idx}
-                        className="rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground"
+                        className="rounded-md border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2.5 py-1 text-xs font-medium text-[#141210] dark:text-[#FAFAFA]"
                       >
                         {String(s).trim()}
                       </span>
@@ -1587,11 +1582,10 @@ export default function AgencyDashboard() {
                 </div>
               )}
 
-              {/* Public Link */}
               <div className="pt-2 flex justify-end gap-2">
                 <Link
                   to={`/worker?worker=${selectedWorker.id}`}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-foreground px-4 text-xs font-semibold text-background hover:opacity-90 transition"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] px-5 text-xs font-semibold text-white transition"
                 >
                   <ExternalLink size={13} />
                   <span>View Public Profile Page</span>
@@ -1605,21 +1599,21 @@ export default function AgencyDashboard() {
       {/* New Project Assignment Modal */}
       {showNewProjectModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-3.5">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground">
-                  <FolderKanban size={16} />
+          <div className="w-full max-w-md rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#EAE2DC] dark:border-white/10 pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                  <FolderKanban size={17} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-foreground">
+                  <h3 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                     Assign Project
                   </h3>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                     Create and dispatch an active job assignment
                   </p>
                 </div>
@@ -1627,7 +1621,7 @@ export default function AgencyDashboard() {
               <button
                 type="button"
                 onClick={() => setShowNewProjectModal(false)}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground cursor-pointer"
+                className="rounded-full p-1.5 text-[#6B645F] dark:text-[#9E958F] hover:bg-[#F5EFEA] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-[#FAFAFA] cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1638,7 +1632,7 @@ export default function AgencyDashboard() {
               className="mt-4 space-y-3.5 text-xs"
             >
               <div>
-                <label className="block text-[11px] font-semibold text-foreground">
+                <label className="block text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
                   Project / Job Title *
                 </label>
                 <input
@@ -1652,12 +1646,12 @@ export default function AgencyDashboard() {
                       title: e.target.value,
                     })
                   }
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
+                  className="mt-1 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] outline-hidden focus:border-[#F4512C]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-foreground">
+                <label className="block text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
                   Assign Specialist *
                 </label>
                 <select
@@ -1673,7 +1667,7 @@ export default function AgencyDashboard() {
                       service: sel?.category || newProjectForm.service,
                     });
                   }}
-                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-foreground cursor-pointer"
+                  className="mt-1 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] outline-hidden focus:border-[#F4512C] cursor-pointer"
                 >
                   <option value="">Select a roster specialist...</option>
                   {dashboard?.workers.map((w) => (
@@ -1687,7 +1681,7 @@ export default function AgencyDashboard() {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">
+                  <label className="block text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
                     Client Name *
                   </label>
                   <input
@@ -1701,12 +1695,12 @@ export default function AgencyDashboard() {
                         client_name: e.target.value,
                       })
                     }
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
+                    className="mt-1 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] outline-hidden focus:border-[#F4512C]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">
+                  <label className="block text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
                     Client Phone
                   </label>
                   <input
@@ -1719,14 +1713,14 @@ export default function AgencyDashboard() {
                         client_phone: e.target.value,
                       })
                     }
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
+                    className="mt-1 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] outline-hidden focus:border-[#F4512C]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">
+                  <label className="block text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
                     Job Location
                   </label>
                   <input
@@ -1739,12 +1733,12 @@ export default function AgencyDashboard() {
                         location: e.target.value,
                       })
                     }
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
+                    className="mt-1 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] outline-hidden focus:border-[#F4512C]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-foreground">
+                  <label className="block text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
                     Target Deadline
                   </label>
                   <input
@@ -1757,16 +1751,16 @@ export default function AgencyDashboard() {
                         deadline: e.target.value,
                       })
                     }
-                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground outline-hidden focus:border-foreground"
+                    className="mt-1 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] outline-hidden focus:border-[#F4512C]"
                   />
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center justify-end gap-2 border-t border-border pt-4">
+              <div className="mt-5 flex items-center justify-end gap-2 border-t border-[#EAE2DC] dark:border-white/10 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowNewProjectModal(false)}
-                  className="rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary cursor-pointer"
+                  className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1778,7 +1772,7 @@ export default function AgencyDashboard() {
                     !newProjectForm.worker_id ||
                     !newProjectForm.client_name
                   }
-                  className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-background hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#F4512C] hover:bg-[#E04320] px-5 py-2 text-xs font-semibold text-white disabled:opacity-50 cursor-pointer"
                 >
                   {newProjectLoading ? "Creating..." : "Create Assignment"}
                 </button>

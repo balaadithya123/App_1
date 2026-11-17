@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { BadgeCheck, Check, MapPin, MessageCircle, Share2, Truck } from "lucide-react";
 import PageShell from "@/components/PageShell";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SupplierDetailSkeleton } from "@/components/PageSkeletons";
 import { getCategoryMeta } from "@/components/materials/categoryMeta";
 import { supabase } from "@/lib/supabase";
 import {
@@ -23,7 +23,7 @@ import {
 const db = supabase as any;
 
 const inputClass =
-  "w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0D0D10] px-3 py-2.5 text-sm outline-none transition focus:border-neutral-500";
+  "w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none transition focus:border-[#F4512C]";
 
 export default function SupplierProfile() {
   const { id } = useParams<{ id: string }>();
@@ -137,11 +137,7 @@ export default function SupplierProfile() {
   if (loading) {
     return (
       <PageShell backTo="/materials" backLabel="Materials" containerWidth="md">
-        <div className="space-y-4" aria-busy="true">
-          <Skeleton className="h-16 w-full rounded-2xl" />
-          <Skeleton className="h-40 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
-        </div>
+        <SupplierDetailSkeleton />
       </PageShell>
     );
   }
@@ -149,11 +145,11 @@ export default function SupplierProfile() {
   if (failed || !supplier) {
     return (
       <PageShell backTo="/materials" backLabel="Materials" containerWidth="md">
-        <div className="space-y-3 py-16 text-center">
-          <p className="text-sm text-[#71717A]">
+        <div className="space-y-3 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] py-14 px-6 text-center shadow-sm">
+          <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
             {failed ? "Couldn't load this supplier. Please try again." : "This supplier isn't listed or isn't verified yet."}
           </p>
-          <Link to="/materials" className="inline-block rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold dark:border-neutral-700">
+          <Link to="/materials" className="inline-block rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition">
             Back to suppliers
           </Link>
         </div>
@@ -183,7 +179,7 @@ export default function SupplierProfile() {
           type="button"
           onClick={() => void share()}
           aria-label="Share supplier"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 transition hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-[#1E1F24]"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 cursor-pointer"
         >
           <Share2 size={15} />
         </button>
@@ -193,56 +189,57 @@ export default function SupplierProfile() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="space-y-5 pb-28"
+        className="space-y-6 pb-28"
       >
-        <header className="flex items-start gap-3">
-          <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${tone}`}>
-            <Icon size={26} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xl font-bold tracking-tight">{supplier.name}</h1>
-              <BadgeCheck size={18} className="shrink-0 text-emerald-600 dark:text-emerald-400" aria-label="Verified" />
+        <header className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-5 sm:p-6 shadow-sm">
+          <div className="flex items-start gap-3.5">
+            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${tone}`}>
+              <Icon size={26} />
             </div>
-            <p className="text-sm text-[#71717A] dark:text-[#A1A1AA]">{supplier.category}</p>
-            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#52525B] dark:text-[#A1A1AA]">
-              {place && (
-                <span className="inline-flex items-center gap-1">
-                  <MapPin size={12} /> {place}
-                </span>
-              )}
-              {supplier.delivery_radius_km ? (
-                <span className="inline-flex items-center gap-1">
-                  <Truck size={12} /> delivers up to {supplier.delivery_radius_km} km
-                </span>
-              ) : null}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">{supplier.name}</h1>
+                <BadgeCheck size={18} className="shrink-0 text-[#0F8A73]" aria-label="Verified" />
+              </div>
+              <p className="text-sm font-medium text-[#F4512C]">{supplier.category}</p>
+              <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
+                {place && (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin size={12} /> {place}
+                  </span>
+                )}
+                {supplier.delivery_radius_km ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Truck size={12} /> delivers up to {supplier.delivery_radius_km} km
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
+          {supplier.description && (
+            <p className="mt-3 pt-3 border-t border-[#EAE2DC] dark:border-white/10 text-sm text-[#6B645F] dark:text-[#9E958F]">{supplier.description}</p>
+          )}
         </header>
-
-        {supplier.description && (
-          <p className="text-sm text-[#52525B] dark:text-[#A1A1AA]">{supplier.description}</p>
-        )}
 
         <section aria-labelledby="products-heading" className="space-y-2.5">
           <div>
-            <h2 id="products-heading" className="text-base font-semibold">
+            <h2 id="products-heading" className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
               Price list
             </h2>
-            <p className="text-xs text-[#71717A]">Select what you need to build one quote.</p>
+            <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">Select what you need to build one quote.</p>
           </div>
           {products.length === 0 ? (
-            <p className="rounded-2xl border border-[#E4E4E7] p-6 text-center text-sm text-[#71717A] dark:border-[#27272A]">
+            <p className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 text-center text-sm text-[#6B645F] dark:text-[#9E958F]">
               No products listed yet.
             </p>
           ) : (
-            <ul className="divide-y divide-[#E4E4E7] overflow-hidden rounded-2xl border border-[#E4E4E7] bg-white dark:divide-[#27272A] dark:border-[#27272A] dark:bg-[#141416]">
+            <ul className="divide-y divide-[#EAE2DC] dark:divide-white/10 overflow-hidden rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] shadow-sm">
               {products.map((p) => {
                 const isOn = p.id in selected;
                 const price = formatPrice(p);
                 const age = daysSince(p.price_updated_at);
                 return (
-                  <li key={p.id} className="px-4 py-3">
+                  <li key={p.id} className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
@@ -250,21 +247,21 @@ export default function SupplierProfile() {
                         aria-checked={isOn}
                         aria-label={`Select ${p.name}`}
                         onClick={() => toggle(p.id)}
-                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition ${
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition cursor-pointer ${
                           isOn
-                            ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
-                            : "border-neutral-300 dark:border-neutral-700"
+                            ? "border-[#F4512C] bg-[#F4512C] text-white"
+                            : "border-[#EAE2DC] dark:border-white/20 bg-[#FAF8F5] dark:bg-[#0B0A09]"
                         }`}
                       >
                         {isOn && <Check size={14} />}
                       </button>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">{p.name}</p>
-                        <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
+                        <p className="text-sm font-semibold text-[#141210] dark:text-[#FAFAFA]">{p.name}</p>
+                        <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                           {price ? `from ${price}` : "Ask for price"}
                           {price &&
                             (isPriceStale(p.price_updated_at) ? (
-                              <span className="ml-1 text-amber-600 dark:text-amber-400">· may be outdated</span>
+                              <span className="ml-1 text-[#F4512C]">· may be outdated</span>
                             ) : (
                               <span className="ml-1">· updated {age === 0 ? "today" : `${age}d ago`}</span>
                             ))}
@@ -273,7 +270,7 @@ export default function SupplierProfile() {
                       {isOn && (
                         <input
                           autoFocus
-                          className="w-24 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-500 dark:border-neutral-800 dark:bg-[#0D0D10]"
+                          className="w-24 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-2 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
                           inputMode="decimal"
                           placeholder={p.unit ? `Qty (${p.unit})` : "Qty"}
                           aria-label={`Quantity of ${p.name}`}
@@ -291,8 +288,8 @@ export default function SupplierProfile() {
           )}
         </section>
 
-        <section aria-labelledby="quote-heading" className="space-y-3 rounded-2xl border border-[#E4E4E7] bg-zinc-50 p-4 dark:border-[#27272A] dark:bg-[#0D0D10]">
-          <h2 id="quote-heading" className="text-base font-semibold">
+        <section aria-labelledby="quote-heading" className="space-y-3 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 shadow-sm">
+          <h2 id="quote-heading" className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
             Get a quote
           </h2>
           <input
@@ -319,12 +316,12 @@ export default function SupplierProfile() {
               ))}
             </select>
           )}
-          {quoteHelp && <p className="text-xs text-[#71717A]">{quoteHelp}</p>}
+          {quoteHelp && <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">{quoteHelp}</p>}
           <button
             type="button"
             onClick={() => void sendQuote()}
             disabled={!canSend || sending}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] px-4 py-3 text-sm font-bold text-white shadow-sm transition disabled:opacity-50 cursor-pointer"
           >
             <MessageCircle size={15} />
             <span>
@@ -337,14 +334,14 @@ export default function SupplierProfile() {
               href={`https://wa.me/${toWhatsappNumber(contact.whatsapp)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center text-xs font-semibold text-[#52525B] underline-offset-2 hover:underline dark:text-[#A1A1AA]"
+              className="block text-center text-xs font-semibold text-[#6B645F] dark:text-[#9E958F] underline-offset-2 hover:text-[#141210] dark:hover:text-[#FAFAFA] hover:underline"
             >
               Or just message {contact.person_name}
             </a>
           )}
         </section>
 
-        <p className="px-1 text-[11px] text-[#71717A]">
+        <p className="px-1 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
           Prices are indicative and set by suppliers. Confirm the final price and delivery on WhatsApp.
         </p>
       </motion.div>

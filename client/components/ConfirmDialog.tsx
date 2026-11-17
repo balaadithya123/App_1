@@ -71,7 +71,7 @@ export default function ConfirmDialog({
     if (variant === "warning") {
       return "bg-amber-600 text-white hover:bg-amber-700 shadow-sm";
     }
-    return "bg-black text-white dark:bg-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-sm";
+    return "bg-[#F4512C] text-white hover:bg-[#E04320] shadow-sm";
   };
 
   return (
@@ -87,14 +87,14 @@ export default function ConfirmDialog({
         }
       }}
     >
-      <div className="relative w-full max-w-md rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-xl transition-all scale-100">
+      <div className="relative w-full max-w-md rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-xl transition-all scale-100">
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
           disabled={loading}
           aria-label="Close dialog"
-          className="absolute right-4 top-4 rounded-full p-1.5 text-[#71717A] dark:text-[#A1A1AA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white disabled:opacity-50 cursor-pointer"
+          className="absolute right-4 top-4 rounded-full p-1.5 text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-white/10 hover:text-[#141210] dark:hover:text-white disabled:opacity-50 cursor-pointer"
         >
           <X size={16} />
         </button>
@@ -111,13 +111,13 @@ export default function ConfirmDialog({
           <div className="min-w-0 flex-1 pr-4">
             <h2
               id="confirm-dialog-title"
-              className="text-base font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA] sm:text-lg"
+              className="text-base font-bold tracking-tight text-[#141210] dark:text-[#FAFAFA] sm:text-lg"
             >
               {title}
             </h2>
             <div
               id="confirm-dialog-description"
-              className="mt-1 text-xs sm:text-sm text-[#71717A] dark:text-[#A1A1AA] leading-relaxed"
+              className="mt-1 text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F] leading-relaxed"
             >
               {description}
             </div>
@@ -126,15 +126,15 @@ export default function ConfirmDialog({
 
         {/* Optional Item Details Card */}
         {itemDetails && (
-          <div className="mt-4 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3.5 text-xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
+          <div className="mt-4 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3.5 text-xs">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F]">
               {itemDetails.label}
             </div>
-            <div className="mt-0.5 text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
+            <div className="mt-0.5 text-sm font-bold text-[#141210] dark:text-[#FAFAFA]">
               {itemDetails.value}
             </div>
             {itemDetails.subValue && (
-              <div className="mt-0.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+              <div className="mt-0.5 text-xs text-[#6B645F] dark:text-[#9E958F]">
                 {itemDetails.subValue}
               </div>
             )}
@@ -147,7 +147,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 text-xs sm:text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 disabled:opacity-50 cursor-pointer"
+            className="inline-flex h-10 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-5 text-xs sm:text-sm font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 disabled:opacity-50 cursor-pointer"
           >
             {cancelText}
           </button>

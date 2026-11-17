@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
+import { FormCardSkeleton } from "@/components/PageSkeletons";
 import { supabase } from "@/lib/supabase";
 const SERVICES = [
   "Electrician",
@@ -132,15 +133,13 @@ export default function AgencyProfileEdit() {
   };
   if (loading)
     return (
-      <PageShell>
-        <div className="mx-auto max-w-2xl py-12 text-center">
-          Loading your existing agency profile...
-        </div>
+      <PageShell hideBack hideHome>
+        <FormCardSkeleton />
       </PageShell>
     );
   return (
-    <PageShell>
-      <form onSubmit={save} className="mx-auto max-w-3xl space-y-5 py-6">
+    <PageShell hideBack hideHome>
+      <form onSubmit={save} className="mx-auto max-w-3xl space-y-5 py-4">
         <button
           type="button"
           onClick={() =>
@@ -150,44 +149,54 @@ export default function AgencyProfileEdit() {
               ? navigate(-1)
               : navigate("/agency/dashboard")
           }
-          className="flex items-center gap-2 text-sm font-bold cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA] transition cursor-pointer"
         >
-          <ArrowLeft size={16} />
-          Back
+          <ArrowLeft size={15} />
+          Back to Dashboard
         </button>
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <h1 className="text-2xl font-extrabold">Edit agency profile</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+
+        <div className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 sm:p-7">
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            Agency Profile Settings
+          </span>
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+            Edit agency profile
+          </h1>
+          <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
             Your existing information is loaded below. Your agency code is
             generated automatically.
           </p>
           {agencyCode && (
-            <p className="mt-3 text-sm font-bold">
+            <p className="mt-3 text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Agency code:{" "}
-              <span className="tracking-wider text-primary">{agencyCode}</span>
+              <span className="ml-1 rounded-md bg-[#FCEAE4] dark:bg-[#3A2018] px-2 py-0.5 font-mono tracking-wider text-[#F4512C]">
+                {agencyCode}
+              </span>
             </p>
           )}
         </div>
+
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
+          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs font-semibold text-rose-600 dark:text-rose-400">
             {error}
           </div>
         )}
-        <section className="rounded-2xl border border-border bg-card p-6 space-y-4">
-          <label className="block text-sm font-bold">
+
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 space-y-4">
+          <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             Agency name
             <input
               required
-              className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+              className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
           </label>
-          <label className="block text-sm font-bold">
+          <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             Contact person
             <input
               required
-              className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+              className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
               value={form.contactPersonName}
               onChange={(e) =>
                 setForm({ ...form, contactPersonName: e.target.value })
@@ -195,34 +204,34 @@ export default function AgencyProfileEdit() {
             />
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-bold">
+            <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Phone
               <input
                 required
                 pattern="[0-9]{10}"
-                className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+                className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
               />
             </label>
-            <label className="block text-sm font-bold">
+            <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Email
               <input
                 required
                 type="email"
-                className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+                className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </label>
           </div>
-          <label className="block text-sm font-bold">
+          <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             Service areas
-            <p className="mt-1 text-xs font-normal text-muted-foreground">
+            <p className="mt-0.5 text-[11px] font-normal text-[#6B645F] dark:text-[#9E958F]">
               Separate areas with commas
             </p>
             <input
-              className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+              className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
               value={form.serviceLocations}
               onChange={(e) =>
                 setForm({ ...form, serviceLocations: e.target.value })
@@ -230,24 +239,30 @@ export default function AgencyProfileEdit() {
             />
           </label>
           <div>
-            <p className="text-sm font-bold">Service categories</p>
+            <p className="text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+              Service categories
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {SERVICES.map((s) => (
                 <button
                   type="button"
                   key={s}
                   onClick={() => toggle(s)}
-                  className={`rounded-full border px-3 py-2 text-sm font-semibold ${form.categories.includes(s) ? "border-primary bg-primary/10 text-primary" : "border-border"}`}
+                  className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                    form.categories.includes(s)
+                      ? "border-[#F4512C] bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]"
+                      : "border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
+                  }`}
                 >
                   {s}
                 </button>
               ))}
             </div>
           </div>
-          <label className="block text-sm font-bold">
+          <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             Team size
             <select
-              className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+              className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
               value={form.teamSizeBand}
               onChange={(e) =>
                 setForm({ ...form, teamSizeBand: e.target.value })
@@ -258,18 +273,18 @@ export default function AgencyProfileEdit() {
               <option>15+</option>
             </select>
           </label>
-          <label className="block text-sm font-bold">
+          <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             Logo URL
             <input
-              className="mt-2 w-full rounded-xl border border-input bg-background p-3"
+              className="mt-1.5 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
               value={form.logoUrl}
               onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
             />
           </label>
-          <label className="block text-sm font-bold">
+          <label className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             Description
             <textarea
-              className="mt-2 min-h-28 w-full rounded-xl border border-input bg-background p-3"
+              className="mt-1.5 min-h-28 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
@@ -278,7 +293,7 @@ export default function AgencyProfileEdit() {
           </label>
           <button
             disabled={saving}
-            className="w-full rounded-xl bg-primary p-3 font-bold text-primary-foreground disabled:opacity-50"
+            className="w-full h-11 rounded-full bg-[#F4512C] hover:bg-[#E04320] text-sm font-semibold text-white transition disabled:opacity-50 cursor-pointer"
           >
             {saving ? "Saving..." : "Save agency profile"}
           </button>

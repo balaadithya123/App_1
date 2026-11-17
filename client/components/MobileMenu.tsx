@@ -1,5 +1,4 @@
 import {
-  Menu,
   X,
   UserRound,
   LogOut,
@@ -10,11 +9,11 @@ import {
   Clock3,
   ShieldCheck,
   Building2,
-  ChevronRight,
-  Bookmark,
-  Compass,
-  BrainCircuit,
-  Sparkles,
+  Package,
+  IndianRupee,
+  MoreHorizontal,
+  Plus,
+  PhoneCall,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -23,9 +22,19 @@ import { getSavedWorkerIds } from "@/lib/favorites";
 import { getRecentlyViewedWorkerIds } from "@/lib/recently-viewed";
 import { getStoredDueBadgeCount, getLiveDueBadgeCount } from "@/lib/home-items";
 import ThemeToggle from "@/components/ThemeToggle";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/lib/i18n";
+import { useVoiceAssistant } from "@/lib/voice-assistant-context";
 
-export default function MobileMenu() {
+interface MobileMenuProps {
+  onPostNeed?: () => void;
+}
+
+export default function MobileMenu({ onPostNeed }: MobileMenuProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const { openCall } = useVoiceAssistant();
   const menuRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
@@ -91,7 +100,6 @@ export default function MobileMenu() {
     };
   }, [session]);
 
-  // Handle outside click & escape key
   useEffect(() => {
     if (!open) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -123,283 +131,260 @@ export default function MobileMenu() {
   const showInbox = loggedIn && !isWorker;
   const totalBadge = unread + dueRemindersCount;
 
+  const displayName =
+    session?.user?.user_metadata?.name || session?.user?.email || "";
+  const initialLetter = displayName.trim().charAt(0).toUpperCase();
+
+  const handlePostNeedClick = () => {
+    setOpen(false);
+    if (onPostNeed) {
+      onPostNeed();
+    } else {
+      navigate("/home", { state: { openPostNeed: true } });
+    }
+  };
+
   return (
     <div ref={menuRef} className="relative z-50 flex items-center">
-      {/* 3-Bars Toggle Button */}
+      {/* Unified Minimal Trigger: Avatar Initial (logged in) or Quiet Menu Button (logged out) */}
       <button
         type="button"
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? "Close menu" : loggedIn ? "Account menu" : "Open menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 cursor-pointer shadow-sm"
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition cursor-pointer active:scale-95 ${
+          loggedIn
+            ? "border-[#F4512C]/30 bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] hover:border-[#F4512C]"
+            : "border-[#EAE2DC] dark:border-white/10 bg-transparent text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
+        }`}
       >
         {open ? (
-          <X
-            size={16}
-            className="text-[#09090B] dark:text-[#FAFAFA] transition-transform duration-200 group-hover:scale-110"
-          />
+          <X size={15} />
+        ) : loggedIn ? (
+          initialLetter ? (
+            <span className="text-xs font-bold leading-none">{initialLetter}</span>
+          ) : (
+            <UserRound size={15} />
+          )
         ) : (
-          <div className="flex flex-col items-center justify-center gap-1">
-            <span className="h-0.5 w-4 rounded-full bg-current transition-all" />
-            <span className="h-0.5 w-3 self-start rounded-full bg-current transition-all group-hover:w-4" />
-            <span className="h-0.5 w-4 rounded-full bg-current transition-all" />
-          </div>
+          <MoreHorizontal size={16} />
         )}
-        {totalBadge > 0 && (
+
+        {totalBadge > 0 && !open && (
           <span
-            className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold shadow-xs ${
-              dueRemindersCount > 0
-                ? "bg-rose-500 text-white"
-                : "bg-black text-white dark:bg-white dark:text-black"
-            }`}
-          >
-            {totalBadge > 9 ? "9+" : totalBadge}
-          </span>
+            aria-hidden="true"
+            className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-[#F4512C] ring-2 ring-[#FAF8F5] dark:ring-[#0B0A09]"
+          />
         )}
       </button>
 
-      {/* Modern Segmented Dropdown Panel */}
+      {/* Clean Editorial Dropdown Panel */}
       {open && (
         <nav
-          aria-label="Main navigation"
-          className="absolute right-0 top-11 z-[100] w-72 origin-top-right rounded-[20px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 shadow-xl transition animate-in fade-in zoom-in-95 duration-150 text-[#09090B] dark:text-[#FAFAFA]"
+          aria-label="Account and navigation menu"
+          className="absolute right-0 top-11 z-[100] w-72 origin-top-right rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2 shadow-2xl transition animate-in fade-in zoom-in-95 duration-150 text-[#141210] dark:text-[#FAFAFA]"
         >
-          {/* Top User Status Header */}
+          {/* User / Account Header */}
           {loggedIn ? (
-            <div className="mb-3 flex items-center justify-between rounded-[14px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3">
-              <div className="min-w-0 flex-1 pr-2">
-                <div className="truncate text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                  {session?.user?.user_metadata?.name || session?.user?.email}
-                </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-[#71717A] dark:text-[#A1A1AA] mt-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  <span className="capitalize">
-                    {isWorker ? "Worker" : isAgency ? "Agency" : "Member"}
-                  </span>
-                </div>
+            <Link
+              to={
+                isWorker
+                  ? "/worker-dashboard"
+                  : isAgency
+                    ? "/agency/dashboard"
+                    : "/profile"
+              }
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220]"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]">
+                  {displayName}
+                </p>
+                <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+                  {isWorker
+                    ? t("menu.workerAccount")
+                    : isAgency
+                      ? t("menu.agencyAccount")
+                      : t("menu.memberAccount")}
+                </p>
               </div>
-              <Link
-                to={
-                  isWorker
-                    ? "/worker-dashboard"
-                    : isAgency
-                      ? "/agency/dashboard"
-                      : "/profile"
-                }
-                onClick={() => setOpen(false)}
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA] transition hover:text-[#09090B] dark:hover:text-white hover:border-neutral-400 shadow-sm"
-                aria-label={
-                  isWorker
-                    ? "Worker Dashboard"
-                    : isAgency
-                      ? "Agency Dashboard"
-                      : "Account Settings"
-                }
-                title={
-                  isWorker
-                    ? "Worker Dashboard"
-                    : isAgency
-                      ? "Agency Dashboard"
-                      : "Profile Settings"
-                }
-              >
-                <UserRound size={14} />
-              </Link>
-            </div>
+              <UserRound size={14} className="shrink-0 text-[#8C847E] dark:text-[#766F6A]" />
+            </Link>
           ) : (
-            <div className="mb-3 flex items-center justify-between rounded-[14px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3">
-              <div>
-                <div className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                  LocalWorker
-                </div>
-                <div className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">
-                  Directory & Services
-                </div>
-              </div>
-              <Link
-                to="/login"
-                state={{ from: "main" }}
-                onClick={() => setOpen(false)}
-                className="rounded-full bg-black text-white dark:bg-white dark:text-black px-3.5 py-1 text-[11px] font-bold transition hover:bg-neutral-800 dark:hover:bg-neutral-200 shadow-sm"
-              >
-                Sign In
-              </Link>
+            <div className="px-2.5 py-2">
+              <p className="text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]">
+                Builderco
+              </p>
+              <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+                {t("menu.subtitle")}
+              </p>
             </div>
           )}
 
-          {/* Section 1: Explore & Discovery (Grid Tile Layout) */}
-          <div className="mb-3">
-            <div className="mb-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
-              Explore Services
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              <Link
-                to="/search?type=workers"
-                onClick={() => setOpen(false)}
-                className="flex flex-col items-start gap-1.5 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#09090B] p-2.5 transition hover:border-neutral-400 dark:hover:border-neutral-600"
-              >
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA]">
-                  <Search size={13} />
-                </div>
-                <span className="text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                  Find Workers
-                </span>
-              </Link>
+          {/* Voice Call Quick Launch */}
+          <div className="mt-1 px-1 space-y-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                openCall(true);
+              }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-full border border-[#F4512C]/30 bg-[#FCEAE4] dark:bg-[#3A2018] py-2 text-xs font-bold text-[#F4512C] transition hover:bg-[#F4512C] hover:text-white cursor-pointer"
+            >
+              <PhoneCall size={13} />
+              <span>{t("hero.voiceCta")}</span>
+            </button>
 
-              <Link
-                to="/search?type=agencies"
-                onClick={() => setOpen(false)}
-                className="flex flex-col items-start gap-1.5 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#09090B] p-2.5 transition hover:border-neutral-400 dark:hover:border-neutral-600"
+            {!isWorker && !isAgency && (
+              <button
+                type="button"
+                onClick={handlePostNeedClick}
+                className="flex sm:hidden w-full items-center justify-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] py-2 text-xs font-semibold text-white transition cursor-pointer"
               >
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA]">
-                  <Building2 size={13} />
-                </div>
-                <span className="text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                  Agencies & Teams
-                </span>
-              </Link>
-            </div>
-
-            {/* Quick Access Badges (Saved & Recent) */}
-            <div className="mt-1.5 space-y-1">
-              <Link
-                to="/saved"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-full px-3 py-1.5 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A]"
-              >
-                <span className="flex items-center gap-2">
-                  <Heart size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-                  <span>Saved Workers</span>
-                </span>
-                <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2 py-0.5 text-[10px] font-bold text-[#71717A] dark:text-[#A1A1AA]">
-                  {savedCount}
-                </span>
-              </Link>
-
-              <Link
-                to="/recently-viewed"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-full px-3 py-1.5 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A]"
-              >
-                <span className="flex items-center gap-2">
-                  <Clock3 size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-                  <span>Recently Viewed</span>
-                </span>
-                <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2 py-0.5 text-[10px] font-bold text-[#71717A] dark:text-[#A1A1AA]">
-                  {recentCount}
-                </span>
-              </Link>
-
-              <Link
-                to="/inbox"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-full px-3 py-1.5 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A]"
-              >
-                <span className="flex items-center gap-2">
-                  <Bell size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-                  <span>Inbox & Reminders</span>
-                </span>
-                {dueRemindersCount > 0 ? (
-                  <span className="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
-                    {dueRemindersCount} due
-                  </span>
-                ) : (
-                  <span className="rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2 py-0.5 text-[10px] font-medium text-[#71717A] dark:text-[#A1A1AA]">
-                    0 due
-                  </span>
-                )}
-              </Link>
-            </div>
+                <Plus size={14} />
+                <span>{t("nav.postNeed")}</span>
+              </button>
+            )}
           </div>
 
-          {/* Section 2: Portals & Work Tools */}
+          {/* Role Management Shortcuts */}
           {(isWorker || isAgency || showInbox) && (
-            <div className="mb-3 border-t border-[#E4E4E7] dark:border-[#27272A] pt-2.5">
-              <div className="mb-1.5 px-1 text-[10px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
-                Management
-              </div>
-              <div className="space-y-1.5">
-                {isWorker && (
-                  <>
-                    <Link
-                      to="/worker-dashboard"
-                      onClick={() => setOpen(false)}
-                      className="group flex items-center justify-between rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#09090B] p-2 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-600"
-                    >
-                      <span className="flex items-center gap-2">
-                        <BriefcaseBusiness size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-                        <span>Worker Portal</span>
-                      </span>
-                      <ChevronRight
-                        size={13}
-                        className="text-[#71717A] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
-                      />
-                    </Link>
-                    <Link
-                      to="/profile-completeness"
-                      onClick={() => setOpen(false)}
-                      className="flex items-center justify-between rounded-full px-3 py-1.5 text-xs text-[#71717A] dark:text-[#A1A1AA] transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] hover:text-[#09090B] dark:hover:text-white"
-                    >
-                      <span className="flex items-center gap-2">
-                        <ShieldCheck size={14} className="text-current" />
-                        <span>Completeness</span>
-                      </span>
-                    </Link>
-                  </>
-                )}
-
-                {isAgency && (
+            <div className="mt-1.5 border-t border-[#EAE2DC]/70 dark:border-white/10 pt-1.5 space-y-0.5">
+              {isWorker && (
+                <>
                   <Link
-                    to="/agency/dashboard"
+                    to="/worker-dashboard"
                     onClick={() => setOpen(false)}
-                    className="group flex items-center justify-between rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#09090B] p-2 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-600"
+                    className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-[#141210] dark:text-[#FAFAFA] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220]"
                   >
-                    <span className="flex items-center gap-2">
-                      <Building2 size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-                      <span>Agency Dashboard</span>
-                    </span>
-                    <ChevronRight
-                      size={13}
-                      className="text-[#71717A] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
-                    />
+                    <BriefcaseBusiness size={14} className="text-[#F4512C]" />
+                    <span>{t("menu.workerPortal")}</span>
                   </Link>
-                )}
-
-                {showInbox && (
                   <Link
-                    to="/inbox"
+                    to="/profile-completeness"
                     onClick={() => setOpen(false)}
-                    className="flex items-center justify-between rounded-full px-3 py-2 text-xs font-medium text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#F4F4F5] dark:hover:bg-[#27272A]"
+                    className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-white"
                   >
-                    <span className="flex items-center gap-2">
-                      <Bell size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-                      <span>Inbox Messages</span>
-                    </span>
-                    {unread > 0 && (
-                      <span className="rounded-full bg-black text-white dark:bg-white dark:text-black px-2 py-0.5 text-[10px] font-bold">
-                        {unread}
-                      </span>
-                    )}
+                    <ShieldCheck size={14} />
+                    <span>{t("menu.profileCompleteness")}</span>
                   </Link>
-                )}
-              </div>
+                </>
+              )}
+
+              {isAgency && (
+                <Link
+                  to="/agency/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-[#141210] dark:text-[#FAFAFA] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220]"
+                >
+                  <Building2 size={14} className="text-[#F4512C]" />
+                  <span>{t("menu.agencyPortal")}</span>
+                </Link>
+              )}
+
+              {showInbox && (
+                <Link
+                  to="/inbox"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium text-[#141210] dark:text-[#FAFAFA] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220]"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Bell size={14} className="text-[#6B645F] dark:text-[#9E958F]" />
+                    <span>{t("menu.inboxReminders")}</span>
+                  </span>
+                  {totalBadge > 0 && (
+                    <span className="text-[11px] font-bold text-[#F4512C] tabular-nums">
+                      {totalBadge}
+                    </span>
+                  )}
+                </Link>
+              )}
             </div>
           )}
 
-          {/* Section 3: Appearance Theme Toggle */}
-          <div className="mb-2 border-t border-[#E4E4E7] dark:border-[#27272A] pt-2">
+          {/* Directory & Utility Links */}
+          <div className="mt-1.5 border-t border-[#EAE2DC]/70 dark:border-white/10 pt-1.5 space-y-0.5">
+            <Link
+              to="/search?type=workers"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-white md:hidden"
+            >
+              <Search size={14} />
+              <span>{t("menu.searchPros")}</span>
+            </Link>
+
+            <Link
+              to="/materials"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-white"
+            >
+              <Package size={14} />
+              <span>{t("menu.materials")}</span>
+            </Link>
+
+            <Link
+              to="/rate-guide"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-white"
+            >
+              <IndianRupee size={14} />
+              <span>{t("menu.rateGuide")}</span>
+            </Link>
+
+            <Link
+              to="/saved"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-white"
+            >
+              <span className="flex items-center gap-2.5">
+                <Heart size={14} />
+                <span>{t("menu.savedWorkers")}</span>
+              </span>
+              {savedCount > 0 && (
+                <span className="text-[11px] font-semibold text-[#8C847E] dark:text-[#766F6A] tabular-nums">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              to="/recently-viewed"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-xl px-2.5 py-2 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-white"
+            >
+              <span className="flex items-center gap-2.5">
+                <Clock3 size={14} />
+                <span>{t("menu.recentlyViewed")}</span>
+              </span>
+              {recentCount > 0 && (
+                <span className="text-[11px] font-semibold text-[#8C847E] dark:text-[#766F6A] tabular-nums">
+                  {recentCount}
+                </span>
+              )}
+            </Link>
+          </div>
+
+          {/* 6-Language Switcher */}
+          <div className="mt-1.5 border-t border-[#EAE2DC]/70 dark:border-white/10 pt-1">
+            <LanguageSelector variant="menu" />
+          </div>
+
+          {/* Install & Appearance */}
+          <div className="mt-1 border-t border-[#EAE2DC]/70 dark:border-white/10 pt-1.5 space-y-1">
+            <PWAInstallButton variant="menu-item" onAction={() => setOpen(false)} />
             <ThemeToggle variant="dropdown-item" />
           </div>
 
-          {/* Section 4: Account & Log Out / Sign In */}
+          {/* Auth Footer */}
           {loggedIn ? (
-            <div className="border-t border-[#E4E4E7] dark:border-[#27272A] pt-2 flex items-center justify-between px-1">
+            <div className="mt-1.5 border-t border-[#EAE2DC]/70 dark:border-white/10 pt-1.5 flex items-center justify-between px-2.5 py-1.5">
               <Link
                 to="/profile"
                 onClick={() => setOpen(false)}
-                className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] transition hover:text-[#09090B] dark:hover:text-white"
+                className="text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:text-[#141210] dark:hover:text-white"
               >
-                Settings
+                {t("menu.accountSettings")}
               </Link>
               <button
                 type="button"
@@ -407,34 +392,34 @@ export default function MobileMenu() {
                 className="flex items-center gap-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 transition hover:opacity-80 cursor-pointer"
               >
                 <LogOut size={13} />
-                <span>Log out</span>
+                <span>{t("menu.logout")}</span>
               </button>
             </div>
           ) : (
-            <div className="border-t border-[#E4E4E7] dark:border-[#27272A] pt-2.5 space-y-2">
+            <div className="mt-1.5 border-t border-[#EAE2DC]/70 dark:border-white/10 pt-2 px-1 pb-1 space-y-2">
               <Link
                 to="/login"
                 state={{ from: "main" }}
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2 w-full rounded-full bg-black text-white dark:bg-white dark:text-black py-2 text-xs font-bold transition hover:opacity-90 shadow-xs"
+                className="flex items-center justify-center gap-2 w-full rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] py-2 text-xs font-semibold transition hover:opacity-90"
               >
-                <UserRound size={13} />
-                <span>Sign In</span>
+                <span>{t("nav.signIn")}</span>
               </Link>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-3 text-[11px] font-medium text-[#6B645F] dark:text-[#9E958F]">
                 <Link
                   to="/join"
                   onClick={() => setOpen(false)}
-                  className="flex-1 text-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] py-1.5 text-[11px] font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] transition"
+                  className="hover:text-[#F4512C] transition"
                 >
-                  Join as Worker
+                  {t("menu.joinWorker")}
                 </Link>
+                <span aria-hidden="true">·</span>
                 <Link
                   to="/register-agency"
                   onClick={() => setOpen(false)}
-                  className="flex-1 text-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] py-1.5 text-[11px] font-semibold text-[#09090B] dark:text-[#FAFAFA] hover:bg-[#F4F4F5] dark:hover:bg-[#27272A] transition"
+                  className="hover:text-[#F4512C] transition"
                 >
-                  Join as Agency
+                  {t("menu.joinAgency")}
                 </Link>
               </div>
             </div>

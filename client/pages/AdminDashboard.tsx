@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PageShell from "@/components/PageShell";
+import { DashboardSkeleton } from "@/components/PageSkeletons";
 import { supabase } from "@/lib/supabase";
 
 type EventRow = {
@@ -349,9 +350,7 @@ export default function AdminDashboard() {
   if (loading)
     return (
       <PageShell hideBack hideHome>
-        <div className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center text-[#67696D] shadow-soft">
-          Loading admin dashboard...
-        </div>
+        <DashboardSkeleton statCount={4} cardCount={2} />
       </PageShell>
     );
 
@@ -359,16 +358,16 @@ export default function AdminDashboard() {
     <PageShell hideBack hideHome>
       <div className="mx-auto max-w-[1000px] space-y-6">
         {/* Growth Dashboard Header */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-6 shadow-soft">
-          <div className="flex items-center justify-between">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 shadow-sm sm:p-7">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#67696D]">
-                Internal
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                Internal Operations
               </p>
-              <h1 className="text-2xl font-bold text-[#2C2C2C]">
+              <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
                 Admin Operations Portal
               </h1>
-              <p className="mt-1 text-sm text-[#67696D]">
+              <p className="mt-1 text-sm text-[#6B645F] dark:text-[#9E958F]">
                 Live directory, agency rosters, phone verification, and
                 moderation
               </p>
@@ -377,19 +376,21 @@ export default function AdminDashboard() {
               type="button"
               onClick={load}
               disabled={refreshing}
-              className="rounded-full border border-[#E7ECF1] bg-white p-2.5 text-[#2C2C2C] hover:bg-[#F6F9FC] shadow-subtle cursor-pointer transition"
+              className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5 text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 shadow-sm cursor-pointer transition"
               aria-label="Refresh analytics"
             >
               <RefreshCw
                 size={17}
                 className={
-                  refreshing ? "animate-spin text-primary" : "text-[#67696D]"
+                  refreshing
+                    ? "animate-spin text-[#F4512C]"
+                    : "text-[#6B645F] dark:text-[#9E958F]"
                 }
               />
             </button>
           </div>
           {error && (
-            <p className="mt-4 rounded-[12px] border border-rose-500/20 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600">
+            <p className="mt-4 rounded-xl border border-rose-500/20 bg-rose-50 dark:bg-rose-950/30 px-3 py-2 text-sm font-semibold text-rose-600 dark:text-rose-400">
               {error}
             </p>
           )}
@@ -403,10 +404,12 @@ export default function AdminDashboard() {
             ].map(([label, value]) => (
               <div
                 key={String(label)}
-                className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4"
+                className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white/90 dark:bg-[#161514]/90 p-4 shadow-xs"
               >
-                <p className="text-xs font-bold text-[#67696D]">{label}</p>
-                <p className="mt-1 text-2xl font-bold text-[#2C2C2C]">
+                <p className="text-xs font-bold text-[#6B645F] dark:text-[#9E958F]">
+                  {label}
+                </p>
+                <p className="mt-1 text-2xl font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                   {value}
                 </p>
               </div>
@@ -415,21 +418,23 @@ export default function AdminDashboard() {
         </section>
 
         {/* Agencies & Affiliated Teams Roster */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2">
-                <Building2 className="text-primary" size={20} />
-                <h2 className="font-bold text-[#2C2C2C] text-lg">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                  <Building2 size={18} />
+                </span>
+                <h2 className="font-extrabold text-[#141210] dark:text-[#FAFAFA] text-lg">
                   Agencies & Linked Teams
                 </h2>
               </div>
-              <p className="mt-1 text-sm text-[#67696D]">
+              <p className="mt-1 text-sm text-[#6B645F] dark:text-[#9E958F]">
                 Manage agency codes, verify businesses, and view workers
                 affiliated via referral codes.
               </p>
             </div>
-            <span className="rounded-full bg-primary-100/20 border border-primary-100/50 px-3 py-1 text-xs font-bold text-primary">
+            <span className="rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] px-3 py-1 text-xs font-bold text-[#F4512C]">
               {agencies.length} Registered{" "}
               {agencies.length === 1 ? "Agency" : "Agencies"}
             </span>
@@ -439,7 +444,6 @@ export default function AdminDashboard() {
             {agencies.map((agency) => {
               const code = agency.agency_code || agency.id;
               const isExpanded = Boolean(expandedAgencies[agency.id]);
-              // Find workers linked to this agency
               const targetIds = [
                 agency.id,
                 agency.agency_code,
@@ -458,16 +462,16 @@ export default function AdminDashboard() {
               return (
                 <div
                   key={agency.id}
-                  className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4"
+                  className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-bold text-[#2C2C2C] text-base">
+                        <p className="font-bold text-[#141210] dark:text-[#FAFAFA] text-base">
                           {agency.name}
                         </p>
                         {agency.verified && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-xs font-bold text-primary">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-[#0F8A73] dark:text-[#3DD1B3]">
                             <BadgeCheck size={13} />
                             Verified Agency
                           </span>
@@ -475,22 +479,22 @@ export default function AdminDashboard() {
                         <button
                           type="button"
                           onClick={() => copyCode(code)}
-                          className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-0.5 font-mono text-xs font-bold text-[#2C2C2C] hover:bg-white/80 cursor-pointer border border-[#E7ECF1] shadow-subtle"
+                          className="inline-flex items-center gap-1 rounded-full bg-white dark:bg-[#161514] px-2.5 py-0.5 font-mono text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 cursor-pointer border border-[#EAE2DC] dark:border-white/10 shadow-2xs transition"
                           title="Click to copy Agency Code"
                         >
                           Code: {code}
                           {copiedCode === code ? (
-                            <Check size={11} className="text-emerald-600" />
+                            <Check size={11} className="text-[#0F8A73] dark:text-[#3DD1B3]" />
                           ) : (
-                            <Copy size={11} className="text-[#989EA7]" />
+                            <Copy size={11} className="text-[#8C847E] dark:text-[#766F6A]" />
                           )}
                         </button>
                       </div>
-                      <p className="text-xs text-[#67696D]">
+                      <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                         {agency.location} · {agency.phone} · {agency.email}
                       </p>
-                      <p className="text-xs text-[#67696D]">
-                        <span className="font-semibold text-[#2C2C2C]">
+                      <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
+                        <span className="font-semibold text-[#141210] dark:text-[#FAFAFA]">
                           Trades:
                         </span>{" "}
                         {agency.services || "General"}
@@ -501,9 +505,9 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => toggleExpand(agency.id)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#E7ECF1] bg-white px-3.5 py-1.5 text-xs font-bold text-[#67696D] hover:text-[#2C2C2C] hover:bg-[#F6F9FC] cursor-pointer shadow-subtle transition"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-1.5 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 cursor-pointer shadow-2xs transition"
                       >
-                        <Users size={13} className="text-primary" />
+                        <Users size={13} className="text-[#F4512C]" />
                         <span>
                           {linkedWorkers.length}{" "}
                           {linkedWorkers.length === 1 ? "Worker" : "Workers"}
@@ -518,10 +522,10 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => toggleAgencyVerification(agency)}
-                        className={`rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer transition shadow-subtle ${
+                        className={`rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer transition shadow-2xs ${
                           agency.verified
-                            ? "border border-[#E7ECF1] bg-white text-[#67696D] hover:bg-[#F6F9FC]"
-                            : "bg-primary text-white hover:bg-[#0f766e]"
+                            ? "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
+                            : "bg-[#0F8A73] text-white hover:bg-[#0B6E5B]"
                         }`}
                       >
                         {agency.verified
@@ -533,14 +537,14 @@ export default function AdminDashboard() {
 
                   {/* Expandable worker roster under this agency */}
                   {isExpanded && (
-                    <div className="mt-3.5 border-t border-[#E7ECF1] pt-3">
-                      <p className="text-xs font-bold uppercase tracking-wider text-[#67696D] mb-2">
+                    <div className="mt-3.5 border-t border-[#EAE2DC] dark:border-white/10 pt-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F] mb-2">
                         Workers Linked to {agency.name} ({linkedWorkers.length})
                       </p>
                       {linkedWorkers.length === 0 ? (
-                        <p className="text-xs text-[#67696D] py-2">
+                        <p className="text-xs text-[#6B645F] dark:text-[#9E958F] py-2">
                           No workers have linked via code{" "}
-                          <strong>{code}</strong> yet. Workers can join by
+                          <strong className="text-[#141210] dark:text-[#FAFAFA]">{code}</strong> yet. Workers can join by
                           entering this code in their profile or during
                           registration.
                         </p>
@@ -549,24 +553,24 @@ export default function AdminDashboard() {
                           {linkedWorkers.map((w) => (
                             <div
                               key={w.id}
-                              className="flex items-center justify-between rounded-[12px] border border-[#E7ECF1] bg-white p-2.5 text-xs shadow-subtle"
+                              className="flex items-center justify-between rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5 text-xs shadow-2xs"
                             >
                               <div>
-                                <p className="font-bold text-[#2C2C2C]">
+                                <p className="font-bold text-[#141210] dark:text-[#FAFAFA]">
                                   {w.name}
                                 </p>
-                                <p className="text-[#67696D]">
+                                <p className="text-[#6B645F] dark:text-[#9E958F]">
                                   {w.category} · {w.locality} · {w.phone}
                                 </p>
                               </div>
                               <div className="flex items-center gap-1">
                                 {w.phone_verified ? (
-                                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-0.5">
+                                  <span className="text-[11px] font-bold text-[#0F8A73] dark:text-[#3DD1B3] flex items-center gap-0.5">
                                     <BadgeCheck size={12} />
                                     Verified
                                   </span>
                                 ) : (
-                                  <span className="text-[11px] text-[#989EA7]">
+                                  <span className="text-[11px] text-[#8C847E] dark:text-[#766F6A]">
                                     Unverified
                                   </span>
                                 )}
@@ -581,7 +585,7 @@ export default function AdminDashboard() {
               );
             })}
             {!agencies.length && (
-              <p className="text-sm text-[#67696D]">
+              <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
                 No agencies registered yet.
               </p>
             )}
@@ -589,13 +593,13 @@ export default function AdminDashboard() {
         </section>
 
         {/* Worker Profiles Directory with Integrated Agency Affiliation & Silent Moderation */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h2 className="font-bold text-[#2C2C2C] text-lg">
+              <h2 className="font-extrabold text-[#141210] dark:text-[#FAFAFA] text-lg">
                 Worker Profiles & Directory
               </h2>
-              <p className="mt-1 text-sm text-[#67696D]">
+              <p className="mt-1 text-sm text-[#6B645F] dark:text-[#9E958F]">
                 Review registered service professionals, agency links, and
                 profiles flagged by screening.
               </p>
@@ -607,10 +611,10 @@ export default function AdminDashboard() {
                     key={tab}
                     type="button"
                     onClick={() => setWorkerFilter(tab)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors cursor-pointer ${
+                    className={`rounded-full px-3.5 py-1.5 text-xs font-bold capitalize transition-colors cursor-pointer ${
                       workerFilter === tab
-                        ? "bg-primary text-white shadow-subtle"
-                        : "bg-[#F6F9FC] text-[#67696D] hover:bg-[#E7ECF1] border border-[#E7ECF1]"
+                        ? "bg-[#F4512C] text-white shadow-2xs"
+                        : "bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA] border border-[#EAE2DC] dark:border-white/10"
                     }`}
                   >
                     {tab === "all" ? `All (${adminWorkers.length})` : tab}
@@ -620,7 +624,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="mt-4 divide-y divide-[#E7ECF1]">
+          <div className="mt-4 divide-y divide-[#EAE2DC] dark:divide-white/10">
             {filteredWorkers.map((w) => {
               const isFlagged =
                 w.has_flags || (w.trust_flags && w.trust_flags.length > 0);
@@ -629,43 +633,45 @@ export default function AdminDashboard() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-bold text-[#2C2C2C]">{w.name}</p>
+                        <p className="font-bold text-[#141210] dark:text-[#FAFAFA]">
+                          {w.name}
+                        </p>
                         {w.phone_verified ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold text-[#0F8A73] dark:text-[#3DD1B3]">
                             <BadgeCheck size={13} />
                             Verified Pro
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#F6F9FC] border border-[#E7ECF1] px-2.5 py-0.5 text-xs font-medium text-[#67696D]">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#FAF8F5] dark:bg-[#0B0A09] border border-[#EAE2DC] dark:border-white/10 px-2.5 py-0.5 text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">
                             Unverified
                           </span>
                         )}
 
                         {/* Agency affiliation badge */}
                         {w.agency_name || w.agency_code ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-primary-100/20 border border-primary-100/50 px-2.5 py-0.5 text-xs font-bold text-primary">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] px-2.5 py-0.5 text-xs font-bold text-[#F4512C]">
                             <Building2 size={12} /> {w.agency_name || "Agency"}{" "}
                             ({w.agency_code || w.agency_id})
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-[#F6F9FC] border border-[#E7ECF1] px-2.5 py-0.5 text-xs font-medium text-[#67696D]">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-[#FAF8F5] dark:bg-[#0B0A09] border border-[#EAE2DC] dark:border-white/10 px-2.5 py-0.5 text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">
                             Independent
                           </span>
                         )}
 
                         {isFlagged && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300/60 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-300/60 dark:border-amber-700/40 px-2.5 py-0.5 text-xs font-bold text-amber-800 dark:text-amber-300">
                             <AlertTriangle
                               size={12}
-                              className="text-amber-600"
+                              className="text-amber-600 dark:text-amber-400"
                             />{" "}
                             Flagged Profile
                           </span>
                         )}
                       </div>
 
-                      <p className="mt-1 text-xs text-[#67696D]">
-                        <span className="font-semibold text-primary">
+                      <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
+                        <span className="font-semibold text-[#F4512C]">
                           {w.category}
                         </span>{" "}
                         · {w.locality} ·{" "}
@@ -674,7 +680,7 @@ export default function AdminDashboard() {
                           {w.phone}
                         </span>
                         {typeof w.portfolio_count === "number" && (
-                          <span className="ml-2 inline-flex items-center gap-1 text-[#989EA7]">
+                          <span className="ml-2 inline-flex items-center gap-1 text-[#8C847E] dark:text-[#766F6A]">
                             <Camera size={11} /> {w.portfolio_count} work photos
                           </span>
                         )}
@@ -684,15 +690,15 @@ export default function AdminDashboard() {
                       {isFlagged &&
                         w.trust_flags &&
                         w.trust_flags.length > 0 && (
-                          <div className="mt-2.5 space-y-1.5 rounded-[12px] border border-amber-300/40 bg-amber-50/60 p-2.5">
+                          <div className="mt-2.5 space-y-1.5 rounded-xl border border-amber-300/40 dark:border-amber-700/40 bg-amber-50/60 dark:bg-amber-950/30 p-2.5">
                             {w.trust_flags.map((flag, idx) => (
                               <div
                                 key={flag.id || idx}
-                                className="flex items-start gap-1.5 text-xs text-amber-800"
+                                className="flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-300"
                               >
                                 <ShieldAlert
                                   size={14}
-                                  className="shrink-0 mt-0.5 text-amber-600"
+                                  className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400"
                                 />
                                 <span>
                                   <strong>
@@ -711,7 +717,7 @@ export default function AdminDashboard() {
                         <button
                           type="button"
                           onClick={() => resolveWorkerFlags(w.id)}
-                          className="rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-100 transition cursor-pointer shadow-subtle"
+                          className="rounded-full border border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-950/40 px-3.5 py-1.5 text-xs font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition cursor-pointer"
                         >
                           Clear Flag
                         </button>
@@ -724,10 +730,10 @@ export default function AdminDashboard() {
                             Boolean(w.phone_verified),
                           )
                         }
-                        className={`rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer transition shadow-subtle ${
+                        className={`rounded-full px-3.5 py-1.5 text-xs font-bold cursor-pointer transition ${
                           w.phone_verified
-                            ? "border border-[#E7ECF1] bg-white text-[#67696D] hover:bg-[#F6F9FC]"
-                            : "bg-primary text-white hover:bg-[#0f766e]"
+                            ? "border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
+                            : "bg-[#0F8A73] text-white hover:bg-[#0B6E5B]"
                         }`}
                       >
                         {w.phone_verified
@@ -740,7 +746,7 @@ export default function AdminDashboard() {
               );
             })}
             {!filteredWorkers.length && (
-              <p className="py-4 text-sm text-[#67696D]">
+              <p className="py-4 text-sm text-[#6B645F] dark:text-[#9E958F]">
                 No workers match this filter.
               </p>
             )}
@@ -749,48 +755,54 @@ export default function AdminDashboard() {
 
         {/* Analytics Breakdown */}
         <section className="grid gap-5 sm:grid-cols-2">
-          <div className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
-            <h2 className="font-bold text-[#2C2C2C] text-base">Conversion</h2>
-            <div className="mt-4 space-y-3 text-sm text-[#2C2C2C]">
-              <p className="flex justify-between text-[#67696D]">
-                <span className="text-[#2C2C2C]">Search → profile view</span>
-                <strong className="text-[#2C2C2C]">
+          <div className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-sm">
+            <h2 className="font-bold text-[#141210] dark:text-[#FAFAFA] text-base">
+              Conversion
+            </h2>
+            <div className="mt-4 space-y-3 text-sm">
+              <p className="flex justify-between text-[#6B645F] dark:text-[#9E958F]">
+                <span>Search → profile view</span>
+                <strong className="text-[#141210] dark:text-[#FAFAFA]">
                   {stats.searchToProfile.toFixed(1)}%
                 </strong>
               </p>
-              <p className="flex justify-between text-[#67696D]">
-                <span className="text-[#2C2C2C]">Profile view → WhatsApp</span>
-                <strong className="text-[#2C2C2C]">
+              <p className="flex justify-between text-[#6B645F] dark:text-[#9E958F]">
+                <span>Profile view → WhatsApp</span>
+                <strong className="text-[#141210] dark:text-[#FAFAFA]">
                   {stats.profileToWhatsapp.toFixed(1)}%
                 </strong>
               </p>
             </div>
           </div>
-          <div className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
-            <h2 className="font-bold text-[#2C2C2C] text-base">Top searches</h2>
+          <div className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-sm">
+            <h2 className="font-bold text-[#141210] dark:text-[#FAFAFA] text-base">
+              Top searches
+            </h2>
             <div className="mt-3 space-y-2 text-sm">
               {stats.topSearches.length ? (
                 stats.topSearches.map(([term, total]) => (
-                  <p key={term} className="flex justify-between text-[#67696D]">
-                    <span className="text-[#2C2C2C]">{term}</span>
-                    <strong className="text-[#2C2C2C]">{total}</strong>
+                  <p key={term} className="flex justify-between text-[#6B645F] dark:text-[#9E958F]">
+                    <span className="text-[#141210] dark:text-[#FAFAFA]">{term}</span>
+                    <strong className="text-[#141210] dark:text-[#FAFAFA]">{total}</strong>
                   </p>
                 ))
               ) : (
-                <p className="text-[#67696D]">No search terms yet.</p>
+                <p className="text-[#6B645F] dark:text-[#9E958F]">No search terms yet.</p>
               )}
             </div>
           </div>
         </section>
 
         {/* Categories Breakdown */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
-          <h2 className="font-bold text-[#2C2C2C] text-base">Top categories</h2>
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-sm">
+          <h2 className="font-bold text-[#141210] dark:text-[#FAFAFA] text-base">
+            Top categories
+          </h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {stats.topCategories.map(([category, total]) => (
               <p
                 key={category}
-                className="flex justify-between rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] px-3 py-2 text-sm text-[#2C2C2C]"
+                className="flex justify-between rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA]"
               >
                 <span>{category}</span>
                 <strong>{total}</strong>
@@ -800,26 +812,26 @@ export default function AdminDashboard() {
         </section>
 
         {/* Callback requests */}
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 sm:p-6 shadow-soft">
-          <h2 className="font-bold text-[#2C2C2C] text-base">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6 shadow-sm">
+          <h2 className="font-bold text-[#141210] dark:text-[#FAFAFA] text-base">
             Callback requests
           </h2>
           <div className="mt-4 space-y-3">
             {callbacks.map((callback) => (
               <div
                 key={callback.id}
-                className="rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] p-4"
+                className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-bold text-[#2C2C2C]">
+                    <p className="font-bold text-[#141210] dark:text-[#FAFAFA]">
                       {callback.client_name} · {callback.service_needed}
                     </p>
-                    <p className="mt-1 text-xs text-[#67696D]">
+                    <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
                       {callback.client_phone} · {callback.preferred_time}
                     </p>
                     {callback.notes && (
-                      <p className="mt-2 text-sm text-[#67696D]">
+                      <p className="mt-2 text-sm text-[#6B645F] dark:text-[#9E958F]">
                         {callback.notes}
                       </p>
                     )}
@@ -830,11 +842,11 @@ export default function AdminDashboard() {
                       onClick={() =>
                         updateCallbackStatus(callback.id, "contacted")
                       }
-                      className="rounded-full border border-[#E7ECF1] bg-white px-3 py-1.5 text-xs font-bold text-[#2C2C2C] hover:bg-[#F6F9FC] shadow-subtle transition cursor-pointer"
+                      className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3 py-1.5 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition cursor-pointer"
                     >
                       <CheckCircle2
                         size={14}
-                        className="mr-1 inline text-emerald-600"
+                        className="mr-1 inline text-[#0F8A73] dark:text-[#3DD1B3]"
                       />
                       Contacted
                     </button>
@@ -843,19 +855,19 @@ export default function AdminDashboard() {
                       onClick={() =>
                         updateCallbackStatus(callback.id, "closed")
                       }
-                      className="rounded-full bg-primary px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#0f766e] shadow-subtle transition cursor-pointer"
+                      className="rounded-full bg-[#0F8A73] px-3.5 py-1.5 text-xs font-bold text-white hover:bg-[#0B6E5B] transition cursor-pointer"
                     >
                       Resolved
                     </button>
                   </div>
                 </div>
-                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#989EA7]">
+                <p className="mt-2 text-xs font-bold uppercase tracking-wide text-[#8C847E] dark:text-[#766F6A]">
                   Status: {callback.status}
                 </p>
               </div>
             ))}
             {!callbacks.length && (
-              <p className="text-sm text-[#67696D]">
+              <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
                 No callback requests yet.
               </p>
             )}

@@ -43,6 +43,7 @@ import {
   detectGpsLocation,
   isLocationMatch,
 } from "@/lib/location";
+import { useLanguage } from "@/lib/i18n";
 
 const categoryList = [
   { name: "All", label: "All Services", icon: LayoutGrid },
@@ -139,6 +140,7 @@ type SearchType = "all" | "workers" | "agencies";
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t, translateCategory } = useLanguage();
 
   const rawType = searchParams.get("type")?.toLowerCase();
   const initialType: SearchType =
@@ -621,19 +623,19 @@ export default function SearchResults() {
 
   return (
     <PageShell
-      backLabel="Back"
+      backLabel={t("callbacks.back")}
       backTo="/"
-      headerTitle={getCategoryHeaderTitle(category)}
+      headerTitle={category === "All" ? t("cat.All Services") : translateCategory(category)}
       headerRight={
         <Link
           to="/saved"
           aria-label="Saved listings"
-          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] px-3 text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5] shadow-subtle hover:border-primary/40 active:scale-95"
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 active:scale-95 transition"
         >
           <Heart
             size={13}
             className={
-              savedIds.length ? "text-primary fill-primary" : "text-[#989EA7]"
+              savedIds.length ? "text-[#F4512C] fill-[#F4512C]" : "text-[#6B645F] dark:text-[#9E958F]"
             }
           />
           <span>{savedIds.length}</span>
@@ -642,24 +644,27 @@ export default function SearchResults() {
       containerWidth="lg"
       className="pb-24"
     >
-      {/* 1. CATEGORY HEADER (When chosen) OR CATEGORY SELECTOR CAROUSEL (Only when "All") */}
+      {/* 1. CATEGORY HEADER OR CATEGORY SELECTOR CAROUSEL */}
       {category !== "All" ? (
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="mb-4 flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]"
+          className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-5"
         >
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#09090B] dark:text-[#FAFAFA]">
-                {category}s
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+              Service Directory
+            </span>
+            <div className="mt-1 flex items-center gap-2.5">
+              <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+                {translateCategory(category)}
               </h1>
-              <span className="rounded-full bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] border border-black/10 dark:border-white/15 px-2.5 py-0.5 text-xs font-mono font-bold">
+              <span className="rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] px-2.5 py-0.5 text-xs font-mono font-bold">
                 {matchingWorkers.length} {matchingWorkers.length === 1 ? "pro" : "pros"}
               </span>
             </div>
-            <p className="text-xs text-[#71717A] dark:text-[#A1A1AA] mt-1">
+            <p className="text-xs text-[#6B645F] dark:text-[#9E958F] mt-1">
               Verified {category.toLowerCase()} professionals{targetLocality ? ` near ${targetLocality}` : ""}
             </p>
           </div>
@@ -668,7 +673,7 @@ export default function SearchResults() {
             type="button"
             whileTap={{ scale: 0.96 }}
             onClick={() => handleCategoryChange("All")}
-            className="inline-flex items-center gap-1.5 rounded-full border border-black/[0.08] dark:border-white/[0.1] bg-white dark:bg-[#18191D] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-xs hover:border-black/25 dark:hover:border-white/25 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white/80 dark:bg-[#161514]/80 px-4 py-2 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition cursor-pointer"
           >
             <span>All Categories</span>
           </motion.button>
@@ -688,21 +693,25 @@ export default function SearchResults() {
                   type="button"
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleCategoryChange(cat.name)}
-                  className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer shadow-sm ${
+                  className={`inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
-                      : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400 dark:hover:border-neutral-500"
+                      ? "bg-[#F4512C] text-white"
+                      : "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50"
                   }`}
                 >
                   <Icon
                     size={13}
                     className={
                       isSelected
-                        ? "text-current"
-                        : "text-[#71717A] dark:text-[#A1A1AA]"
+                        ? "text-white"
+                        : "text-[#F4512C]"
                     }
                   />
-                  <span>{cat.label}</span>
+                  <span>
+                    {cat.name === "All"
+                      ? t("cat.All Services")
+                      : translateCategory(cat.name)}
+                  </span>
                 </motion.button>
               );
             })}
@@ -712,24 +721,19 @@ export default function SearchResults() {
 
       {/* 2. COMPACT TOOLBAR & FILTER STRIP */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2.5">
-        {/* Count and quick filters */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* Active Standard Location Pill with GPS trigger */}
           <button
             type="button"
             onClick={handleQuickGps}
             disabled={gpsDetecting}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
               locality
-                ? "border border-neutral-400 dark:border-neutral-600 bg-[#F4F4F5] dark:bg-[#27272A] text-[#09090B] dark:text-[#FAFAFA]"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA] hover:border-neutral-400"
+                ? "border border-[#F4512C]/40 bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]"
+                : "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#6B645F] dark:text-[#9E958F] hover:border-[#F4512C]/50"
             }`}
             title="Current search location (Click to refresh via GPS)"
           >
-            <MapPin
-              size={12}
-              className={locality ? "text-current" : "text-[#71717A]"}
-            />
+            <MapPin size={12} className="text-[#F4512C]" />
             <span>
               {gpsDetecting
                 ? "Detecting GPS..."
@@ -739,36 +743,35 @@ export default function SearchResults() {
             </span>
           </button>
 
-          {/* Quick Filter Pill Buttons */}
           <motion.button
             type="button"
             whileTap={{ scale: 0.95 }}
             onClick={() => setOnlyAvailableToday(!onlyAvailableToday)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
               onlyAvailableToday
-                ? "bg-emerald-600 text-white shadow-md"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-emerald-400"
+                ? "bg-[#0F8A73] text-white"
+                : "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] hover:border-[#0F8A73]/50"
             }`}
           >
             <span
-              className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-emerald-500 animate-pulse"}`}
+              className={`h-1.5 w-1.5 rounded-full ${onlyAvailableToday ? "bg-white" : "bg-[#0F8A73] animate-pulse"}`}
             />
-            <span>Available Today</span>
+            <span>{t("card.availableToday")}</span>
           </motion.button>
 
           <motion.button
             type="button"
             whileTap={{ scale: 0.95 }}
             onClick={() => setOnlyVerified(!onlyVerified)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
               onlyVerified
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400"
+                ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                : "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50"
             }`}
           >
             <BadgeCheck
               size={12}
-              className={onlyVerified ? "text-current" : "text-[#71717A]"}
+              className={onlyVerified ? "text-current" : "text-[#0F8A73]"}
             />
             <span>Verified</span>
           </motion.button>
@@ -777,30 +780,22 @@ export default function SearchResults() {
             type="button"
             whileTap={{ scale: 0.95 }}
             onClick={() => setMinRating4Plus(!minRating4Plus)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition cursor-pointer shadow-sm ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition cursor-pointer ${
               minRating4Plus
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-md"
-                : "border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] hover:border-neutral-400"
+                ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                : "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50"
             }`}
           >
-            <Star
-              size={11}
-              className={
-                minRating4Plus
-                  ? "fill-amber-400 text-amber-400"
-                  : "fill-amber-400 text-amber-400"
-              }
-            />
+            <Star size={11} className="fill-amber-400 text-amber-400" />
             <span>4.5+ Rating</span>
           </motion.button>
 
-          {/* Quick Filter Reset */}
           {hasActiveFilters && (
             <motion.button
               type="button"
               whileTap={{ scale: 0.95 }}
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] underline cursor-pointer ml-1"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#F4512C] hover:underline cursor-pointer ml-1"
             >
               <RotateCcw size={11} />
               <span>Reset</span>
@@ -808,15 +803,15 @@ export default function SearchResults() {
           )}
         </div>
 
-        {/* Segmented Type Switcher (All / Workers / Agencies) */}
-        <div className="inline-flex rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-0.5 text-xs shadow-sm">
+        {/* Segmented Type Switcher */}
+        <div className="inline-flex rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-1 text-xs">
           <button
             type="button"
             onClick={() => handleTypeChange("all")}
-            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+            className={`rounded-full px-3.5 py-1 font-semibold transition cursor-pointer ${
               searchType === "all"
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
+                ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
             }`}
           >
             All ({matchingWorkers.length + matchingAgencies.length})
@@ -824,10 +819,10 @@ export default function SearchResults() {
           <button
             type="button"
             onClick={() => handleTypeChange("workers")}
-            className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+            className={`rounded-full px-3.5 py-1 font-semibold transition cursor-pointer ${
               searchType === "workers"
-                ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
+                ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
             }`}
           >
             Pros ({matchingWorkers.length})
@@ -836,10 +831,10 @@ export default function SearchResults() {
             <button
               type="button"
               onClick={() => handleTypeChange("agencies")}
-              className={`rounded-full px-3 py-1 font-semibold transition cursor-pointer ${
+              className={`rounded-full px-3.5 py-1 font-semibold transition cursor-pointer ${
                 searchType === "agencies"
-                  ? "bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] shadow-sm"
-                  : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#09090B] dark:hover:text-[#FAFAFA]"
+                  ? "bg-[#141210] text-white dark:bg-white dark:text-[#11100F]"
+                  : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
               }`}
             >
               Agencies ({matchingAgencies.length})
@@ -848,7 +843,7 @@ export default function SearchResults() {
         </div>
       </div>
 
-      {/* 3. WORKER & AGENCY LISTINGS — Smooth layout transition & fade animation */}
+      {/* 3. WORKER & AGENCY LISTINGS */}
       <section>
         <AnimatePresence mode="wait">
           {combined.length ? (
@@ -869,9 +864,7 @@ export default function SearchResults() {
                   transition={{ duration: 0.18 }}
                 >
                   {item.type === "agency" ? (
-                    <AgencyCard
-                      agency={item.data}
-                    />
+                    <AgencyCard agency={item.data} />
                   ) : (
                     <WorkerCard
                       worker={item.data}
@@ -892,16 +885,16 @@ export default function SearchResults() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2 }}
-              className="rounded-[20px] border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#111215] p-8 text-center shadow-xs"
+              className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center"
             >
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-black/5 dark:bg-white/10 text-[#09090B] dark:text-[#FAFAFA] mb-3.5">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] mb-3.5">
                 <SearchIcon size={24} />
               </div>
-              <h3 className="text-base font-bold text-[#09090B] dark:text-[#FAFAFA]">
+              <h3 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                 No Specialists Found
               </h3>
-              <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA] max-w-sm mx-auto">
-                We couldn't find any{" "}
+              <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F] max-w-sm mx-auto">
+                We couldn&apos;t find any{" "}
                 {category !== "All" ? category.toLowerCase() : ""} professionals
                 matching your current filters
                 {targetLocality ? ` near ${targetLocality}` : ""}.
@@ -911,17 +904,17 @@ export default function SearchResults() {
                   <button
                     type="button"
                     onClick={handleResetFilters}
-                    className="inline-flex h-9 items-center justify-center rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] px-4 text-xs font-bold transition cursor-pointer shadow-xs"
+                    className="inline-flex h-10 items-center justify-center rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white px-5 text-xs font-bold transition cursor-pointer"
                   >
                     Clear Filters
                   </button>
                 )}
                 <Link
                   to="/assistant"
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl border border-black/10 dark:border-white/15 bg-black/5 dark:bg-white/10 px-4 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-black/10 dark:hover:bg-white/15"
+                  className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-5 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50"
                 >
-                  <Sparkles size={13} />
-                  <span>Ask AI Matchmaker</span>
+                  <Sparkles size={13} className="text-[#F4512C]" />
+                  <span>Ask Matchmaker</span>
                 </Link>
               </div>
             </motion.div>
@@ -930,14 +923,14 @@ export default function SearchResults() {
 
         {/* Excluded Candidates Section */}
         {excludedWorkers.length > 0 && (
-          <div className="mt-6 rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#111215] p-4 shadow-xs">
+          <div className="mt-6 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4">
             <button
               type="button"
               onClick={() => setShowExcluded(!showExcluded)}
-              className="flex items-center justify-between w-full text-xs font-semibold text-[#71717A] hover:text-[#09090B] dark:hover:text-[#FAFAFA] cursor-pointer"
+              className="flex items-center justify-between w-full text-xs font-semibold text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA] cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
-                <AlertTriangle size={13} className="text-amber-500" />
+                <AlertTriangle size={13} className="text-[#F4512C]" />
                 <span>
                   Excluded from Top Recommendations ({excludedWorkers.length})
                 </span>
@@ -949,21 +942,21 @@ export default function SearchResults() {
               )}
             </button>
             {showExcluded && (
-              <div className="mt-3 space-y-2 pt-2 border-t border-black/[0.08] dark:border-white/[0.08]">
+              <div className="mt-3 space-y-2 pt-2 border-t border-[#EAE2DC] dark:border-white/10">
                 {excludedWorkers.map((ex, idx) => (
                   <div
                     key={`${ex.worker_id}-${idx}`}
-                    className="rounded-xl border border-black/[0.06] dark:border-white/[0.05] bg-black/[0.02] dark:bg-white/[0.02] p-2.5 text-xs"
+                    className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3 text-xs"
                   >
-                    <div className="flex items-center justify-between text-[#71717A]">
-                      <span className="font-bold text-[#09090B] dark:text-[#FAFAFA]">
+                    <div className="flex items-center justify-between text-[#6B645F] dark:text-[#9E958F]">
+                      <span className="font-bold text-[#141210] dark:text-[#FAFAFA]">
                         Candidate ID: {ex.worker_id}
                       </span>
-                      <span className="text-[10px] text-red-600 font-bold">
+                      <span className="text-[10px] text-rose-500 font-bold">
                         Filtered
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-[#71717A]">
+                    <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
                       {ex.reason}
                     </p>
                   </div>
@@ -974,7 +967,6 @@ export default function SearchResults() {
         )}
       </section>
 
-      {/* 4. BOTTOM NAVIGATION BAR */}
       <NavBar />
     </PageShell>
   );
@@ -987,12 +979,11 @@ function AgencyCard({ agency }: { agency: Agency }) {
     : "";
 
   return (
-    <article className="rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#16171B] p-4 sm:p-4.5 shadow-xs flex flex-col justify-between hover:border-black/25 dark:hover:border-white/20 transition-all group">
+    <article className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 flex flex-col justify-between hover:border-[#F4512C]/50 transition-all group">
       <div>
-        {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/[0.08] dark:border-white/[0.08] bg-neutral-100 dark:bg-[#1C1D22] text-[#09090B] dark:text-[#FAFAFA] shadow-xs">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
               {agency.logo_url ? (
                 <img
                   src={agency.logo_url}
@@ -1008,43 +999,41 @@ function AgencyCard({ agency }: { agency: Agency }) {
 
             <div>
               <div className="flex items-center gap-1.5">
-                <h4 className="text-base sm:text-lg font-bold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition">
+                <h4 className="text-base font-bold text-[#141210] dark:text-[#FAFAFA] group-hover:text-[#F4512C] transition">
                   {agency.name}
                 </h4>
                 {agency.verified && (
-                  <BadgeCheck size={16} className="text-emerald-500 shrink-0" />
+                  <BadgeCheck size={15} className="text-[#0F8A73] shrink-0" />
                 )}
               </div>
-              <p className="text-xs sm:text-sm font-medium text-[#71717A] dark:text-[#A1A1AA]">
+              <p className="text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">
                 {agency.team_size_band} Team · Agency Hub
               </p>
             </div>
           </div>
 
-          <span className="inline-flex items-center gap-1 rounded-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 px-2.5 py-0.5 text-xs font-mono font-bold text-[#09090B] dark:text-[#FAFAFA]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[#F5EFEA] dark:bg-[#242220] border border-[#EAE2DC] dark:border-white/10 px-2.5 py-0.5 text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA]">
             Agency
           </span>
         </div>
 
-        {/* Categories & Locality */}
-        <div className="mt-3 space-y-1.5 text-xs sm:text-[13px]">
-          <div className="flex items-center justify-between text-[#71717A] dark:text-[#A1A1AA]">
-            <span className="flex items-center gap-1 font-mono truncate max-w-[190px]">
-              <MapPin size={12} className="shrink-0" /> {agency.service_locations.join(", ")}
+        <div className="mt-3 space-y-1.5 text-xs">
+          <div className="flex items-center justify-between text-[#6B645F] dark:text-[#9E958F]">
+            <span className="flex items-center gap-1 truncate max-w-[190px]">
+              <MapPin size={12} className="shrink-0 text-[#F4512C]" /> {agency.service_locations.join(", ")}
             </span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Active Agency</span>
+            <span className="font-semibold text-[#0F8A73]">Active Agency</span>
           </div>
-          <p className="text-xs sm:text-[13px] text-[#52525B] dark:text-[#D4D4D8] line-clamp-2 leading-relaxed">
+          <p className="text-xs text-[#6B645F] dark:text-[#9E958F] line-clamp-2 leading-relaxed">
             {agency.description || agency.categories.join(" · ")}
           </p>
         </div>
 
-        {/* Services Tags */}
         <div className="mt-3 flex flex-wrap gap-1.5">
           {agency.categories.map((cat, idx) => (
             <span
               key={idx}
-              className="rounded-md bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/5 px-2 py-0.5 text-xs text-[#52525B] dark:text-[#D4D4D8] font-medium"
+              className="rounded-md bg-[#F5EFEA] dark:bg-[#242220] px-2.5 py-0.5 text-[11px] text-[#6B645F] dark:text-[#9E958F] font-medium"
             >
               {cat}
             </span>
@@ -1052,22 +1041,21 @@ function AgencyCard({ agency }: { agency: Agency }) {
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="mt-3.5 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between gap-2">
+      <div className="mt-4 pt-3 border-t border-[#EAE2DC] dark:border-white/10 flex items-center justify-between gap-2">
         <Link
           to={`/agency-profile?agency=${encodeURIComponent(agency.id)}`}
-          className="text-xs sm:text-sm font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline cursor-pointer"
+          className="text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:text-[#F4512C] transition cursor-pointer"
         >
           View Agency
         </Link>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {whatsappUrl && (
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-[#0F8A73] hover:bg-[#0B6E5B] text-white px-3.5 text-xs font-semibold transition cursor-pointer active:scale-95"
             >
               <MessageCircle size={13} />
               <span>WhatsApp</span>
@@ -1075,7 +1063,7 @@ function AgencyCard({ agency }: { agency: Agency }) {
           )}
           <Link
             to={`/agency-profile?agency=${encodeURIComponent(agency.id)}`}
-            className="inline-flex items-center gap-1 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] px-3.5 py-1.5 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
+            className="inline-flex h-9 items-center gap-1 rounded-xl bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-3.5 text-xs font-semibold transition hover:opacity-90 cursor-pointer active:scale-95"
           >
             <span>Connect</span>
             <ArrowRight size={12} />
@@ -1099,6 +1087,7 @@ function WorkerCard({
   isSaved: boolean;
   onToggleSaved: (e: React.MouseEvent) => void;
 }) {
+  const { t, translateCategory } = useLanguage();
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
   const [ratingStats, setRatingStats] = useState(() =>
     getComputedWorkerRating(worker)
@@ -1165,15 +1154,12 @@ function WorkerCard({
         tabIndex={0}
         role="button"
         aria-label={`View profile of ${worker.name}`}
-        className="rounded-2xl border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#16171B] p-4 sm:p-4.5 shadow-xs flex flex-col justify-between hover:border-black/25 dark:hover:border-white/20 transition-all group cursor-pointer select-none"
+        className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 flex flex-col justify-between hover:border-[#F4512C]/50 transition-all group cursor-pointer select-none"
       >
         <div>
-          {/* Header */}
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3">
-              <div
-                className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#09090B] text-white dark:bg-[#FAFAFA] dark:text-[#09090B] font-extrabold text-sm shadow-xs overflow-hidden"
-              >
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] font-extrabold text-sm overflow-hidden">
                 {worker.photo_url ? (
                   <img
                     src={worker.photo_url}
@@ -1188,27 +1174,25 @@ function WorkerCard({
                 {isAvailableToday && (
                   <span
                     title="Available Today"
-                    className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#16171B] bg-emerald-500"
+                    className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-[#161514] bg-[#0F8A73]"
                   />
                 )}
               </div>
 
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h4
-                    className="text-base sm:text-lg font-bold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition"
-                  >
+                  <h4 className="text-base font-bold text-[#141210] dark:text-[#FAFAFA] group-hover:text-[#F4512C] transition">
                     {worker.name}
                   </h4>
-                  <BadgeCheck size={16} className="text-emerald-500 shrink-0" />
+                  <BadgeCheck size={15} className="text-[#0F8A73] shrink-0" />
                 </div>
-                <p className="text-xs sm:text-sm font-medium text-[#71717A] dark:text-[#A1A1AA]">
-                  {worker.category} · {worker.experience || "5+ yrs exp"}
+                <p className="text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">
+                  {translateCategory(worker.category)} · {worker.experience || "5+ yrs exp"}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={(e) => {
@@ -1216,88 +1200,85 @@ function WorkerCard({
                   setIsRateModalOpen(true);
                 }}
                 title="Click to rate this professional"
-                className="group/rate flex items-center gap-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 px-2 py-0.5 text-xs sm:text-sm font-bold font-mono text-amber-700 dark:text-amber-400 transition cursor-pointer border border-amber-500/20"
+                className="group/rate flex items-center gap-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 px-2 py-0.5 text-xs font-bold font-mono text-amber-600 dark:text-amber-400 transition cursor-pointer border border-amber-500/20"
                 aria-label={`Rating: ${ratingStats.rating.toFixed(1)}. Click to rate ${worker.name}`}
               >
-                <Star size={12} className="fill-amber-400 text-amber-400 group-hover/rate:scale-110 transition-transform" />
+                <Star size={11} className="fill-amber-400 text-amber-400" />
                 <span>{ratingStats.rating.toFixed(1)}</span>
-                <span className="text-[10px] sm:text-xs font-normal opacity-80">
+                <span className="text-[10px] font-normal opacity-80">
                   ({ratingStats.reviewsCount})
                 </span>
               </button>
               <button
                 type="button"
                 onClick={onToggleSaved}
-                className="text-[#71717A] hover:text-rose-500 transition p-1 cursor-pointer"
+                className="text-[#6B645F] dark:text-[#9E958F] hover:text-[#F4512C] transition p-1 cursor-pointer"
                 aria-label={isSaved ? `Unsave ${worker.name}` : `Save ${worker.name}`}
               >
                 <Heart
                   size={15}
-                  className={isSaved ? "text-rose-500 fill-rose-500" : ""}
+                  className={isSaved ? "text-[#F4512C] fill-[#F4512C]" : ""}
                 />
               </button>
             </div>
           </div>
 
-          {/* Meta info */}
-          <div className="mt-3 space-y-1.5 text-xs sm:text-[13px]">
-            <div className="flex items-center justify-between text-[#71717A] dark:text-[#A1A1AA]">
-              <span className="flex items-center gap-1 font-mono truncate max-w-[190px]">
-                <MapPin size={12} className="shrink-0" /> {worker.locality || "Local area"}
+          <div className="mt-3 space-y-1.5 text-xs">
+            <div className="flex items-center justify-between text-[#6B645F] dark:text-[#9E958F]">
+              <span className="flex items-center gap-1 truncate max-w-[190px]">
+                <MapPin size={12} className="shrink-0 text-[#6B645F] dark:text-[#9E958F]" /> {worker.locality || "Local area"}
               </span>
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                {isAvailableToday ? "Available Today" : "Free tomorrow"}
+              <span className="flex items-center gap-1 font-medium text-[#6B645F] dark:text-[#9E958F]">
+                <Clock size={12} />
+                {isAvailableToday ? t("card.availableToday") : t("card.bookAhead")}
               </span>
             </div>
-            <p className="text-xs sm:text-[13px] text-[#52525B] dark:text-[#D4D4D8] line-clamp-2 leading-relaxed">
+            <p className="text-xs text-[#6B645F] dark:text-[#9E958F] line-clamp-2 leading-relaxed">
               {worker.about || "Verified home service professional with guaranteed workmanship."}
             </p>
           </div>
 
-          {/* Services Tags */}
           {services.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {services.slice(0, 3).map((s, idx) => (
                 <span
                   key={idx}
-                  className="rounded-md bg-black/5 dark:bg-white/5 border border-black/[0.06] dark:border-white/5 px-2 py-0.5 text-xs text-[#52525B] dark:text-[#D4D4D8] font-medium"
+                  className="rounded-md bg-[#F5EFEA] dark:bg-[#242220] px-2.5 py-0.5 text-[11px] text-[#6B645F] dark:text-[#9E958F] font-medium"
                 >
                   {s}
                 </span>
               ))}
               {services.length > 3 && (
-                <span className="text-xs text-[#71717A] dark:text-[#A1A1AA] self-center">
-                  +{services.length - 3} more
+                <span className="text-xs text-[#6B645F] dark:text-[#9E958F] self-center">
+                  {t("card.more", { count: services.length - 3 })}
                 </span>
               )}
             </div>
           )}
         </div>
 
-        {/* Actions */}
-        <div className="mt-3.5 pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center gap-2">
+        <div className="mt-4 pt-3 border-t border-[#EAE2DC] dark:border-white/10 flex items-center gap-2.5">
           {whatsappUrl && (
             <button
               type="button"
               onClick={handleQuickWhatsApp}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white py-2 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
+              className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#0F8A73] hover:bg-[#0B6E5B] text-white text-xs font-semibold transition cursor-pointer active:scale-95"
             >
-              <MessageCircle size={13} />
-              <span>WhatsApp</span>
+              <MessageCircle size={14} />
+              <span>{t("card.whatsapp")}</span>
             </button>
           )}
           <button
             type="button"
             onClick={handleQuickCall}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] py-2 text-xs sm:text-sm font-bold shadow-xs transition cursor-pointer active:scale-95"
+            className="flex-1 inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#141210] text-white dark:bg-white dark:text-[#11100F] text-xs font-semibold transition hover:opacity-90 cursor-pointer active:scale-95"
           >
-            <Phone size={12} />
-            <span>Call</span>
+            <Phone size={13} />
+            <span>{t("card.call")}</span>
           </button>
         </div>
       </article>
 
-      {/* Customer Rating Modal */}
       <RateWorkerModal
         worker={worker}
         isOpen={isRateModalOpen}

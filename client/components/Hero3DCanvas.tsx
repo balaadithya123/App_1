@@ -189,20 +189,20 @@ function LuminousGlassShield3D({ isHovered }: { isHovered: boolean }) {
         transform
         position={[0, -0.15, 0.22]}
         distanceFactor={3.2}
-        className="pointer-events-none select-none flex flex-col items-center justify-center text-zinc-900"
+        className="pointer-events-none select-none flex flex-col items-center justify-center text-[#141210]"
       >
-        <div className="flex flex-col items-center justify-center p-4 bg-white/90 backdrop-blur-2xl rounded-2xl border border-emerald-400/50 shadow-2xl text-center w-52">
-          <div className="h-11 w-11 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-md mb-2">
+        <div className="flex flex-col items-center justify-center p-4 bg-white/95 backdrop-blur-2xl rounded-2xl border border-[#0F8A73]/40 shadow-2xl text-center w-52">
+          <div className="h-11 w-11 rounded-xl bg-[#0F8A73] text-white flex items-center justify-center shadow-md mb-2">
             <ShieldCheck size={26} className="animate-pulse" />
           </div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-emerald-800">
+          <span className="text-[11px] font-black uppercase tracking-widest text-[#0F8A73]">
             Aadhaar Verified Pro
           </span>
-          <span className="text-xs font-extrabold text-[#09090B] mt-0.5 tracking-tight">
+          <span className="text-xs font-extrabold text-[#141210] mt-0.5 tracking-tight">
             100% Direct Connection
           </span>
-          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] font-black text-emerald-900 bg-emerald-100/90 border border-emerald-300 px-3 py-1 rounded-full shadow-2xs">
-            <Sparkles size={11} className="text-amber-500" />
+          <div className="mt-2.5 flex items-center gap-1.5 text-[10px] font-black text-[#0F8A73] bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-3 py-1 rounded-full">
+            <Sparkles size={11} className="text-[#F4512C]" />
             <span>0% Commission Cut</span>
           </div>
         </div>
@@ -261,8 +261,8 @@ function OrbitalNode({
           distanceFactor={3.6}
           className="pointer-events-none select-none"
         >
-          <div className="flex items-center gap-2 bg-white/95 text-[#09090B] px-3.5 py-1.5 rounded-full shadow-xl border border-zinc-200/90 text-xs font-black whitespace-nowrap backdrop-blur-md">
-            <div className={`p-1 rounded-full ${badgeColor} text-white shadow-xs`}>
+          <div className="flex items-center gap-2 bg-white/95 text-[#141210] px-3.5 py-1.5 rounded-full shadow-xl border border-[#EAE2DC] text-xs font-black whitespace-nowrap backdrop-blur-md">
+            <div className={`p-1 rounded-full ${badgeColor} text-white`}>
               <Icon size={12} />
             </div>
             <span>{label}</span>
@@ -278,22 +278,22 @@ function OrbitalNode({
 // --------------------------------------------------
 function FallbackGraphic() {
   return (
-    <div className="w-full h-full min-h-[360px] flex items-center justify-center p-6 bg-gradient-to-b from-emerald-900 to-zinc-950 text-white rounded-3xl border border-emerald-800 shadow-xl relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(52,211,153,0.25)_0,transparent_70%)]" />
+    <div className="w-full h-full min-h-[360px] flex items-center justify-center p-6 bg-gradient-to-b from-[#261B16] to-[#0B0A09] text-white rounded-3xl border border-white/10 shadow-xl relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(244,81,44,0.22)_0,transparent_70%)]" />
       <div className="relative z-10 flex flex-col items-center text-center max-w-xs space-y-3">
-        <div className="h-16 w-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg animate-bounce">
+        <div className="h-16 w-16 rounded-2xl bg-[#F4512C] text-white flex items-center justify-center shadow-lg animate-bounce">
           <ShieldCheck size={36} />
         </div>
-        <span className="text-xs font-black uppercase tracking-widest text-emerald-300">
+        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
           Govt ID & Aadhaar Verified
         </span>
         <h3 className="text-xl font-extrabold text-white">
           Verified Neighborhood Network
         </h3>
-        <p className="text-xs text-emerald-100 leading-relaxed font-medium">
+        <p className="text-xs text-[#9E958F] leading-relaxed font-medium">
           Direct WhatsApp & phone connection with zero platform markup.
         </p>
-        <div className="pt-2 flex items-center gap-2 text-xs font-bold text-emerald-300">
+        <div className="pt-2 flex items-center gap-2 text-xs font-bold text-[#3DD1B3]">
           <CheckCircle2 size={15} />
           <span>100% Commission-Free</span>
         </div>

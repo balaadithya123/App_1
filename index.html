@@ -20,18 +20,19 @@
       name="google-site-verification"
       content="gaAJHd0hJKdWuHKMFpPI1vBD2M1N_hWpYhOO5fmbTXs"
     />
-    <meta name="theme-color" content="#1D90F3" />
-    <link rel="apple-touch-icon" href="/pwa-icon-512.png" />
+    <meta name="theme-color" content="#F4512C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Builderco" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href="https://builderco.vercel.app/" />
     <script>
       (function () {
         try {
           var theme = localStorage.getItem("localworker_theme");
-          if (
-            theme === "dark" ||
-            (!theme &&
-              window.matchMedia("(prefers-color-scheme: dark)").matches)
-          ) {
+          if (theme !== "light") {
             document.documentElement.classList.add("dark");
             document.documentElement.setAttribute("data-theme", "dark");
           } else {

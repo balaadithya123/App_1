@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { BadgeCheck, CalendarDays, CheckCircle2, Loader2, MapPin, XCircle } from "lucide-react";
+import { BadgeCheck, CalendarDays, CheckCircle2, MapPin, XCircle } from "lucide-react";
 import PageShell from "@/components/PageShell";
+import { FormCardSkeleton } from "@/components/PageSkeletons";
 import { supabase } from "@/lib/supabase";
 import { PassbookError, formatRupees, passbookApi } from "@/lib/passbook";
 import { RATE_UNIT_LABEL, type JobSlipPreview } from "@shared/passbook";
@@ -65,38 +66,37 @@ export default function JobSlip() {
   return (
     <PageShell backTo="/home" backLabel="Home" containerWidth="sm">
       <div className="space-y-5 pb-24">
-        {view === "loading" && (
-          <div className="flex min-h-[30vh] items-center justify-center" aria-busy="true">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        )}
+        {view === "loading" && <FormCardSkeleton />}
 
         {view === "signed-out" && (
-          <div className="space-y-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-center">
-            <h1 className="text-xl font-bold tracking-tight">Confirm your job</h1>
-            <p className="text-sm text-[#71717A]">
+          <div className="space-y-4 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 sm:p-8 text-center shadow-sm">
+            <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+              Work Passbook
+            </span>
+            <h1 className="text-xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">Confirm your job</h1>
+            <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">
               A worker shared a job with you. Sign in to see the details and confirm it. Confirming builds the
               worker's Work Passbook, so future customers can trust them.
             </p>
             <Link
               to={`/login?next=${nextParam}`}
-              className="inline-flex w-full items-center justify-center rounded-full bg-black px-4 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[#F4512C] hover:bg-[#E04320] px-4 py-3 text-sm font-bold text-white shadow-sm transition"
             >
               Sign in
             </Link>
-            <Link to="/register" className="block text-xs font-semibold underline">
+            <Link to="/register" className="block text-xs font-bold text-[#F4512C] hover:underline">
               New here? Create an account, then open this link again
             </Link>
           </div>
         )}
 
         {view === "error" && (
-          <div className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] p-8 text-center">
-            <p className="text-sm text-[#71717A]">{error}</p>
+          <div className="space-y-3 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center shadow-sm">
+            <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">{error}</p>
             <button
               type="button"
               onClick={() => void load()}
-              className="rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold dark:border-neutral-700"
+              className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition cursor-pointer"
             >
               Try again
             </button>
@@ -104,68 +104,68 @@ export default function JobSlip() {
         )}
 
         {view === "ready" && preview && (
-          <article className="space-y-4 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5">
+          <article className="space-y-4 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-sm">
             <div className="flex items-center gap-3">
               {preview.slip.worker_photo_url ? (
-                <img src={preview.slip.worker_photo_url} alt="" className="h-12 w-12 rounded-full object-cover" />
+                <img src={preview.slip.worker_photo_url} alt="" className="h-12 w-12 rounded-full object-cover ring-2 ring-[#EAE2DC] dark:ring-white/10" />
               ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-sm font-bold dark:bg-white/5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] text-sm font-bold text-[#F4512C]">
                   {preview.slip.worker_name.slice(0, 1).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
-                <p className="truncate text-base font-semibold">{preview.slip.worker_name}</p>
-                <p className="text-xs text-[#71717A]">{preview.slip.worker_category ?? "Worker"}</p>
+                <p className="truncate text-base font-bold text-[#141210] dark:text-[#FAFAFA]">{preview.slip.worker_name}</p>
+                <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">{preview.slip.worker_category ?? "Worker"}</p>
               </div>
             </div>
 
             <div>
-              <h1 className="text-lg font-bold tracking-tight">{preview.slip.service_label}</h1>
+              <h1 className="text-lg font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">{preview.slip.service_label}</h1>
               {preview.slip.description && (
-                <p className="mt-1 text-sm text-[#52525B] dark:text-[#A1A1AA]">{preview.slip.description}</p>
+                <p className="mt-1 text-sm text-[#6B645F] dark:text-[#9E958F]">{preview.slip.description}</p>
               )}
             </div>
 
             <dl className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/5">
-                <dt className="text-[11px] text-[#71717A]">Agreed rate</dt>
-                <dd className="font-semibold">
+              <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3">
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F]">Agreed rate</dt>
+                <dd className="mt-0.5 font-bold text-[#141210] dark:text-[#FAFAFA]">
                   {formatRupees(preview.slip.agreed_rate)} {RATE_UNIT_LABEL[preview.slip.rate_unit]}
                 </dd>
               </div>
-              <div className="rounded-xl bg-zinc-50 p-3 dark:bg-white/5">
-                <dt className="text-[11px] text-[#71717A]">Advance</dt>
-                <dd className="font-semibold">
+              <div className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3">
+                <dt className="text-[11px] font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F]">Advance</dt>
+                <dd className="mt-0.5 font-bold text-[#141210] dark:text-[#FAFAFA]">
                   {preview.slip.advance > 0 ? formatRupees(preview.slip.advance) : "None"}
                 </dd>
               </div>
             </dl>
 
-            <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#52525B] dark:text-[#A1A1AA]">
+            <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
               <span className="inline-flex items-center gap-1">
-                <CalendarDays size={13} /> {preview.slip.job_date}
+                <CalendarDays size={13} className="text-[#F4512C]" /> {preview.slip.job_date}
               </span>
               {preview.slip.locality && (
                 <span className="inline-flex items-center gap-1">
-                  <MapPin size={13} /> {preview.slip.locality}
+                  <MapPin size={13} className="text-[#0F8A73]" /> {preview.slip.locality}
                 </span>
               )}
             </p>
 
             {preview.is_own ? (
-              <p className="rounded-xl bg-zinc-50 p-3 text-xs text-[#52525B] dark:bg-white/5 dark:text-[#A1A1AA]">
+              <p className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3 text-xs text-[#6B645F] dark:text-[#9E958F]">
                 This is your own job slip. Send the link to your customer so they can confirm it.
               </p>
             ) : preview.can_respond ? (
-              <div className="space-y-2.5">
-                <p className="text-xs text-[#71717A]">
+              <div className="space-y-2.5 pt-2 border-t border-[#EAE2DC] dark:border-white/10">
+                <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                   Only confirm if this matches what you and the worker agreed. The app does not handle any payment.
                 </p>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => void respond("confirm")}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] px-4 py-3 text-sm font-bold text-white shadow-sm transition disabled:opacity-50 cursor-pointer"
                 >
                   <BadgeCheck size={16} /> Yes, this is correct
                 </button>
@@ -173,15 +173,15 @@ export default function JobSlip() {
                   type="button"
                   disabled={busy}
                   onClick={() => void respond("decline")}
-                  className="w-full rounded-full border border-neutral-300 px-4 py-3 text-sm font-semibold disabled:opacity-50 dark:border-neutral-700"
+                  className="w-full rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-3 text-sm font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-rose-500/40 transition disabled:opacity-50 cursor-pointer"
                 >
                   No, this is not right
                 </button>
               </div>
             ) : (
               <p
-                className={`inline-flex items-center gap-2 text-sm font-semibold ${
-                  preview.slip.status === "confirmed" ? "text-emerald-600 dark:text-emerald-400" : "text-[#71717A]"
+                className={`inline-flex items-center gap-2 text-sm font-bold ${
+                  preview.slip.status === "confirmed" ? "text-[#0F8A73] dark:text-[#3DD1B3]" : "text-[#6B645F] dark:text-[#9E958F]"
                 }`}
               >
                 {preview.slip.status === "confirmed" ? <CheckCircle2 size={16} /> : <XCircle size={16} />}

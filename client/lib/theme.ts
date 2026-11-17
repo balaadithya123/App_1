@@ -3,16 +3,10 @@ export type Theme = "light" | "dark";
 const THEME_KEY = "localworker_theme";
 
 export function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === "dark" || saved === "light") return saved;
-  if (
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  ) {
-    return "dark";
-  }
-  return "light";
+  return "dark";
 }
 
 export function applyTheme(theme: Theme) {

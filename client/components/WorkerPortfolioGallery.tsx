@@ -45,18 +45,20 @@ export default function WorkerPortfolioGallery({
   if (photos.length === 0) return null;
 
   return (
-    <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-5 shadow-soft">
+    <section className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Camera size={18} className="text-primary" />
-          <h2 className="font-bold text-base text-[#2C2C2C]">Work Portfolio</h2>
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+            <Camera size={16} />
+          </div>
+          <h2 className="font-bold text-base text-[#141210] dark:text-[#FAFAFA]">Work Portfolio</h2>
         </div>
-        <span className="text-xs font-semibold text-[#67696D]">
+        <span className="text-xs font-semibold text-[#6B645F] dark:text-[#9E958F]">
           {photos.length} {photos.length === 1 ? "photo" : "photos"}
         </span>
       </div>
 
-      <p className="mt-1 text-xs text-[#67696D]">
+      <p className="mt-1.5 text-xs text-[#6B645F] dark:text-[#9E958F]">
         Recent projects and completed jobs by {workerName}
       </p>
 
@@ -66,7 +68,7 @@ export default function WorkerPortfolioGallery({
             key={photo.id || idx}
             type="button"
             onClick={() => setActivePhoto(photo)}
-            className="group relative aspect-square overflow-hidden rounded-[12px] border border-[#E7ECF1] bg-[#F6F9FC] text-left transition hover:border-primary hover:shadow-subtle cursor-pointer"
+            className="group relative aspect-square overflow-hidden rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-left transition hover:border-[#F4512C]/50 hover:shadow-md cursor-pointer"
           >
             <img
               src={photo.image_url}
@@ -93,7 +95,7 @@ export default function WorkerPortfolioGallery({
           onClick={() => setActivePhoto(null)}
         >
           <div
-            className="relative max-h-[90vh] max-w-2xl overflow-hidden rounded-[20px] bg-white border border-[#E7ECF1] shadow-2xl"
+            className="relative max-h-[90vh] max-w-2xl overflow-hidden rounded-[24px] bg-white dark:bg-[#161514] border border-[#EAE2DC] dark:border-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -111,7 +113,7 @@ export default function WorkerPortfolioGallery({
               referrerPolicy="no-referrer"
             />
             {activePhoto.label && (
-              <div className="p-3.5 text-center text-xs font-semibold text-[#2C2C2C] border-t border-[#E7ECF1]">
+              <div className="p-3.5 text-center text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] border-t border-[#EAE2DC] dark:border-white/10">
                 {activePhoto.label}
               </div>
             )}

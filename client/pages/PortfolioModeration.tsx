@@ -1191,26 +1191,28 @@ function CheckRow({
 }) {
   return (
     <div
-      className={`flex items-start gap-2.5 rounded-[12px] border p-2.5 text-xs ${
+      className={`flex items-start gap-2.5 rounded-xl border p-2.5 text-xs ${
         failed
-          ? "border-rose-200 bg-rose-50 text-[#2C2C2C]"
-          : "border-border bg-card text-[#67696D]"
+          ? "border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-[#141210] dark:text-[#FAFAFA]"
+          : "border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F]"
       }`}
     >
       <div className="mt-0.5">
         {failed ? (
-          <XCircle size={15} className="text-rose-600" />
+          <XCircle size={15} className="text-rose-600 dark:text-rose-400" />
         ) : (
-          <CheckCircle2 size={15} className="text-emerald-600" />
+          <CheckCircle2 size={15} className="text-[#0F8A73] dark:text-[#3DD1B3]" />
         )}
       </div>
       <div>
         <div
-          className={`font-bold ${failed ? "text-rose-700" : "text-[#2C2C2C]"}`}
+          className={`font-bold ${failed ? "text-rose-700 dark:text-rose-400" : "text-[#141210] dark:text-[#FAFAFA]"}`}
         >
           {label}: {failed ? "Flagged / Failed" : "Passed"}
         </div>
-        <div className="text-[11px] text-[#67696D]">{description}</div>
+        <div className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+          {description}
+        </div>
       </div>
     </div>
   );

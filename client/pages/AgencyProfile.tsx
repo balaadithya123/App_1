@@ -16,6 +16,7 @@ import {
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import RequestCallbackForm from "@/components/RequestCallbackForm";
+import { AgencyProfileSkeleton } from "@/components/PageSkeletons";
 import { supabase } from "@/lib/supabase";
 
 type Worker = {
@@ -145,7 +146,7 @@ export default function AgencyProfile() {
     ? String(agency.phone).replace(/\D/g, "").slice(-10)
     : "";
   const whatsappUrl = phone
-    ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hello ${agency?.name}, I found your agency on LocalWorker.`)}`
+    ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hello ${agency?.name}, I found your agency on Builderco.`)}`
     : "";
 
   return (
@@ -156,24 +157,21 @@ export default function AgencyProfile() {
     >
       <div className="space-y-5">
         {loading ? (
-          <div className="flex min-h-[300px] items-center justify-center">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-              <span>Loading agency profile...</span>
-            </div>
-          </div>
+          <AgencyProfileSkeleton />
         ) : error || !agency ? (
-          <div className="rounded-2xl border border-border bg-card p-8 text-center">
-            <Building2 size={36} className="mx-auto text-muted-foreground" />
-            <h1 className="mt-3 text-lg font-bold text-foreground">
+          <div className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+              <Building2 size={24} />
+            </div>
+            <h1 className="mt-4 text-lg font-extrabold text-[#141210] dark:text-[#FAFAFA]">
               Agency Not Found
             </h1>
-            <p className="mt-1.5 text-xs text-muted-foreground">
+            <p className="mt-1.5 text-xs text-[#6B645F] dark:text-[#9E958F]">
               {error || "We could not find the requested agency profile."}
             </p>
             <Link
               to="/search?type=agencies"
-              className="mt-4 inline-flex h-9 items-center justify-center rounded-lg bg-foreground px-4 text-xs font-semibold text-background hover:opacity-90 transition"
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-full bg-[#F4512C] hover:bg-[#E04320] px-5 text-xs font-semibold text-white transition"
             >
               Browse All Agencies
             </Link>
@@ -181,9 +179,9 @@ export default function AgencyProfile() {
         ) : (
           <>
             {/* Main Agency Header */}
-            <section className="rounded-2xl border border-border bg-card p-6 sm:p-7">
+            <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 sm:p-7">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border bg-secondary font-bold text-foreground text-xl">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#F4512C] font-bold text-white text-xl shadow-sm">
                   {agency.logo_url ? (
                     <img
                       src={agency.logo_url}
@@ -191,33 +189,36 @@ export default function AgencyProfile() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <Building2 size={30} className="text-primary" />
+                    <Building2 size={28} className="text-white" />
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                      {agency.name}
-                    </h1>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                      Verified Service Agency
+                    </span>
                     {agency.verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-2.5 py-0.5 text-[11px] font-semibold text-[#0F8A73]">
                         <BadgeCheck size={13} /> Verified Agency
                       </span>
                     )}
                   </div>
+                  <h1 className="mt-1 text-xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA] sm:text-2xl">
+                    {agency.name}
+                  </h1>
 
-                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-[#6B645F] dark:text-[#9E958F]">
                     {agency.service_locations.length > 0 && (
                       <span className="flex items-center gap-1">
-                        <MapPin size={13} className="shrink-0" />
+                        <MapPin size={13} className="shrink-0 text-[#F4512C]" />
                         <span>
                           Coverage: {agency.service_locations.join(", ")}
                         </span>
                       </span>
                     )}
                     <span className="flex items-center gap-1">
-                      <Users size={13} className="shrink-0" />
+                      <Users size={13} className="shrink-0 text-[#F4512C]" />
                       <span>
                         {agency.team_size_band || "5-10"} Team Capacity
                       </span>
@@ -227,11 +228,11 @@ export default function AgencyProfile() {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="mt-6 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                 {phone && (
                   <a
                     href={`tel:+91${phone}`}
-                    className="flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-foreground text-xs font-semibold text-background transition hover:opacity-90"
+                    className="flex h-10 items-center justify-center gap-2 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] text-xs font-semibold transition hover:opacity-90"
                   >
                     <Phone size={14} />
                     <span>Call (+91 {phone})</span>
@@ -243,7 +244,7 @@ export default function AgencyProfile() {
                     href={whatsappUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[#128C7E] text-xs font-semibold text-white transition hover:bg-[#075E54]"
+                    className="flex h-10 items-center justify-center gap-2 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] text-xs font-semibold text-white transition"
                   >
                     <MessageCircle size={14} />
                     <span>WhatsApp Agency</span>
@@ -253,7 +254,7 @@ export default function AgencyProfile() {
                 <button
                   type="button"
                   onClick={() => setCallbackOpen(true)}
-                  className="flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-secondary text-xs font-semibold text-foreground transition hover:bg-card cursor-pointer"
+                  className="flex h-10 items-center justify-center gap-2 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white/80 dark:bg-[#161514]/80 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 cursor-pointer"
                 >
                   <span>Request Callback</span>
                 </button>
@@ -262,11 +263,11 @@ export default function AgencyProfile() {
 
             {/* About Agency */}
             {agency.description && (
-              <section className="rounded-xl border border-border bg-card p-5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
                   About Agency
                 </h2>
-                <p className="mt-2 text-xs leading-relaxed text-foreground">
+                <p className="mt-2 text-xs leading-relaxed text-[#141210] dark:text-[#FAFAFA]">
                   {agency.description}
                 </p>
               </section>
@@ -274,17 +275,17 @@ export default function AgencyProfile() {
 
             {/* Specializations & Services */}
             {agency.categories.length > 0 && (
-              <section className="rounded-xl border border-border bg-card p-5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+                <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
                   Specializations
                 </h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {agency.categories.map((c) => (
                     <span
                       key={c}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-secondary/40 px-3 py-1.5 text-xs font-medium text-foreground"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-1.5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]"
                     >
-                      <Wrench size={13} className="text-primary" />
+                      <Wrench size={13} className="text-[#F4512C]" />
                       <span>{c}</span>
                     </span>
                   ))}
@@ -294,25 +295,25 @@ export default function AgencyProfile() {
 
             {/* Team Members List */}
             {workers.length > 0 && (
-              <section className="rounded-xl border border-border bg-card p-5">
-                <div className="flex items-center justify-between border-b border-border/80 pb-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+                <div className="flex items-center justify-between border-b border-[#EAE2DC] dark:border-white/10 pb-3">
+                  <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
                     Affiliated Specialists ({workers.length})
                   </h2>
-                  <span className="text-[11px] text-muted-foreground">
+                  <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                     Verified Crew
                   </span>
                 </div>
 
-                <div className="mt-3 divide-y divide-border/60">
+                <div className="mt-3 divide-y divide-[#EAE2DC] dark:divide-white/10">
                   {workers.map((w) => (
                     <Link
                       key={w.id}
                       to={`/worker?worker=${w.id}`}
-                      className="group flex items-center justify-between py-3 transition hover:bg-secondary/30 rounded-lg px-2"
+                      className="group flex items-center justify-between py-3 transition hover:bg-[#FAF8F5] dark:hover:bg-[#0B0A09] rounded-xl px-2.5"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-secondary font-bold text-foreground text-xs">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] font-bold text-[#F4512C] text-xs">
                           {w.photo_url ? (
                             <img
                               src={w.photo_url}
@@ -325,17 +326,17 @@ export default function AgencyProfile() {
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <h3 className="text-xs font-bold text-foreground group-hover:text-primary">
+                            <h3 className="text-xs font-bold text-[#141210] dark:text-[#FAFAFA] group-hover:text-[#F4512C]">
                               {w.name}
                             </h3>
                             {w.phone_verified && (
                               <BadgeCheck
                                 size={12}
-                                className="text-emerald-500"
+                                className="text-[#0F8A73]"
                               />
                             )}
                           </div>
-                          <p className="text-[11px] text-muted-foreground">
+                          <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                             {w.category} · {w.locality}
                           </p>
                         </div>
@@ -343,13 +344,13 @@ export default function AgencyProfile() {
 
                       <div className="flex items-center gap-2">
                         {w.available_today && (
-                          <span className="hidden sm:inline-block rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                          <span className="hidden sm:inline-block rounded-full bg-[#0F8A73]/10 border border-[#0F8A73]/30 px-2.5 py-0.5 text-[10px] font-bold text-[#0F8A73]">
                             Available
                           </span>
                         )}
                         <ChevronRight
                           size={14}
-                          className="text-muted-foreground group-hover:text-foreground"
+                          className="text-[#6B645F] dark:text-[#9E958F] group-hover:text-[#F4512C]"
                         />
                       </div>
                     </Link>
@@ -359,12 +360,12 @@ export default function AgencyProfile() {
             )}
 
             {/* Quality Guarantee Notice */}
-            <section className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground">
-                <ShieldCheck size={15} className="text-primary" />
+            <section className="rounded-[20px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                <ShieldCheck size={16} className="text-[#F4512C]" />
                 <span>Agency Certified Service</span>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1.5 text-xs leading-relaxed text-[#6B645F] dark:text-[#9E958F]">
                 Work performed by this agency and its linked specialists is
                 backed by verified management supervision and direct support.
               </p>

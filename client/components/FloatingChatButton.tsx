@@ -1,14 +1,14 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Sparkles, MessageSquare } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { PhoneCall } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
+import { useVoiceAssistant } from "@/lib/voice-assistant-context";
 
 export default function FloatingChatButton() {
   const location = useLocation();
+  const { t } = useLanguage();
+  const { openCall, isOpen } = useVoiceAssistant();
 
-  // Hide on dedicated assistant/chat page and authentication screens
   const hideOn = [
-    "/assistant",
-    "/chat",
     "/login",
     "/join",
     "/register",
@@ -17,6 +17,7 @@ export default function FloatingChatButton() {
     "/voice-onboarding",
   ];
   if (
+    isOpen ||
     hideOn.includes(location.pathname) ||
     location.pathname.startsWith("/register") ||
     location.pathname.startsWith("/join")
@@ -26,18 +27,23 @@ export default function FloatingChatButton() {
 
   return (
     <aside
-      aria-label="AI Assistant Quick Access"
-      className="fixed bottom-4 right-4 z-40 sm:bottom-6 sm:right-6"
+      aria-label={t("nav.voiceHelp")}
+      className="fixed bottom-20 right-4 z-40 md:bottom-6 md:right-6"
     >
-      <Link
-        to="/assistant"
-        className="group flex h-11 items-center gap-2 rounded-full border border-border bg-foreground px-3.5 text-background shadow-md transition-all duration-200 hover:opacity-90 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Open AI Assistant"
-        title="Open AI Assistant"
+      <button
+        type="button"
+        onClick={() => openCall(true)}
+        className="group flex h-11 items-center gap-2 rounded-full border border-[#EAE2DC] dark:border-white/15 bg-[#141210] dark:bg-white text-white dark:text-[#11100F] px-4 shadow-lg transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer"
+        aria-label={t("nav.voiceHelp")}
+        title={t("nav.voiceHelp")}
       >
-        <Sparkles size={16} className="text-primary shrink-0" />
-        <span className="text-xs font-bold tracking-tight">AI Assistant</span>
-      </Link>
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#F4512C] text-white shrink-0">
+          <PhoneCall size={13} />
+        </span>
+        <span className="text-xs font-bold tracking-tight">
+          {t("nav.voiceHelp")}
+        </span>
+      </button>
     </aside>
   );
 }

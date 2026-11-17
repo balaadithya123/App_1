@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2, MessageCircle, Plus, Trash2, X } from "lucide-react";
 import PageShell from "@/components/PageShell";
+import { ListRowsSkeleton } from "@/components/PageSkeletons";
 import { supabase } from "@/lib/supabase";
 import { PassbookError, formatRupees, passbookApi, todayIso } from "@/lib/passbook";
 import {
@@ -23,13 +24,13 @@ type MineResponse = {
 };
 
 const fieldClass =
-  "w-full rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0D0D10] px-3 py-2.5 text-sm outline-none transition focus:border-neutral-500";
+  "w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-2.5 text-sm text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] outline-none transition focus:border-[#F4512C]";
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  confirmed: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
-  declined: "bg-red-500/10 text-red-700 dark:text-red-400",
-  cancelled: "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400",
+  pending: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  confirmed: "bg-[#0F8A73]/10 text-[#0F8A73]",
+  declined: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  cancelled: "bg-[#F5EFEA] dark:bg-[#242220] text-[#6B645F] dark:text-[#9E958F]",
 };
 
 export default function WorkerPassbook() {
@@ -164,22 +165,23 @@ export default function WorkerPassbook() {
   return (
     <PageShell backTo="/worker-dashboard" backLabel="Dashboard" containerWidth="md">
       <div className="space-y-6 pb-24">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Work Passbook</h1>
-          <p className="mt-0.5 text-sm text-[#71717A]">
+        <div className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            Verified Work Ledger
+          </p>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+            Work Passbook
+          </h1>
+          <p className="mt-1 text-sm text-[#6B645F] dark:text-[#9E958F]">
             Record each job with your customer. When they confirm it, it becomes part of your public work history.
           </p>
         </div>
 
-        {state === "loading" && (
-          <div className="flex min-h-[30vh] items-center justify-center" aria-busy="true">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        )}
+        {state === "loading" && <ListRowsSkeleton count={3} columns={1} />}
 
         {(state === "blocked" || state === "error") && (
-          <div className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] p-8 text-center">
-            <p className="text-sm text-[#71717A]">{message}</p>
+          <div className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center">
+            <p className="text-sm text-[#6B645F] dark:text-[#9E958F]">{message}</p>
             {state === "error" ? (
               <button
                 type="button"
@@ -187,12 +189,12 @@ export default function WorkerPassbook() {
                   setState("loading");
                   void load();
                 }}
-                className="rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold dark:border-neutral-700"
+                className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 cursor-pointer"
               >
                 Try again
               </button>
             ) : (
-              <Link to="/worker-dashboard" className="text-xs font-semibold underline">
+              <Link to="/worker-dashboard" className="text-xs font-semibold text-[#F4512C] underline">
                 Back to dashboard
               </Link>
             )}
@@ -201,13 +203,13 @@ export default function WorkerPassbook() {
 
         {state === "ready" && data && (
           <>
-            <section className="space-y-3">
+            <section className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold">Jobs</h2>
+                <h2 className="text-base font-bold text-[#141210] dark:text-[#FAFAFA]">Jobs</h2>
                 <button
                   type="button"
                   onClick={() => setShowForm((v) => !v)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-xs font-semibold text-white dark:bg-white dark:text-black"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] px-4 py-2 text-xs font-bold text-white transition cursor-pointer"
                 >
                   {showForm ? <X size={13} /> : <Plus size={13} />}
                   {showForm ? "Close" : "New job slip"}
@@ -217,7 +219,7 @@ export default function WorkerPassbook() {
               {showForm && (
                 <form
                   onSubmit={(e) => void createSlip(e)}
-                  className="space-y-3 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4"
+                  className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4"
                 >
                   <input className={fieldClass} placeholder="Job (e.g. Kitchen tap repair)" value={label} onChange={(e) => setLabel(e.target.value)} maxLength={60} />
                   <textarea className={fieldClass} rows={2} placeholder="Details (optional)" value={details} onChange={(e) => setDetails(e.target.value)} maxLength={300} />
@@ -235,11 +237,11 @@ export default function WorkerPassbook() {
                     <input className={fieldClass} inputMode="decimal" placeholder="Agreed rate (₹)" value={rate} onChange={(e) => setRate(e.target.value.replace(/[^\d.]/g, ""))} />
                     <input className={fieldClass} inputMode="decimal" placeholder="Advance (₹, optional)" value={advance} onChange={(e) => setAdvance(e.target.value.replace(/[^\d.]/g, ""))} />
                   </div>
-                  {formError && <p className="text-xs font-medium text-red-600">{formError}</p>}
+                  {formError && <p className="text-xs font-medium text-rose-500">{formError}</p>}
                   <button
                     type="submit"
                     disabled={saving}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] px-4 py-3 text-sm font-bold text-white disabled:opacity-50 transition cursor-pointer"
                   >
                     {saving ? <Loader2 size={15} className="animate-spin" /> : <MessageCircle size={15} />}
                     Create and send on WhatsApp
@@ -248,17 +250,17 @@ export default function WorkerPassbook() {
               )}
 
               {data.jobs.length === 0 ? (
-                <p className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] p-8 text-center text-sm text-[#71717A]">
+                <p className="rounded-2xl border border-dashed border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-8 text-center text-sm text-[#6B645F] dark:text-[#9E958F]">
                   No jobs yet. After you agree a job with a customer, create a slip and send it to them.
                 </p>
               ) : (
                 <ul className="space-y-3">
                   {data.jobs.map((job) => (
-                    <li key={job.id} className="space-y-2 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4">
+                    <li key={job.id} className="space-y-2 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold">{job.service_label}</p>
-                          <p className="text-xs text-[#71717A]">
+                          <p className="truncate text-sm font-bold text-[#141210] dark:text-[#FAFAFA]">{job.service_label}</p>
+                          <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                             {job.job_date} · {formatRupees(Number(job.agreed_rate))} {RATE_UNIT_LABEL[job.rate_unit]}
                           </p>
                         </div>
@@ -271,7 +273,7 @@ export default function WorkerPassbook() {
                           <button
                             type="button"
                             onClick={() => shareSlip(job, data.worker.name)}
-                            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-neutral-300 px-3 py-2 text-xs font-semibold dark:border-neutral-700"
+                            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] px-3 py-2 text-xs font-bold text-white transition cursor-pointer"
                           >
                             <MessageCircle size={13} /> Send again
                           </button>
@@ -279,7 +281,7 @@ export default function WorkerPassbook() {
                             type="button"
                             aria-label={`Cancel ${job.service_label}`}
                             onClick={() => void cancelSlip(job.id)}
-                            className="rounded-full border border-neutral-300 px-3 text-red-600 dark:border-neutral-700"
+                            className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3 text-rose-600 dark:text-rose-400 hover:border-rose-500/40 cursor-pointer"
                           >
                             <Trash2 size={14} />
                           </button>
@@ -291,15 +293,18 @@ export default function WorkerPassbook() {
               )}
             </section>
 
-            <section className="space-y-3">
+            <section className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
               <div>
-                <h2 className="text-base font-bold">My typical rates</h2>
-                <p className="text-xs text-[#71717A]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                  Pricing Transparency
+                </p>
+                <h2 className="mt-0.5 text-base font-bold text-[#141210] dark:text-[#FAFAFA]">My typical rates</h2>
+                <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                   Shown on your profile and used in the Fair Rate Guide, so customers know what to expect.
                 </p>
               </div>
               {rates.map((r, i) => (
-                <div key={i} className="space-y-2 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3">
+                <div key={i} className="space-y-2 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-3.5">
                   <input className={fieldClass} placeholder="Service (e.g. Tap repair)" value={r.service_label} onChange={(e) => updateRate(i, { service_label: e.target.value })} maxLength={60} />
                   <div className="grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-2">
                     <input className={fieldClass} inputMode="decimal" placeholder="From ₹" value={r.rate_min || ""} onChange={(e) => updateRate(i, { rate_min: Number(e.target.value.replace(/[^\d.]/g, "")) })} />
@@ -311,7 +316,7 @@ export default function WorkerPassbook() {
                         </option>
                       ))}
                     </select>
-                    <button type="button" aria-label="Remove rate" onClick={() => setRates((rows) => rows.filter((_, idx) => idx !== i))} className="rounded-full p-1.5 text-[#71717A]">
+                    <button type="button" aria-label="Remove rate" onClick={() => setRates((rows) => rows.filter((_, idx) => idx !== i))} className="rounded-full p-1.5 text-[#6B645F] dark:text-[#9E958F] hover:text-rose-500 cursor-pointer">
                       <X size={14} />
                     </button>
                   </div>
@@ -322,7 +327,7 @@ export default function WorkerPassbook() {
                   <button
                     type="button"
                     onClick={() => setRates((rows) => [...rows, { service_label: "", rate_min: 0, rate_max: 0, rate_unit: "job" }])}
-                    className="inline-flex items-center gap-1 rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold dark:border-neutral-700"
+                    className="inline-flex items-center gap-1 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-2 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 cursor-pointer"
                   >
                     <Plus size={13} /> Add a rate
                   </button>
@@ -331,7 +336,7 @@ export default function WorkerPassbook() {
                   type="button"
                   disabled={savingRates}
                   onClick={() => void saveRates()}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-5 py-2 text-xs font-bold disabled:opacity-50 hover:opacity-90 cursor-pointer"
                 >
                   {savingRates && <Loader2 size={13} className="animate-spin" />} Save rates
                 </button>

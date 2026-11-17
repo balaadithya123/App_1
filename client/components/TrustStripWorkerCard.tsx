@@ -14,6 +14,7 @@ import { getWorkerContactHref, getWorkerWhatsAppHref } from "@/lib/contact";
 import { logAnalyticsEvent, logContactEvent } from "@/lib/analytics";
 import { isWorkerSaved, toggleSavedWorker } from "@/lib/favorites";
 import { getComputedWorkerRating } from "@/lib/ratings";
+import { useLanguage } from "@/lib/i18n";
 import RateWorkerModal from "./RateWorkerModal";
 
 interface TrustStripWorkerCardProps {
@@ -24,6 +25,7 @@ export default function TrustStripWorkerCard({
   worker,
 }: TrustStripWorkerCardProps) {
   const navigate = useNavigate();
+  const { t, translateCategory } = useLanguage();
   const [saved, setSaved] = useState(() => isWorkerSaved(worker.id));
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
 
@@ -105,53 +107,51 @@ export default function TrustStripWorkerCard({
         tabIndex={0}
         role="button"
         aria-label={`View profile of ${worker.name}`}
-        className="rounded-[22px] border border-[#F0E2DA] dark:border-[#342A27] bg-white dark:bg-[#171719] p-4 shadow-[0_4px_16px_rgba(67,44,32,0.05)] flex flex-col justify-between hover:border-[#F4A58E] transition-all duration-200 group w-full h-full cursor-pointer select-none"
+        className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 flex flex-col justify-between hover:border-[#F4512C]/50 transition-all duration-200 group w-full h-full cursor-pointer select-none shadow-2xs"
       >
         <div>
-          {/* Header with Avatar, Name, Verification, Rating & Bookmark */}
+          {/* Header with Name, Verification, Rating & Bookmark */}
           <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <h4
-                    className="text-sm sm:text-base font-bold text-[#09090B] dark:text-[#FAFAFA] group-hover:text-black dark:group-hover:text-white transition truncate"
-                    title={worker.name}
-                  >
-                    {worker.name}
-                  </h4>
-                  <BadgeCheck size={15} className="text-emerald-500 shrink-0" />
-                </div>
-                <p className="text-xs font-medium text-[#71717A] dark:text-[#A1A1AA] truncate mt-0.5">
-                  {worker.category}{worker.experience ? ` · ${worker.experience}` : ""}
-                </p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <h4
+                  className="text-base font-bold text-[#141210] dark:text-white transition truncate"
+                  title={worker.name}
+                >
+                  {worker.name}
+                </h4>
+                <BadgeCheck size={16} className="text-emerald-500 shrink-0" />
               </div>
+              <p className="text-xs font-medium text-[#6B645F] dark:text-[#9E958F] truncate mt-0.5">
+                {translateCategory(worker.category)}{worker.experience ? ` · ${worker.experience}` : ""}
+              </p>
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
-              {/* Clickable Customer Rating System */}
-              {ratingStats.reviewsCount > 0 && <button
-                type="button"
-                onClick={handleRateClick}
-                title="Click to rate this professional"
-                className="group/rate flex items-center gap-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 px-2 py-1 text-xs font-bold text-amber-700 dark:text-amber-400 transition cursor-pointer border border-amber-500/20"
-                aria-label={`Rating: ${ratingStats.rating.toFixed(1)}. Click to rate ${worker.name}`}
-              >
-                <Star size={12} className="fill-amber-400 text-amber-400 group-hover/rate:scale-110 transition-transform" />
-                <span>{ratingStats.rating.toFixed(1)}</span>
-                <span className="text-[11px] font-normal opacity-80">
-                  ({ratingStats.reviewsCount})
-                </span>
-              </button>}
+              {ratingStats.reviewsCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleRateClick}
+                  title="Click to rate this professional"
+                  className="group/rate flex items-center gap-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 px-2 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 transition cursor-pointer border border-amber-500/20"
+                  aria-label={`Rating: ${ratingStats.rating.toFixed(1)}. Click to rate ${worker.name}`}
+                >
+                  <Star size={12} className="fill-amber-400 text-amber-400 group-hover/rate:scale-110 transition-transform" />
+                  <span>{ratingStats.rating.toFixed(1)}</span>
+                  <span className="text-[11px] font-normal opacity-80">
+                    ({ratingStats.reviewsCount})
+                  </span>
+                </button>
+              )}
 
-              {/* Heart Bookmark */}
               <button
                 type="button"
                 onClick={handleToggleSaved}
-                className="text-[#71717A] hover:text-rose-500 transition p-1 cursor-pointer"
+                className="text-[#8C847E] hover:text-rose-500 transition p-1 cursor-pointer"
                 aria-label={saved ? `Unsave ${worker.name}` : `Save ${worker.name}`}
               >
                 <Heart
-                  size={15}
+                  size={16}
                   className={saved ? "text-rose-500 fill-rose-500" : ""}
                 />
               </button>
@@ -159,41 +159,45 @@ export default function TrustStripWorkerCard({
           </div>
 
           {/* Location & Availability Status */}
-          <div className="mt-3 space-y-1.5 text-xs">
-            <div className="flex items-center justify-between text-[#52525B] dark:text-[#A1A1AA] text-xs">
-              <span className="flex items-center gap-1.5 font-medium truncate max-w-[150px]">
-                <MapPin size={12} className="shrink-0 text-[#71717A]" />
-                <span className="truncate">{worker.locality || "Location not provided"}</span>
+          <div className="mt-3.5 space-y-2 text-xs">
+            <div className="flex items-center justify-between text-[#6B645F] dark:text-[#A19994] text-xs">
+              <span className="flex items-center gap-1.5 font-medium truncate max-w-[160px]">
+                <MapPin size={13} className="shrink-0 text-[#8C847E]" />
+                <span className="truncate">{worker.locality || t("card.locationMissing")}</span>
               </span>
               <span
-                className={`font-semibold inline-flex items-center gap-1 ${
+                className={`font-medium inline-flex items-center gap-1 shrink-0 ${
                   isAvailableToday
                     ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-[#71717A] dark:text-[#A1A1AA]"
+                    : "text-[#8C847E] dark:text-[#9E958F]"
                 }`}
               >
-                <Clock size={11} />
-                <span>{isAvailableToday ? "Available today" : "Book ahead"}</span>
+                <Clock size={12} />
+                <span>{isAvailableToday ? t("card.availableToday") : t("card.bookAhead")}</span>
               </span>
             </div>
 
-            {worker.about && <p className="text-xs text-[#52525B] dark:text-[#D4D4D8] line-clamp-1 leading-relaxed">{worker.about}</p>}
+            {worker.about && (
+              <p className="text-xs text-[#524B47] dark:text-[#D4CFCB] line-clamp-1 leading-relaxed">
+                {worker.about}
+              </p>
+            )}
           </div>
 
           {/* Services Tags */}
           {services.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {services.slice(0, 2).map((s, idx) => (
                 <span
                   key={idx}
-                  className="rounded-md bg-neutral-100 dark:bg-white/5 border border-[#E4E4E7] dark:border-white/5 px-2 py-0.5 text-[11px] text-[#52525B] dark:text-[#D4D4D8] font-medium truncate max-w-[120px]"
+                  className="rounded-full bg-[#F5EFEA] dark:bg-[#242220] border border-[#EAE2DC] dark:border-white/10 px-3 py-0.5 text-[11px] text-[#524B47] dark:text-[#D4CFCB] font-medium truncate max-w-[140px]"
                 >
                   {s}
                 </span>
               ))}
               {services.length > 2 && (
-                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA] self-center font-medium">
-                  +{services.length - 2} more
+                <span className="text-[11px] text-[#8C847E] dark:text-[#9E958F] self-center font-medium px-1">
+                  {t("card.more", { count: services.length - 2 })}
                 </span>
               )}
             </div>
@@ -201,25 +205,25 @@ export default function TrustStripWorkerCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-3.5 pt-3 border-t border-[#E4E4E7] dark:border-[#27272A] flex items-center gap-2">
+        <div className="mt-4 pt-3.5 border-t border-[#EAE2DC] dark:border-white/10 flex items-center gap-2.5">
           {whatsappHref && (
             <button
               type="button"
               onClick={handleQuickWhatsApp}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#128C7E] hover:bg-[#075E54] text-white py-2 text-xs font-bold shadow-xs transition cursor-pointer active:scale-95"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#0F8A73] hover:bg-[#0B6E5B] text-white py-2.5 text-xs font-bold transition cursor-pointer active:scale-95"
             >
-              <MessageCircle size={13} />
-              <span>WhatsApp</span>
+              <MessageCircle size={14} />
+              <span>{t("card.whatsapp")}</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={handleQuickCall}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#09090B] hover:bg-neutral-800 text-white dark:bg-[#FAFAFA] dark:hover:bg-neutral-200 dark:text-[#09090B] py-2 text-xs font-bold shadow-xs transition cursor-pointer active:scale-95"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#141210] hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-[#11100F] py-2.5 text-xs font-bold transition cursor-pointer active:scale-95"
           >
-            <Phone size={12} />
-            <span>Call</span>
+            <Phone size={13} />
+            <span>{t("card.call")}</span>
           </button>
         </div>
       </article>

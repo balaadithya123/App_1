@@ -31,21 +31,21 @@ export default function WorkerPassbookSection({ workerId }: { workerId: string }
   return (
     <section
       aria-labelledby="passbook-heading"
-      className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 shadow-soft"
+      className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 sm:p-5 shadow-sm"
     >
-      <h2 id="passbook-heading" className="flex items-center gap-2 text-sm sm:text-base font-bold">
-        <BadgeCheck size={16} className="text-emerald-600 dark:text-emerald-400" />
+      <h2 id="passbook-heading" className="flex items-center gap-2 text-sm sm:text-base font-bold text-[#141210] dark:text-[#FAFAFA]">
+        <BadgeCheck size={16} className="text-[#0F8A73] dark:text-[#3DD1B3]" />
         Work Passbook
       </h2>
 
       {data.confirmed_jobs > 0 && (
         <div className="mt-3 space-y-2">
-          <p className="text-sm">
+          <p className="text-sm text-[#141210] dark:text-[#FAFAFA]">
             <span className="font-semibold">{data.confirmed_jobs}</span> job{data.confirmed_jobs === 1 ? "" : "s"}{" "}
             confirmed by customers
             {data.distinct_customers > 0 ? ` (${data.distinct_customers} different customer${data.distinct_customers === 1 ? "" : "s"})` : ""}
           </p>
-          <ul className="space-y-1 text-xs text-[#52525B] dark:text-[#A1A1AA]">
+          <ul className="space-y-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
             {data.recent.map((job, i) => (
               <li key={`${job.service_label}-${i}`}>
                 {job.service_label} · {job.month}
@@ -57,13 +57,15 @@ export default function WorkerPassbookSection({ workerId }: { workerId: string }
       )}
 
       {data.rates.length > 0 && (
-        <div className="mt-3 space-y-1">
-          <p className="text-xs font-semibold text-[#71717A]">Typical rates (set by the worker)</p>
-          <ul className="space-y-1 text-sm">
+        <div className="mt-3 space-y-1.5 border-t border-[#EAE2DC] dark:border-white/10 pt-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#6B645F] dark:text-[#9E958F]">
+            Typical rates (set by the worker)
+          </p>
+          <ul className="space-y-1.5 text-sm">
             {data.rates.map((r, i) => (
-              <li key={`${r.service_label}-${i}`} className="flex justify-between gap-3">
+              <li key={`${r.service_label}-${i}`} className="flex justify-between gap-3 text-[#141210] dark:text-[#FAFAFA]">
                 <span>{r.service_label}</span>
-                <span className="font-medium">
+                <span className="font-semibold">
                   {formatRupees(r.rate_min)}
                   {r.rate_max !== r.rate_min ? ` – ${formatRupees(r.rate_max)}` : ""} {RATE_UNIT_LABEL[r.rate_unit]}
                 </span>

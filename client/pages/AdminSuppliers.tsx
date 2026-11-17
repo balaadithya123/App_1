@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle2, Loader2, Trash2 } from "lucide-react";
+import { CheckCircle2, Trash2 } from "lucide-react";
 import PageShell from "@/components/PageShell";
+import { ListRowsSkeleton } from "@/components/PageSkeletons";
 import { supabase } from "@/lib/supabase";
 import type { Supplier } from "@/lib/materials";
 
@@ -75,11 +76,18 @@ export default function AdminSuppliers() {
 
   return (
     <PageShell backTo="/materials" backLabel="Materials" containerWidth="lg">
-      <div className="space-y-5 pb-24">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">Supplier approvals</h1>
-          <p className="text-xs text-[#71717A]">Approve new suppliers before customers can see them.</p>
-        </div>
+      <div className="space-y-6 pb-24">
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            Admin Moderation
+          </span>
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
+            Supplier Approvals
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F]">
+            Approve new suppliers before customers can see them.
+          </p>
+        </section>
 
         <div className="flex gap-2">
           {(["pending", "verified"] as const).map((t) => (
@@ -87,10 +95,10 @@ export default function AdminSuppliers() {
               key={t}
               type="button"
               onClick={() => setTab(t)}
-              className={`rounded-full border px-4 py-1.5 text-xs font-semibold capitalize transition ${
+              className={`rounded-full border px-4 py-1.5 text-xs font-bold capitalize transition cursor-pointer ${
                 tab === t
-                  ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
-                  : "border-neutral-200 dark:border-neutral-800"
+                  ? "border-[#F4512C] bg-[#F4512C] text-white shadow-xs"
+                  : "border-[#EAE2DC] bg-white text-[#6B645F] hover:border-[#F4512C]/40 dark:border-white/10 dark:bg-[#161514] dark:text-[#9E958F]"
               }`}
             >
               {t}
@@ -99,14 +107,12 @@ export default function AdminSuppliers() {
           ))}
         </div>
 
-        {error && <p className="text-xs font-medium text-red-600">{error}</p>}
+        {error && <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
 
         {loading ? (
-          <div className="flex min-h-[30vh] items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
+          <ListRowsSkeleton count={4} columns={2} />
         ) : visible.length === 0 ? (
-          <p className="rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] p-8 text-center text-sm text-[#71717A]">
+          <p className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-8 text-center text-sm text-[#6B645F] dark:text-[#9E958F] shadow-sm">
             Nothing {tab === "pending" ? "waiting for approval" : "verified yet"}.
           </p>
         ) : (
@@ -114,19 +120,19 @@ export default function AdminSuppliers() {
             {visible.map((r) => (
               <article
                 key={r.id}
-                className="space-y-2.5 rounded-2xl border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4"
+                className="space-y-3 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 shadow-sm"
               >
                 <div>
-                  <h3 className="text-base font-semibold">{r.name}</h3>
-                  <p className="text-xs text-[#71717A]">
+                  <h3 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">{r.name}</h3>
+                  <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
                     {r.category} · {[r.area, r.city].filter(Boolean).join(", ")}
                     {r.delivery_radius_km ? ` · ${r.delivery_radius_km} km` : ""}
                   </p>
                 </div>
-                {r.description && <p className="text-xs text-[#52525B] dark:text-[#A1A1AA]">{r.description}</p>}
-                <ul className="text-xs text-[#52525B] dark:text-[#A1A1AA]">
+                {r.description && <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">{r.description}</p>}
+                <ul className="space-y-1 text-xs text-[#6B645F] dark:text-[#9E958F] rounded-xl bg-[#FAF8F5] dark:bg-[#0B0A09] p-3 border border-[#EAE2DC] dark:border-white/10">
                   {(r.supplier_contacts ?? []).map((c) => (
-                    <li key={c.id}>
+                    <li key={c.id} className="font-semibold text-[#141210] dark:text-[#FAFAFA]">
                       {c.person_name}: {c.whatsapp}
                     </li>
                   ))}
@@ -143,7 +149,11 @@ export default function AdminSuppliers() {
                     type="button"
                     disabled={busyId === r.id}
                     onClick={() => void setVerified(r.id, !r.is_verified)}
-                    className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-black px-4 py-2 text-xs font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                    className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition cursor-pointer disabled:opacity-50 ${
+                      r.is_verified
+                        ? "border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#141210] dark:text-[#FAFAFA]"
+                        : "bg-[#0F8A73] hover:bg-[#0B6E5B] text-white"
+                    }`}
                   >
                     <CheckCircle2 size={13} />
                     {r.is_verified ? "Unverify" : "Approve"}
@@ -153,7 +163,7 @@ export default function AdminSuppliers() {
                     aria-label={`Delete ${r.name}`}
                     disabled={busyId === r.id}
                     onClick={() => void remove(r.id, r.name)}
-                    className="rounded-full border border-neutral-300 px-3 text-red-600 disabled:opacity-50 dark:border-neutral-700"
+                    className="rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 disabled:opacity-50 cursor-pointer transition"
                   >
                     <Trash2 size={14} />
                   </button>

@@ -1,6 +1,11 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getInitialTheme, toggleTheme, type Theme } from "@/lib/theme";
+import {
+  applyTheme,
+  getInitialTheme,
+  toggleTheme,
+  type Theme,
+} from "@/lib/theme";
 
 interface ThemeToggleProps {
   variant?: "icon" | "pill" | "dropdown-item";
@@ -42,6 +47,12 @@ export default function ThemeToggle({
     setTheme(next);
   };
 
+  const handleSelect = (e: React.MouseEvent, next: Theme) => {
+    e.stopPropagation();
+    applyTheme(next);
+    setTheme(next);
+  };
+
   if (!mounted) {
     return (
       <div
@@ -55,23 +66,45 @@ export default function ThemeToggle({
 
   if (variant === "dropdown-item") {
     return (
-      <button
-        type="button"
-        onClick={handleToggle}
-        className={`flex w-full items-center justify-between rounded-full px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-primary-100/10 hover:text-primary cursor-pointer ${className}`}
+      <div
+        className={`flex items-center justify-between gap-3 px-2.5 py-1.5 ${className}`}
       >
-        <span className="flex items-center gap-2">
-          {isDark ? (
-            <Moon size={14} className="text-primary" />
-          ) : (
-            <Sun size={14} className="text-amber-500" />
-          )}
-          <span>{isDark ? "Dark Mode (Black)" : "Light Mode"}</span>
+        <span className="text-xs font-medium text-[#6B645F] dark:text-[#9E958F]">
+          Appearance
         </span>
-        <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
-          {isDark ? "Black" : "Light"}
-        </span>
-      </button>
+        <div
+          role="group"
+          aria-label="Theme appearance"
+          className="inline-flex items-center rounded-lg border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-0.5"
+        >
+          <button
+            type="button"
+            onClick={(e) => handleSelect(e, "light")}
+            aria-pressed={!isDark}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold transition cursor-pointer ${
+              !isDark
+                ? "bg-white text-[#141210] shadow-xs"
+                : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-white"
+            }`}
+          >
+            <Sun size={11} />
+            <span>Light</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => handleSelect(e, "dark")}
+            aria-pressed={isDark}
+            className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold transition cursor-pointer ${
+              isDark
+                ? "bg-[#242220] text-[#FAFAFA] shadow-xs"
+                : "text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-white"
+            }`}
+          >
+            <Moon size={11} />
+            <span>Dark</span>
+          </button>
+        </div>
+      </div>
     );
   }
 
@@ -104,10 +137,8 @@ export default function ThemeToggle({
       type="button"
       onClick={handleToggle}
       aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      title={
-        isDark ? "Switch to Light Mode" : "Switch to Dark Mode (Pitch Black)"
-      }
-      className={`flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground transition hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-primary shadow-subtle cursor-pointer active:scale-95 ${className}`}
+      title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      className={`flex h-9 w-9 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 focus-visible:ring-2 focus-visible:ring-[#F4512C] cursor-pointer active:scale-95 ${className}`}
     >
       {isDark ? (
         <Sun
@@ -117,7 +148,7 @@ export default function ThemeToggle({
       ) : (
         <Moon
           size={15}
-          className="text-[#67696D] hover:-rotate-12 transition-transform duration-300"
+          className="text-[#6B645F] hover:-rotate-12 transition-transform duration-300"
         />
       )}
     </button>

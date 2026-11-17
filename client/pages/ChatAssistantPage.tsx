@@ -187,18 +187,18 @@ export default function ChatAssistantPage() {
       containerWidth="lg"
       contentPadding="px-2 sm:px-6 py-2 sm:py-4"
     >
-      <div className="mx-auto flex h-[calc(100dvh-5.5rem)] sm:h-[calc(100dvh-7.5rem)] max-w-4xl flex-col rounded-xl sm:rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+      <div className="mx-auto flex h-[calc(100dvh-5.5rem)] sm:h-[calc(100dvh-7.5rem)] max-w-4xl flex-col rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] shadow-sm overflow-hidden">
         {/* Chat Header */}
-        <div className="flex items-center justify-between border-b border-border bg-card px-3 py-2.5 sm:px-5 sm:py-3 gap-2">
+        <div className="flex items-center justify-between border-b border-[#EAE2DC] dark:border-white/10 bg-gradient-to-r from-[#FFF4EF] via-[#FAF8F5] to-white dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#161514] px-3 py-2.5 sm:px-5 sm:py-3 gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
               <Sparkles size={16} />
             </div>
             <div className="min-w-0">
-              <h1 className="text-sm font-bold text-foreground truncate">
+              <h1 className="text-sm font-bold text-[#141210] dark:text-[#FAFAFA] truncate">
                 AI Assistant
               </h1>
-              <p className="text-[11px] text-muted-foreground hidden sm:block truncate">
+              <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F] hidden sm:block truncate">
                 Find verified specialists and agencies by requirements
               </p>
             </div>
@@ -206,14 +206,14 @@ export default function ChatAssistantPage() {
 
           {/* Location & Controls */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="flex items-center rounded-lg border border-border bg-background px-2 py-1 text-xs">
-              <MapPin size={12} className="mr-1 text-primary shrink-0" />
+            <div className="flex items-center rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#0B0A09] px-2.5 py-1 text-xs">
+              <MapPin size={12} className="mr-1 text-[#F4512C] shrink-0" />
               <input
                 type="text"
                 placeholder="Area (e.g. Kattur)"
                 value={clientLocation}
                 onChange={(e) => setClientLocation(e.target.value)}
-                className="w-20 sm:w-28 bg-transparent text-xs text-foreground outline-hidden placeholder:text-muted-foreground"
+                className="w-20 sm:w-28 bg-transparent text-xs text-[#141210] dark:text-[#FAFAFA] outline-hidden placeholder:text-[#8C847E] dark:placeholder:text-[#766F6A]"
               />
               <button
                 type="button"
@@ -221,10 +221,10 @@ export default function ChatAssistantPage() {
                 title="Use GPS"
                 aria-label="Use GPS"
                 disabled={isLocating}
-                className="ml-0.5 text-muted-foreground hover:text-primary transition disabled:opacity-50"
+                className="ml-0.5 text-[#6B645F] dark:text-[#9E958F] hover:text-[#F4512C] transition disabled:opacity-50"
               >
                 {isLocating ? (
-                  <Loader2 size={12} className="animate-spin text-primary" />
+                  <Loader2 size={12} className="animate-spin text-[#F4512C]" />
                 ) : (
                   <Navigation size={12} />
                 )}
@@ -236,7 +236,7 @@ export default function ChatAssistantPage() {
               onClick={handleResetChat}
               title="Reset conversation"
               aria-label="Reset conversation"
-              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+              className="flex h-7 w-7 items-center justify-center rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F] transition hover:border-[#F4512C]/50 hover:text-[#141210] dark:hover:text-[#FAFAFA]"
             >
               <RotateCcw size={12} />
             </button>
@@ -244,14 +244,14 @@ export default function ChatAssistantPage() {
         </div>
 
         {/* Message Thread */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3.5">
+        <div className="flex-1 overflow-y-auto bg-[#FAF8F5]/50 dark:bg-[#0B0A09]/40 p-3 sm:p-5 space-y-3.5">
           {messages.map((msg) => (
             <div
               key={msg.id}
               className={`flex gap-2 sm:gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full border border-border bg-primary/10 text-primary mt-0.5">
+                <div className="flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C] mt-0.5">
                   <Sparkles size={13} />
                 </div>
               )}
@@ -259,8 +259,8 @@ export default function ChatAssistantPage() {
               <div
                 className={`max-w-[94%] sm:max-w-[82%] space-y-2.5 rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-foreground text-background font-medium rounded-br-xs"
-                    : "bg-secondary/60 text-foreground border border-border/80 rounded-bl-xs shadow-2xs"
+                    ? "bg-[#141210] dark:bg-white text-white dark:text-[#11100F] font-medium rounded-br-xs"
+                    : "bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] border border-[#EAE2DC] dark:border-white/10 rounded-bl-xs shadow-2xs"
                 }`}
               >
                 {/* Text Content */}
@@ -270,9 +270,9 @@ export default function ChatAssistantPage() {
 
                 {/* Google Maps Grounding Sources */}
                 {msg.groundingChunks && msg.groundingChunks.length > 0 && (
-                  <div className="mt-2 rounded-lg border border-border bg-card/60 p-2 text-xs">
-                    <p className="font-semibold text-muted-foreground flex items-center gap-1 mb-1 text-[11px]">
-                      <MapPin size={11} className="text-primary" />
+                  <div className="mt-2 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-2.5 text-xs">
+                    <p className="font-semibold text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1 mb-1 text-[11px]">
+                      <MapPin size={11} className="text-[#F4512C]" />
                       <span>Verified Nearby Areas:</span>
                     </p>
                     <div className="flex flex-wrap gap-1">
@@ -288,7 +288,7 @@ export default function ChatAssistantPage() {
                             href={uri}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-secondary/80"
+                            className="inline-flex items-center gap-1 rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] px-2.5 py-0.5 text-[10px] font-semibold text-[#F4512C] hover:opacity-85"
                           >
                             <span>{title}</span>
                             <ExternalLink size={9} />
@@ -301,9 +301,9 @@ export default function ChatAssistantPage() {
 
                 {/* Worker Match Cards */}
                 {msg.matchedWorkers && msg.matchedWorkers.length > 0 && (
-                  <div className="mt-2.5 space-y-2 pt-2 border-t border-border/50">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      <HardHat size={12} className="text-primary" />
+                  <div className="mt-2.5 space-y-2 pt-2 border-t border-[#EAE2DC] dark:border-white/10">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1.5">
+                      <HardHat size={12} className="text-[#F4512C]" />
                       <span>
                         Matching Specialists ({msg.matchedWorkers.length})
                       </span>
@@ -312,28 +312,28 @@ export default function ChatAssistantPage() {
                       {msg.matchedWorkers.map((worker: any) => (
                         <div
                           key={worker.id}
-                          className="rounded-xl border border-border bg-card p-2.5 sm:p-3 shadow-2xs transition hover:border-foreground/30 text-left"
+                          className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-2.5 sm:p-3 shadow-2xs transition hover:border-[#F4512C]/50 text-left"
                         >
                           <div className="flex items-start justify-between gap-1.5">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-foreground text-xs truncate">
+                                <h3 className="font-bold text-[#141210] dark:text-[#FAFAFA] text-xs truncate">
                                   {worker.name}
                                 </h3>
                                 {worker.phone_verified && (
                                   <span title="Verified">
                                     <ShieldCheck
                                       size={12}
-                                      className="text-emerald-500 shrink-0"
+                                      className="text-[#0F8A73] dark:text-[#3DD1B3] shrink-0"
                                     />
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground truncate">
+                              <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F] truncate">
                                 {worker.category} • {worker.locality}
                               </p>
                             </div>
-                            <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                            <span className="shrink-0 rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] px-2 py-0.5 text-[10px] font-bold text-[#F4512C]">
                               {worker.experience}y exp
                             </span>
                           </div>
@@ -341,25 +341,25 @@ export default function ChatAssistantPage() {
                           <div className="mt-2.5 flex items-center gap-1.5">
                             <a
                               href={`tel:${worker.phone}`}
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-foreground py-1.5 text-[11px] font-bold text-background hover:opacity-90 transition"
+                              className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#141210] dark:bg-white py-1.5 text-[11px] font-bold text-white dark:text-[#11100F] hover:opacity-90 transition"
                             >
                               <Phone size={11} />
                               <span>Call</span>
                             </a>
                             <a
                               href={`https://wa.me/91${worker.phone}?text=${encodeURIComponent(
-                                `Hi ${worker.name}, I found your profile on Local Worker for ${worker.category} work.`,
+                                `Hi ${worker.name}, I found your profile on Builderco for ${worker.category} work.`,
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-[#128C7E] hover:bg-[#075E54] text-white py-1.5 text-[11px] font-bold shadow-xs transition"
+                              className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0F8A73] hover:bg-[#0B6E5B] text-white py-1.5 text-[11px] font-bold shadow-xs transition"
                             >
                               <MessageSquare size={11} />
                               <span>WhatsApp</span>
                             </a>
                             <Link
                               to={`/worker?id=${worker.id}`}
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground transition"
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA] transition"
                               title="View Profile"
                             >
                               <ChevronRight size={13} />
@@ -373,9 +373,9 @@ export default function ChatAssistantPage() {
 
                 {/* Agency Match Cards */}
                 {msg.matchedAgencies && msg.matchedAgencies.length > 0 && (
-                  <div className="mt-2.5 space-y-2 pt-2 border-t border-border/50">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      <Building2 size={12} className="text-primary" />
+                  <div className="mt-2.5 space-y-2 pt-2 border-t border-[#EAE2DC] dark:border-white/10">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-[#6B645F] dark:text-[#9E958F] flex items-center gap-1.5">
+                      <Building2 size={12} className="text-[#F4512C]" />
                       <span>
                         Matching Agencies ({msg.matchedAgencies.length})
                       </span>
@@ -384,32 +384,32 @@ export default function ChatAssistantPage() {
                       {msg.matchedAgencies.map((agency: any) => (
                         <div
                           key={agency.id}
-                          className="rounded-xl border border-border bg-card p-2.5 sm:p-3 shadow-2xs transition hover:border-foreground/30 text-left"
+                          className="rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-2.5 sm:p-3 shadow-2xs transition hover:border-[#F4512C]/50 text-left"
                         >
                           <div className="flex items-start justify-between gap-1.5">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-foreground text-xs truncate">
+                                <h3 className="font-bold text-[#141210] dark:text-[#FAFAFA] text-xs truncate">
                                   {agency.name}
                                 </h3>
                                 {agency.verified && (
                                   <span title="Verified Agency">
                                     <ShieldCheck
                                       size={12}
-                                      className="text-emerald-500 shrink-0"
+                                      className="text-[#0F8A73] dark:text-[#3DD1B3] shrink-0"
                                     />
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-muted-foreground truncate">
+                              <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F] truncate">
                                 {(agency.categories || []).join(", ")}
                               </p>
-                              <p className="text-[10px] text-muted-foreground truncate">
+                              <p className="text-[10px] text-[#8C847E] dark:text-[#766F6A] truncate">
                                 Areas:{" "}
                                 {(agency.service_locations || []).join(", ")}
                               </p>
                             </div>
-                            <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
+                            <span className="shrink-0 rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] px-2 py-0.5 text-[10px] font-bold text-[#F4512C]">
                               {agency.team_size_band}
                             </span>
                           </div>
@@ -418,7 +418,7 @@ export default function ChatAssistantPage() {
                             {agency.phone && (
                               <a
                                 href={`tel:${agency.phone}`}
-                                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-foreground py-1.5 text-[11px] font-bold text-background hover:opacity-90 transition"
+                                className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#141210] dark:bg-white py-1.5 text-[11px] font-bold text-white dark:text-[#11100F] hover:opacity-90 transition"
                               >
                                 <Phone size={11} />
                                 <span>Call</span>
@@ -426,7 +426,7 @@ export default function ChatAssistantPage() {
                             )}
                             <Link
                               to={`/agency-profile?id=${agency.id}`}
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border bg-secondary py-1.5 text-[11px] font-bold text-foreground hover:bg-secondary/80 transition"
+                              className="flex flex-1 items-center justify-center gap-1 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] py-1.5 text-[11px] font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition"
                             >
                               <span>Profile</span>
                               <ArrowRight size={11} />
@@ -438,7 +438,7 @@ export default function ChatAssistantPage() {
                   </div>
                 )}
 
-                <div className="text-[10px] text-muted-foreground/70 text-right mt-1">
+                <div className="text-[10px] text-[#8C847E] dark:text-[#766F6A] text-right mt-1">
                   {msg.timestamp}
                 </div>
               </div>
@@ -448,14 +448,15 @@ export default function ChatAssistantPage() {
           {/* Typing / Loading Indicator */}
           {isLoading && (
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-primary/10 text-primary">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
                 <Sparkles size={13} />
               </div>
-              <div className="flex items-center gap-2 rounded-2xl rounded-bl-xs border border-border bg-secondary px-3.5 py-2.5 text-xs text-muted-foreground">
-                <Loader2
-                  size={13}
-                  className="animate-spin text-primary shrink-0"
-                />
+              <div className="flex items-center gap-2.5 rounded-2xl rounded-bl-xs border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-2.5 text-xs text-[#6B645F] dark:text-[#9E958F]">
+                <span className="inline-flex items-center gap-1" aria-hidden="true">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#F4512C] animate-bounce [animation-delay:-0.24s]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#F4512C] animate-bounce [animation-delay:-0.12s]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#F4512C] animate-bounce" />
+                </span>
                 <span>Finding matching specialists & agencies...</span>
               </div>
             </div>
@@ -466,14 +467,14 @@ export default function ChatAssistantPage() {
 
         {/* Quick Requirement Chips (horizontal scroll on mobile) */}
         {messages.length <= 2 && (
-          <div className="border-t border-border bg-card/60 px-3 py-2 sm:px-4">
+          <div className="border-t border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3 py-2 sm:px-4">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none sm:flex-wrap">
               {QUICK_PROMPTS.map((prompt, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => handleSendMessage(prompt)}
-                  className="shrink-0 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] text-foreground transition hover:border-foreground/40 hover:bg-secondary"
+                  className="shrink-0 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3 py-1 text-[11px] font-medium text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 hover:text-[#F4512C]"
                 >
                   {prompt}
                 </button>
@@ -483,7 +484,7 @@ export default function ChatAssistantPage() {
         )}
 
         {/* Sticky Input Bar */}
-        <div className="border-t border-border bg-card p-2.5 sm:p-3">
+        <div className="border-t border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-2.5 sm:p-3">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -498,13 +499,13 @@ export default function ChatAssistantPage() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Describe what work you need done..."
               disabled={isLoading}
-              className="h-10 flex-1 rounded-xl border border-border bg-background px-3 text-xs sm:text-sm text-foreground outline-hidden focus:border-foreground focus:ring-1 focus:ring-foreground placeholder:text-muted-foreground"
+              className="h-10 flex-1 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 text-xs sm:text-sm text-[#141210] dark:text-[#FAFAFA] outline-hidden focus:border-[#F4512C] focus:ring-2 focus:ring-[#F4512C]/20 placeholder:text-[#8C847E] dark:placeholder:text-[#766F6A]"
             />
 
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-foreground text-background transition hover:opacity-90 disabled:opacity-40"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F4512C] text-white transition hover:bg-[#E04320] disabled:opacity-40 cursor-pointer"
               aria-label="Send message"
               title="Send"
             >

@@ -1,24 +1,9 @@
-import {
-  ArrowLeft,
-  Search,
-  Heart,
-  Building2,
-  Sparkles,
-  UserRound,
-  Briefcase,
-  Bell,
-  LayoutDashboard,
-  MessageSquare,
-  Clock,
-} from "lucide-react";
-import BrandLogo from "@/components/BrandLogo";
-import MobileMenu from "@/components/MobileMenu";
-import ThemeToggle from "@/components/ThemeToggle";
+import { ArrowLeft } from "lucide-react";
+import TopBar from "@/components/TopBar";
 import TrackRecordFollowUpBanner from "@/components/TrackRecordFollowUpBanner";
 import { type ReactNode, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { getStoredDueBadgeCount, getLiveDueBadgeCount } from "@/lib/home-items";
 
 interface PageShellProps {
   children: ReactNode;
@@ -38,7 +23,7 @@ interface PageShellProps {
 const maxWidthMap = {
   sm: "max-w-xl",
   md: "max-w-3xl",
-  lg: "max-w-5xl",
+  lg: "max-w-6xl",
   xl: "max-w-7xl",
   full: "max-w-full",
 };
@@ -53,45 +38,12 @@ export default function PageShell({
   hideBack = false,
   hideHome = false,
   disableBrandNavigation = false,
-  containerWidth = "md",
+  containerWidth = "lg",
   contentPadding,
   className = "",
 }: PageShellProps) {
   const navigate = useNavigate();
   const [session, setSession] = useState<any>(null);
-  const [dueCount, setDueCount] = useState<number>(0);
-
-  useEffect(() => {
-    const updateDue = () => {
-      setDueCount(getStoredDueBadgeCount(session?.user?.id));
-      void getLiveDueBadgeCount(session?.user?.id).then((c) => setDueCount(c));
-    };
-    updateDue();
-    window.addEventListener("home-items-changed", updateDue);
-    return () => window.removeEventListener("home-items-changed", updateDue);
-  }, [session?.user?.id]);
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-      return;
-    }
-    if (
-      window.history.state &&
-      typeof window.history.state.idx === "number" &&
-      window.history.state.idx > 0
-    ) {
-      navigate(-1);
-    } else if (backTo) {
-      if (backTo === "/" && loggedIn) {
-        navigate(isWorker ? "/worker-dashboard" : isAgency ? "/agency" : "/home");
-      } else {
-        navigate(backTo);
-      }
-    } else {
-      navigate(-1);
-    }
-  };
 
   useEffect(() => {
     if (!supabase) return;
@@ -108,208 +60,58 @@ export default function PageShell({
   const userRole = session?.user?.user_metadata?.role;
   const isWorker = userRole === "worker";
   const isAgency = userRole === "agency";
-  const portalPath = isWorker
-    ? "/worker-dashboard"
-    : isAgency
-      ? "/agency"
-      : "/profile";
-  const portalLabel = isWorker
-    ? "Worker Dashboard"
-    : isAgency
-      ? "Agency Dashboard"
-      : "Profile Settings";
-  const homePath = isWorker
-    ? "/worker-dashboard"
-    : isAgency
-      ? "/agency"
-      : loggedIn
-        ? "/home"
-        : "/";
 
-  const brand = (
-    <div className="flex items-center group">
-      <BrandLogo className="h-7 w-auto transition-transform group-hover:scale-105" />
-    </div>
-  );
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (
+      window.history.state &&
+      typeof window.history.state.idx === "number" &&
+      window.history.state.idx > 0
+    ) {
+      navigate(-1);
+    } else if (backTo) {
+      if (backTo === "/" && loggedIn) {
+        navigate(
+          isWorker ? "/worker-dashboard" : isAgency ? "/agency" : "/home",
+        );
+      } else {
+        navigate(backTo);
+      }
+    } else {
+      navigate(-1);
+    }
+  };
 
   const noHome = hideHome || disableBrandNavigation;
-  const maxWidthClass = maxWidthMap[containerWidth] || maxWidthMap.md;
+  const maxWidthClass = maxWidthMap[containerWidth] || maxWidthMap.lg;
   const paddingClass =
     contentPadding !== undefined
       ? contentPadding
       : "px-4 py-6 sm:px-6 sm:py-8 lg:px-8";
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] flex flex-col selection:bg-neutral-200 dark:selection:bg-neutral-800">
-      {/* Sticky Top Header */}
-      <header className="sticky top-0 z-40 w-full border-b border-[#E4E4E7] dark:border-[#27272A] bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          {/* Brand Logo & Desktop Nav */}
-          <div className="flex items-center gap-4 lg:gap-8 min-w-0">
-            {noHome ? (
-              <div aria-label="Builderco" className="shrink-0">{brand}</div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => navigate(homePath)}
-                aria-label="Go to homepage"
-                className="text-left cursor-pointer focus-visible:outline-none rounded-xl shrink-0"
-              >
-                {brand}
-              </button>
-            )}
-
-            {/* Subtle Divider */}
-            <div className="hidden md:block h-5 w-px bg-[#E4E4E7] dark:bg-[#27272A] shrink-0" />
-
-            {/* Desktop Quick Nav Links */}
-            <nav className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-[#52525B] dark:text-[#A1A1AA]">
-              {isWorker ? (
-                <>
-                  <Link
-                    to="/worker-dashboard"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <LayoutDashboard size={14} />
-                    <span>Dashboard</span>
-                  </Link>
-                  <Link
-                    to="/worker-commitments"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Briefcase size={14} />
-                    <span>Commitments</span>
-                  </Link>
-                  <Link
-                    to="/callback-requests"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Bell size={14} />
-                    <span>Callbacks</span>
-                  </Link>
-                </>
-              ) : isAgency ? (
-                <>
-                  <Link
-                    to="/agency"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Building2 size={14} />
-                    <span>Dashboard</span>
-                  </Link>
-                  <Link
-                    to="/inbox"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <MessageSquare size={14} />
-                    <span>Inbox</span>
-                  </Link>
-                  <Link
-                    to="/agency/profile/edit"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <UserRound size={14} />
-                    <span>Agency Profile</span>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/search?type=workers"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Search size={14} />
-                    <span>Workers</span>
-                  </Link>
-                  <Link
-                    to="/search?type=agencies"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Building2 size={14} />
-                    <span>Agencies</span>
-                  </Link>
-                  <Link
-                    to="/saved"
-                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Heart size={14} />
-                    <span>Saved</span>
-                  </Link>
-                  <Link
-                    to="/inbox"
-                    className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-neutral-100 dark:hover:bg-[#1E1F24] hover:text-[#09090B] dark:hover:text-white"
-                  >
-                    <Clock size={14} />
-                    <span>Inbox</span>
-                    {dueCount > 0 && (
-                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-extrabold text-white shadow-xs">
-                        {dueCount > 9 ? "9+" : dueCount}
-                      </span>
-                    )}
-                  </Link>
-                </>
-              )}
-            </nav>
-          </div>
-
-          {/* Actions & Menu */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            {!isWorker && !isAgency && (
-              <Link
-                to="/home"
-                state={{ openPostNeed: true }}
-                className="hidden lg:inline-flex items-center gap-1.5 rounded-full bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 px-3.5 py-1.5 text-xs font-semibold shadow-2xs transition active:scale-95"
-              >
-                <Sparkles size={13} />
-                <span>Post a Need</span>
-              </Link>
-            )}
-            <ThemeToggle />
-            {!loggedIn && (
-              <Link
-                to="/login"
-                state={{ from: "main" }}
-                className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-black/10 dark:border-white/15 bg-black text-white dark:bg-white dark:text-black px-3.5 py-1.5 text-xs font-bold transition hover:opacity-90 shadow-2xs"
-              >
-                Sign In
-              </Link>
-            )}
-            {loggedIn && (
-              <Link
-                to={portalPath}
-                aria-label={portalLabel}
-                title={portalLabel}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 shadow-2xs"
-              >
-                <UserRound size={15} />
-              </Link>
-            )}
-            <div className="md:hidden">
-              <MobileMenu />
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#141210] dark:text-[#FAFAFA] flex flex-col selection:bg-[#F4512C]/20">
+      <TopBar disableBrandNavigation={noHome} />
 
       {/* Main Content Area */}
       <main className={`flex-1 ${paddingClass}`}>
         <div className={`mx-auto ${maxWidthClass} ${className}`}>
           {!hideBack && (
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-5 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-3.5 py-1.5 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] shadow-sm transition-all hover:border-neutral-400 dark:hover:border-neutral-500 cursor-pointer active:scale-95"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-1.5 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition-all hover:border-[#F4512C]/50 cursor-pointer active:scale-95"
                 >
-                  <ArrowLeft
-                    size={14}
-                    className="transition-transform group-hover:-translate-x-0.5"
-                  />
+                  <ArrowLeft size={14} />
                   <span>{backLabel}</span>
                 </button>
                 {headerTitle && (
-                  <h1 className="text-base sm:text-lg font-bold text-[#09090B] dark:text-[#FAFAFA] tracking-tight truncate">
+                  <h1 className="text-base sm:text-lg font-bold text-[#141210] dark:text-[#FAFAFA] tracking-tight truncate">
                     {headerTitle}
                   </h1>
                 )}

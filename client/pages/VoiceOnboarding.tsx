@@ -21,8 +21,9 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import PageShell from "@/components/PageShell";
+import { useLanguage, type AppLanguage } from "@/lib/i18n";
 
-export type UILanguage = "en" | "ta" | "hi";
+export type UILanguage = AppLanguage;
 
 export interface ExtractedProfile {
   full_name: string;
@@ -56,16 +57,34 @@ const COMMON_LANGUAGES = [
 
 const SAMPLE_PRESETS = [
   {
-    langName: "தமிழ் (Tamil Code-Switched)",
+    langName: "தமிழ் (Tamil Spoken)",
     label: "Murugan - Electrician (Chennai)",
     transcript:
       "Vanakkam sir, en peru Murugan. Naan T. Nagar Chennai-la electrician vela paakren. Enakku 8 varusham experience irukku, wiring switchboard ellam pannuven. Tamil and English pesuven. All days available sir, emergency work-kume varuven.",
   },
   {
-    langName: "हिन्दी (Hindi Code-Switched)",
+    langName: "हिन्दी (Hindi Spoken)",
     label: "Ramesh - Plumber (Delhi)",
     transcript:
       "Namaste, mera naam Ramesh Kumar hai. Main Rohini Delhi mein plumber aur sanitary fitting ka kaam karta hoon. Mujhe 6 saal ka experience hai pipe leakage aur tap repair mein. Hindi aur English bolta hoon. Weekends only available hoon.",
+  },
+  {
+    langName: "తెలుగు (Telugu Spoken)",
+    label: "Srinivas - AC Repair (Hyderabad)",
+    transcript:
+      "Namaskaram, naa peru Srinivas Rao. Nenu Madhapur Hyderabad lo AC repair mariyu appliance repair pani chesthanu. Naaku 7 years experience undi. Telugu, Hindi, English matladathanu. Daily morning 9 nundi evening 7 varaku available.",
+  },
+  {
+    langName: "മലയാളം (Malayalam Spoken)",
+    label: "Biju - Painter (Kochi)",
+    transcript:
+      "Namaskaram, ente peru Biju. Njan Edappally Kochi-yil painter aayi pani cheyyunnu. 9 varsham experience undu, house interior painting and waterproofing cheyyum. Malayalam and English samsarikkum. Monday to Saturday free aanu.",
+  },
+  {
+    langName: "ಕನ್ನಡ (Kannada Spoken)",
+    label: "Mahesh - Mason (Bengaluru)",
+    transcript:
+      "Namaskara, nanna hesaru Mahesh. Naanu Indiranagar Bengaluru alli mason mattu tile work madtini. Nanage 12 varsha experience ide. Kannada, Tamil mattu Hindi mathadtini. Emergency kelsa idru bartini.",
   },
   {
     langName: "English (Indian English)",
@@ -226,11 +245,157 @@ const DICTIONARY = {
     micPermissionError:
       "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया अनुमति दें या नीचे दिए गए सैंपल वॉइस नोट्स का उपयोग करें।",
   },
+  te: {
+    badge: "వాయిస్ ప్రొఫైల్ సెటప్",
+    title: "మాట్లాడి మీ ప్రొఫైల్ తయారు చేయండి",
+    subtitle:
+      "మైక్ బటన్ నొక్కి తెలుగు, తమిళం, హిందీ, మలయాళం, కన్నడ లేదా ఇంగ్లీష్‌లో 60 సెకన్లు మాట్లాడండి. మీ వివరాలన్నీ ఆటోమేటిక్‌గా ఫిల్ అవుతాయి.",
+    tapToRecord: "మాట్లాడటానికి నొక్కండి",
+    recordingState: "వింటున్నాను... ఫ్రీగా మాట్లాడండి",
+    stopRecording: "మాట్లాడటం అయిపోయింది (ఆపండి)",
+    secondsLeft: "సెకన్లు మిగిలాయి",
+    maxDuration: "గరిష్టం 60s",
+    speakGuideTitle: "ఏం చెప్పాలంటే:",
+    speakGuidePoints: [
+      "మీ పూర్తి పేరు",
+      "మీ పని (ఎలక్ట్రీషియన్, ప్లంబర్, పెయింటర్ వగైరా)",
+      "ఎన్ని సంవత్సరాల అనుభవం",
+      "మీ ఊరు లేదా ఏరియా",
+      "ఏ రోజులు/టైమ్‌లో పనికి వస్తారు",
+    ],
+    trySample: "లేదా శాంపిల్ వాయిస్ నోట్‌తో టెస్ట్ చేయండి:",
+    transcribingTitle: "మీ మాటలు విని వివరాలు తీస్తున్నాను...",
+    transcribingSub: "మీ వాయిస్ నుండి ప్రొఫైల్ వివరాలు తయారవుతున్నాయి...",
+    transcriptSectionTitle: "మీరు చెప్పింది (వాయిస్ టెక్స్ట్)",
+    transcriptEditTip: "AI రాసిన టెక్స్ట్ ఇక్కడ ఉంది. కావాలంటే మార్చుకోవచ్చు:",
+    formSectionTitle: "వివరాలు చెక్ చేసి ఎడిట్ చేయండి",
+    formSectionSub:
+      "కింద ఉన్న వివరాలు చూడండి. ఏదైనా డౌట్ ఉన్న ఫీల్డ్ దగ్గర ⚠️ గుర్తు ఉంటుంది.",
+    fullName: "పూర్తి పేరు",
+    services: "మీ పని / కేటగిరీ",
+    servicesHint: "మీరు చేసే పనులు ఎంచుకోండి:",
+    experience: "అనుభవం (సంవత్సరాలు)",
+    experienceNull: "చెప్పలేదు",
+    serviceArea: "పని చేసే ఏరియా / ఊరు",
+    languages: "మాట్లాడే భాషలు",
+    availability: "ఖాళీగా ఉండే సమయం",
+    confidenceWarning: "⚠️ గుర్తు ఉన్న ఫీల్డ్‌లని ఒకసారి చెక్ చేయండి",
+    needsVerification: "చెక్ చేయండి",
+    confirmBtn: "కన్ఫర్మ్ చేసి JSON తయారు చేయండి",
+    resetBtn: "మళ్లీ రికార్డ్ చేయండి",
+    finalTitle: "ఫైనల్ ప్రొఫైల్ డేటా (Payload)",
+    finalSub: "సేవ్ చేయడానికి సిద్ధంగా ఉన్న ప్రొఫైల్ JSON:",
+    copied: "కాపీ అయింది!",
+    copyJson: "JSON కాపీ చేయండి",
+    step1: "1. వాయిస్ రికార్డ్",
+    step2: "2. చెక్ & ఎడిట్",
+    step3: "3. కన్ఫర్మ్",
+    micPermissionError:
+      "మైక్ పర్మిషన్ రాలేదు. దయచేసి మైక్ అనుమతి ఇవ్వండి లేదా కింద ఉన్న శాంపిల్ వాయిస్ నోట్ వాడండి.",
+  },
+  ml: {
+    badge: "വോയിസ് പ്രൊഫൈൽ സെറ്റപ്പ്",
+    title: "സംസാരിച്ച് പ്രൊഫൈൽ ഉണ്ടാക്കൂ",
+    subtitle:
+      "മൈക്ക് ബട്ടൺ അമർത്തി മലയാളം, തമിഴ്, ഹിന്ദി, തെലുങ്ക്, കന്നഡ അല്ലെങ്കിൽ ഇംഗ്ലീഷിൽ 60 സെക്കൻഡ് സംസാരിക്കൂ. ബാക്കി വിവരങ്ങൾ തനിയെ നിറയും.",
+    tapToRecord: "സംസാരിക്കാൻ തൊടൂ",
+    recordingState: "കേൾക്കുന്നുണ്ട്... ധൈര്യമായി സംസാരിക്കൂ",
+    stopRecording: "പറഞ്ഞു തീർന്നു (നിർത്തൂ)",
+    secondsLeft: "സെക്കൻഡ് ബാക്കി",
+    maxDuration: "പരമാവധി 60s",
+    speakGuideTitle: "എന്തൊക്കെ പറയാം:",
+    speakGuidePoints: [
+      "നിങ്ങളുടെ മുഴുവൻ പേര്",
+      "ചെയ്യുന്ന പണി (ഇലക്ട്രീഷ്യൻ, പ്ലംബർ, പെയിന്റർ തുടങ്ങിയവ)",
+      "എത്ര വർഷത്തെ പരിചയം",
+      "നിങ്ങളുടെ സ്ഥലം അല്ലെങ്കിൽ നഗരം",
+      "എപ്പോഴൊക്കെ പണിക്ക് വരാൻ പറ്റും",
+    ],
+    trySample: "അല്ലെങ്കിൽ താഴെയുള്ള സാമ്പിൾ വോയിസ് നോക്കൂ:",
+    transcribingTitle: "ശബ്ദം കേട്ട് വിവരങ്ങൾ എടുക്കുന്നു...",
+    transcribingSub: "നിങ്ങളുടെ സംസാരത്തിൽ നിന്ന് പ്രൊഫൈൽ തയ്യാറാക്കുന്നു...",
+    transcriptSectionTitle: "നിങ്ങൾ പറഞ്ഞത് (വോയിസ് ടെക്സ്റ്റ്)",
+    transcriptEditTip: "AI എഴുതിയ വാക്കുകൾ. തെറ്റുണ്ടെങ്കിൽ ഇവിടെ തിരുത്താം:",
+    formSectionTitle: "വിവരങ്ങൾ ശരിയാണോ എന്ന് നോക്കൂ",
+    formSectionSub:
+      "താഴെയുള്ള വിവരങ്ങൾ പരിശോധിക്കൂ. സംശയമുള്ളവയിൽ ⚠️ അടയാളം ഉണ്ടാകും.",
+    fullName: "മുഴുവൻ പേര്",
+    services: "പണി / വിഭാഗങ്ങൾ",
+    servicesHint: "ചെയ്യുന്ന പണികൾ തിരഞ്ഞെടുക്കൂ:",
+    experience: "പരിചയം (വർഷം)",
+    experienceNull: "പറഞ്ഞിട്ടില്ല",
+    serviceArea: "സ്ഥലം / ഏരിയ",
+    languages: "സംസാരിക്കുന്ന ഭാഷകൾ",
+    availability: "ലഭ്യമാകുന്ന സമയം",
+    confidenceWarning: "⚠️ അടയാളപ്പെടുത്തിയ വിവരങ്ങൾ ഒന്നു ചെക്ക് ചെയ്യൂ",
+    needsVerification: "ചെക്ക് ചെയ്യൂ",
+    confirmBtn: "ഉറപ്പാക്കി JSON ഉണ്ടാക്കൂ",
+    resetBtn: "വീണ്ടും റെക്കോർഡ് ചെയ്യൂ",
+    finalTitle: "അവസാന പ്രൊഫൈൽ ഡാറ്റ (Payload)",
+    finalSub: "സേവ് ചെയ്യാൻ തയ്യാറായ JSON വിവരങ്ങൾ:",
+    copied: "കോപ്പിയായി!",
+    copyJson: "JSON കോപ്പി ചെയ്യൂ",
+    step1: "1. വോയിസ് റെക്കോർഡ്",
+    step2: "2. ചെക്ക് & എഡിറ്റ്",
+    step3: "3. കൺഫേം",
+    micPermissionError:
+      "മൈക്ക് അനുമതി കിട്ടിയില്ല. മൈക്ക് അനുവദിക്കുകയോ താഴെയുള്ള സാമ്പിൾ വോയിസ് ഉപയോഗിക്കുകയോ ചെയ്യൂ.",
+  },
+  kn: {
+    badge: "ವಾಯ್ಸ್ ಪ್ರೊಫೈಲ್ ಸೆಟಪ್",
+    title: "ಮಾತನಾಡಿ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಮಾಡಿ",
+    subtitle:
+      "ಮೈಕ್ ಬಟನ್ ಒತ್ತಿ ಕನ್ನಡ, ತಮಿಳು, ಹಿಂದಿ, ತೆಲುಗು, ಮಲಯಾಳಂ ಅಥವಾ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ 60 ಸೆಕೆಂಡ್ ಮಾತಾಡಿ. ನಿಮ್ಮ ವಿವರಗಳು ತಾನಾಗಿಯೇ ಫಿಲ್ ಆಗುತ್ತವೆ.",
+    tapToRecord: "ಮಾತನಾಡಲು ಒತ್ತಿ",
+    recordingState: "ಕೇಳ್ತಾ ಇದ್ದೀನಿ... ಆರಾಮಾಗಿ ಮಾತಾಡಿ",
+    stopRecording: "ಮಾತು ಮುಗೀತು (ನಿಲ್ಲಿಸಿ)",
+    secondsLeft: "ಸೆಕೆಂಡ್ ಬಾಕಿ",
+    maxDuration: "ಗರಿಷ್ಠ 60s",
+    speakGuideTitle: "ಏನು ಹೇಳಬೇಕು:",
+    speakGuidePoints: [
+      "ನಿಮ್ಮ ಪೂರ್ತಿ ಹೆಸರು",
+      "ನಿಮ್ಮ ಕೆಲಸ (ಎಲೆಕ್ಟ್ರೀಷಿಯನ್, ಪ್ಲಂಬರ್, ಪೇಂಟರ್ ಇತ್ಯಾದಿ)",
+      "ಎಷ್ಟು ವರ್ಷದ ಅನುಭವ",
+      "ನಿಮ್ಮ ಊರು ಅಥವಾ ಏರಿಯಾ",
+      "ಯಾವಾಗ ಕೆಲಸಕ್ಕೆ ಬರೋಕೆ ಆಗುತ್ತೆ",
+    ],
+    trySample: "ಅಥವಾ ಸ್ಯಾಂಪಲ್ ವಾಯ್ಸ್ ನೋಟ್ ಟೆಸ್ಟ್ ಮಾಡಿ:",
+    transcribingTitle: "ಮಾತು ಕೇಳಿ ವಿವರ ತೆಗೆಯಲಾಗುತ್ತಿದೆ...",
+    transcribingSub: "ನಿಮ್ಮ ಧ್ವನಿಯಿಂದ ಪ್ರೊಫೈಲ್ ಡೇಟಾ ಸಿದ್ಧವಾಗುತ್ತಿದೆ...",
+    transcriptSectionTitle: "ನೀವು ಹೇಳಿದ್ದು (ವಾಯ್ಸ್ ಟೆಕ್ಸ್ಟ್)",
+    transcriptEditTip: "AI ಬರೆದ ಮಾತು. ಬೇಕಿದ್ದರೆ ನೀವೇ ಇಲ್ಲಿ ಸರಿಪಡಿಸಬಹುದು:",
+    formSectionTitle: "ವಿವರ ಚೆಕ್ ಮಾಡಿ & ಬದಲಿಸಿ",
+    formSectionSub:
+      "ಕೆಳಗಿನ ವಿವರ ನೋಡಿ. ಅನುಮಾನ ಇರುವ ಜಾಗದಲ್ಲಿ ⚠️ ಗುರುತು ಇರುತ್ತೆ.",
+    fullName: "ಪೂರ್ತಿ ಹೆಸರು",
+    services: "ನಿಮ್ಮ ಕೆಲಸ / ವಿಭಾಗ",
+    servicesHint: "ನಿಮಗೆ ಬರುವ ಎಲ್ಲಾ ಕೆಲಸ ಆಯ್ಕೆ ಮಾಡಿ:",
+    experience: "ಅನುಭವ (ವರ್ಷಗಳು)",
+    experienceNull: "ಹೇಳಿಲ್ಲ",
+    serviceArea: "ಏರಿಯಾ / ನಗರ",
+    languages: "ಮಾತನಾಡುವ ಭಾಷೆಗಳು",
+    availability: "ಕೆಲಸಕ್ಕೆ ಸಿಗುವ ಸಮಯ",
+    confidenceWarning: "⚠️ ಗುರುತು ಇರುವ ವಿವರಗಳನ್ನು ಒಮ್ಮೆ ಚೆಕ್ ಮಾಡಿ",
+    needsVerification: "ಚೆಕ್ ಮಾಡಿ",
+    confirmBtn: "ಕನ್ಫರ್ಮ್ ಮಾಡಿ JSON ತಯಾರಿಸಿ",
+    resetBtn: "ಮತ್ತೆ ರೆಕಾರ್ಡ್ ಮಾಡಿ",
+    finalTitle: "ಫೈನಲ್ ಪ್ರೊಫೈಲ್ ಡೇಟಾ (Payload)",
+    finalSub: "ಸೇವ್ ಮಾಡಲು ರೆಡಿ ಇರುವ JSON ಡೇಟಾ:",
+    copied: "ಕಾಪಿ ಆಯ್ತು!",
+    copyJson: "JSON ಕಾಪಿ ಮಾಡಿ",
+    step1: "1. ವಾಯ್ಸ್ ರೆಕಾರ್ಡ್",
+    step2: "2. ಚೆಕ್ & ಎడిಟ್",
+    step3: "3. ಕನ್ಫರ್ಮ್",
+    micPermissionError:
+      "ಮೈಕ್ ಪರ್ಮಿಷನ್ ಸಿಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮೈಕ್ ಅನುಮತಿ ಕೊಡಿ ಅಥವಾ ಕೆಳಗಿನ ಸ್ಯಾಂಪಲ್ ವಾಯ್ಸ್ ಬಳಸಿ.",
+  },
 };
 
 export default function VoiceOnboarding() {
-  const [uiLang, setUiLang] = useState<UILanguage>("en");
-  const t = DICTIONARY[uiLang];
+  const { language: appLang, setLanguage: setAppLang } = useLanguage();
+  const uiLang: UILanguage = appLang;
+  const setUiLang = (next: UILanguage) => setAppLang(next);
+  const t = DICTIONARY[uiLang] || DICTIONARY.en;
 
   // Recording states
   const [isRecording, setIsRecording] = useState(false);
@@ -549,20 +714,23 @@ export default function VoiceOnboarding() {
             </div>
 
             {/* Language Toggle Bar */}
-            <div className="flex items-center gap-1 rounded-xl border border-border bg-secondary/50 p-1">
+            <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-secondary/50 p-1">
               <Languages size={14} className="ml-1.5 text-muted-foreground" />
               {(
                 [
                   { id: "en", label: "English" },
                   { id: "ta", label: "தமிழ்" },
                   { id: "hi", label: "हिन्दी" },
+                  { id: "te", label: "తెలుగు" },
+                  { id: "ml", label: "മലയാളം" },
+                  { id: "kn", label: "ಕನ್ನಡ" },
                 ] as const
               ).map((lang) => (
                 <button
                   key={lang.id}
                   type="button"
                   onClick={() => setUiLang(lang.id)}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition cursor-pointer ${
                     uiLang === lang.id
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -976,10 +1144,10 @@ export default function VoiceOnboarding() {
                           onClick={() =>
                             setProfile({ ...profile, years_experience: yr })
                           }
-                          className={`rounded-full px-3 py-1 text-xs font-bold transition cursor-pointer shadow-subtle ${
+                          className={`rounded-full px-3 py-1 text-xs font-bold transition cursor-pointer shadow-2xs ${
                             profile.years_experience === yr
-                              ? "bg-primary text-white"
-                              : "border border-border bg-white text-muted-foreground hover:text-foreground"
+                              ? "bg-[#F4512C] text-white"
+                              : "border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA]"
                           }`}
                         >
                           {yr} yr{yr > 1 ? "s" : ""}
@@ -1162,8 +1330,8 @@ export default function VoiceOnboarding() {
             </div>
 
             {/* Payload Pre Block */}
-            <div className="mt-4 overflow-hidden rounded-xl border border-border bg-slate-950 p-4 shadow-inner">
-              <pre className="overflow-x-auto text-xs font-mono leading-relaxed text-emerald-400 sm:text-sm">
+            <div className="mt-4 overflow-hidden rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#141210] p-4 shadow-inner">
+              <pre className="overflow-x-auto text-xs font-mono leading-relaxed text-[#3DD1B3] sm:text-sm">
                 {JSON.stringify(confirmedPayload, null, 2)}
               </pre>
             </div>

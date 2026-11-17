@@ -40,6 +40,7 @@ import RequestCallbackForm from "@/components/RequestCallbackForm";
 import TrustStripWorkerCard from "@/components/TrustStripWorkerCard";
 import WorkerTrackRecordSection from "@/components/WorkerTrackRecordSection";
 import WorkerPassbookSection from "@/components/WorkerPassbookSection";
+import { WorkerProfileSkeleton } from "@/components/PageSkeletons";
 
 // Fallback high-quality proof-of-work project photos by category if worker has not uploaded custom photos yet
 const categoryFallbacks: Record<
@@ -348,19 +349,7 @@ export default function WorkerProfile() {
   if (loadingWorkers && !worker) {
     return (
       <PageShell backTo="/search" backLabel="Search specialists">
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-8 text-center rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] shadow-soft">
-          <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary-100/15 text-primary border border-primary-100/30 mb-5">
-            <span className="absolute inset-0 animate-ping rounded-full bg-primary-100/10" />
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-          <h2 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5] tracking-tight">
-            Loading Specialist Profile
-          </h2>
-          <p className="mt-1 text-xs text-[#67696D] dark:text-[#A1A1AA] max-w-[280px]">
-            Please wait while we retrieve the verified profile and customer
-            track records.
-          </p>
-        </div>
+        <WorkerProfileSkeleton />
       </PageShell>
     );
   }
@@ -368,16 +357,16 @@ export default function WorkerProfile() {
   if (!worker) {
     return (
       <PageShell backTo="/search" backLabel="Search specialists">
-        <div className="flex flex-col items-center justify-center min-h-[420px] p-6 sm:p-10 text-center rounded-[24px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] shadow-soft max-w-2xl mx-auto my-6 sm:my-10">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100/30 dark:bg-rose-950/20 text-rose-500 border border-rose-100 dark:border-rose-950/30 mb-6 shrink-0 shadow-subtle">
+        <div className="flex flex-col items-center justify-center min-h-[420px] p-6 sm:p-10 text-center rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] max-w-2xl mx-auto my-6 sm:my-10">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 mb-6 shrink-0">
             {loadingError ? <AlertCircle size={28} /> : <UserX size={28} />}
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
             {loadingError ? "Connection Failed" : "Profile Not Found"}
           </h1>
 
-          <p className="mt-2.5 text-xs sm:text-sm text-[#67696D] dark:text-[#A1A1AA] max-w-md leading-relaxed">
+          <p className="mt-2.5 text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F] max-w-md leading-relaxed">
             {loadingError
               ? "We encountered a temporary issue loading our directory of specialists. Check your internet connection and try again."
               : "The requested specialist profile is currently unavailable. The profile may have been unlisted, moved, or the ID is incorrect."}
@@ -386,7 +375,7 @@ export default function WorkerProfile() {
           <div className="mt-8 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <Link
               to="/search"
-              className="flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-primary px-6 text-xs font-bold text-white hover:bg-[#0f766e] shadow-subtle transition-all duration-200 active:scale-[0.98]"
+              className="flex h-11 w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-[#F4512C] hover:bg-[#E04320] px-6 text-xs font-bold text-white transition-all duration-200 active:scale-[0.98]"
             >
               <ArrowLeft size={14} />
               <span>Back to search</span>
@@ -397,7 +386,6 @@ export default function WorkerProfile() {
                 type="button"
                 onClick={() => {
                   setLoadingWorkers(true);
-                  // Trigger a re-fetch of available workers
                   fetch("/api/workers", { cache: "no-store" })
                     .then(async (r) => {
                       if (!r.ok) throw new Error();
@@ -416,7 +404,7 @@ export default function WorkerProfile() {
                       setLoadingWorkers(false);
                     });
                 }}
-                className="flex h-11 w-full sm:w-auto items-center justify-center rounded-full border border-[#E7ECF1] dark:border-[#222222] bg-[#F6F9FC] dark:bg-[#121212] px-6 text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5] hover:bg-[#EDF2F7] dark:hover:bg-[#1A1A1A] transition-all duration-200 active:scale-[0.98]"
+                className="flex h-11 w-full sm:w-auto items-center justify-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-6 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 transition-all duration-200 active:scale-[0.98]"
               >
                 Try Again
               </button>
@@ -434,7 +422,7 @@ export default function WorkerProfile() {
     if (!worker) return;
     const shareUrl = window.location.href;
     const shareTitle = `${worker.name} - Verified ${worker.category}`;
-    const shareText = `Check out ${worker.name}, a verified ${worker.category} in ${worker.locality || "your area"} with verified track record stats on Fusion Starter!`;
+    const shareText = `Check out ${worker.name}, a verified ${worker.category} in ${worker.locality || "your area"} with verified track record stats on Builderco!`;
 
     if (navigator.share) {
       try {
@@ -447,7 +435,6 @@ export default function WorkerProfile() {
           category: worker.category,
         });
       } catch (err) {
-        // Fallback if the user cancelled or native share throws an error
         if (err instanceof Error && err.name !== "AbortError") {
           copyToClipboard(shareUrl);
         }
@@ -468,9 +455,7 @@ export default function WorkerProfile() {
         });
         setTimeout(() => setCopied(false), 2500);
       })
-      .catch(() => {
-        // fallback fail silently
-      });
+      .catch(() => {});
   };
 
   const save = () => {
@@ -478,7 +463,6 @@ export default function WorkerProfile() {
     setSaved(getSavedWorkerIds().includes(worker.id));
   };
 
-  // Only render rating/reviews if they exist in the data (no fabricated stats)
   const hasRating =
     worker.avg_rating !== undefined || worker.rating !== undefined;
   const ratingValue = Number(worker.avg_rating || worker.rating);
@@ -494,16 +478,15 @@ export default function WorkerProfile() {
     >
       {/* Toast Notification */}
       {copied && (
-        <div className="fixed top-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-emerald-200 dark:border-emerald-800 bg-white/95 dark:bg-[#121212]/95 px-4 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-200 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
-          <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="fixed top-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#0F8A73]/30 bg-white/95 dark:bg-[#161514]/95 px-4 py-2 text-xs font-bold text-[#0F8A73] shadow-lg backdrop-blur-md">
+          <span className="flex h-1.5 w-1.5 rounded-full bg-[#0F8A73] animate-pulse" />
           <span>Profile link copied to clipboard!</span>
         </div>
       )}
 
-      {/* 1. HERO SECTION: PROOF-OF-WORK PHOTO STRIP (Replaces large centered headshot) */}
-      <section className="relative overflow-hidden rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] shadow-soft">
-        {/* Full-width horizontal scrollable photo strip */}
-        <div className="relative bg-[#0F172A]">
+      {/* 1. HERO SECTION: PROOF-OF-WORK PHOTO STRIP */}
+      <section className="relative overflow-hidden rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514]">
+        <div className="relative bg-[#141210]">
           <div className="flex h-44 sm:h-56 w-full gap-2 overflow-x-auto p-2 scrollbar-none snap-x snap-mandatory">
             {workPhotos.map((item, idx) => (
               <div
@@ -511,7 +494,7 @@ export default function WorkerProfile() {
                 onClick={() => setActivePhoto(item)}
                 role="button"
                 tabIndex={0}
-                className="group relative h-full w-[240px] sm:w-[280px] shrink-0 snap-start overflow-hidden rounded-[14px] bg-[#1E293B] cursor-pointer"
+                className="group relative h-full w-[240px] sm:w-[280px] shrink-0 snap-start overflow-hidden rounded-2xl bg-[#242220] cursor-pointer"
               >
                 <img
                   src={item.image_url}
@@ -520,16 +503,14 @@ export default function WorkerProfile() {
                   referrerPolicy="no-referrer"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
-                    // Fallback pattern if remote photo fails
                     const target = e.currentTarget;
                     target.src =
                       "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=700&auto=format&fit=crop&q=80";
                   }}
                 />
-                {/* Proof of Work Badge Overlay */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2.5 text-white">
                   <div className="flex items-center gap-1.5 text-[11px] font-semibold truncate">
-                    <Camera size={11} className="shrink-0 text-primary-100" />
+                    <Camera size={11} className="shrink-0 text-[#F4512C]" />
                     <span className="truncate">{item.label}</span>
                   </div>
                 </div>
@@ -537,43 +518,38 @@ export default function WorkerProfile() {
             ))}
           </div>
 
-          {/* Top Floating Action Controls (Bookmark & Share) */}
           <div className="absolute top-3.5 right-3.5 flex items-center gap-2 z-10">
             <button
               type="button"
               onClick={handleShare}
               title="Share specialist profile"
               aria-label="Share"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-black/80 text-[#2C2C2C] dark:text-[#F4F4F5] backdrop-blur-md shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-[#161514]/90 text-[#141210] dark:text-[#FAFAFA] backdrop-blur-md shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <Share2
-                size={14}
-                className="text-[#67696D] dark:text-[#A1A1AA]"
-              />
+              <Share2 size={14} className="text-[#6B645F] dark:text-[#9E958F]" />
             </button>
             <button
               type="button"
               onClick={save}
               title={saved ? "Saved to bookmarks" : "Save to bookmarks"}
               aria-label={saved ? "Saved" : "Save"}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-black/80 text-[#2C2C2C] dark:text-[#F4F4F5] backdrop-blur-md shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 dark:bg-[#161514]/90 text-[#141210] dark:text-[#FAFAFA] backdrop-blur-md shadow-md transition hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Heart
                 size={15}
                 fill={saved ? "currentColor" : "none"}
                 className={
-                  saved ? "text-rose-500" : "text-[#67696D] dark:text-[#A1A1AA]"
+                  saved ? "text-[#F4512C]" : "text-[#6B645F] dark:text-[#9E958F]"
                 }
               />
             </button>
           </div>
         </div>
 
-        {/* 2. COMPACT DETAILS HEADER WITH OVERLAPPING SMALL AVATAR */}
+        {/* 2. COMPACT DETAILS HEADER */}
         <div className="px-4 pb-5 sm:px-6">
-          {/* Avatar overlapping the bottom-left corner of the photo strip */}
           <div className="-mt-8 sm:-mt-9 flex items-end gap-3.5 mb-2">
-            <div className="relative flex h-16 w-16 sm:h-18 sm:w-18 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white dark:border-[#0A0A0A] bg-[#F6F9FC] dark:bg-[#141414] font-bold text-primary text-xl shadow-soft">
+            <div className="relative flex h-16 w-16 sm:h-18 sm:w-18 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white dark:border-[#161514] bg-[#FCEAE4] dark:bg-[#3A2018] font-bold text-[#F4512C] text-xl">
               {worker.photo_url ? (
                 <img
                   src={worker.photo_url}
@@ -589,50 +565,47 @@ export default function WorkerProfile() {
               )}
             </div>
 
-            {/* Availability status tag next to avatar */}
             {worker.available_today && (
-              <span className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-200 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-[#0F8A73]/30 bg-[#0F8A73]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#0F8A73]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0F8A73] animate-pulse" />
                 Available Today
               </span>
             )}
           </div>
 
-          {/* Name, verified badge (if applicable), primary trade/category tag — single compact row */}
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2C2C2C] dark:text-[#F4F4F5]">
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA]">
               {worker.name}
             </h1>
 
             {worker.phone_verified && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary-100/40 bg-primary-100/15 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                <BadgeCheck size={13} className="text-primary" />
+              <span className="inline-flex items-center gap-1 rounded-full border border-[#0F8A73]/30 bg-[#0F8A73]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#0F8A73]">
+                <BadgeCheck size={13} className="text-[#0F8A73]" />
                 <span>Verified Pro</span>
               </span>
             )}
 
-            <span className="rounded-full border border-[#E7ECF1] dark:border-[#262626] bg-[#F6F9FC] dark:bg-[#141414] px-2.5 py-0.5 text-[11px] font-bold text-primary">
+            <span className="rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] px-3 py-0.5 text-[11px] font-bold text-[#F4512C]">
               {worker.category}
             </span>
 
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-1 text-[11px] font-bold border border-[#E7ECF1] dark:border-[#262626] bg-white dark:bg-[#121212] hover:bg-[#F6F9FC] dark:hover:bg-[#1A1A1A] text-[#67696D] dark:text-[#A1A1AA] hover:text-primary dark:hover:text-primary px-2.5 py-0.5 rounded-full transition cursor-pointer shadow-subtle active:scale-[0.98]"
+              className="inline-flex items-center gap-1 text-[11px] font-bold border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] hover:border-[#F4512C]/50 text-[#6B645F] dark:text-[#9E958F] hover:text-[#141210] dark:hover:text-[#FAFAFA] px-2.5 py-0.5 rounded-full transition cursor-pointer active:scale-[0.98]"
             >
-              <Share2 size={11} className="text-[#989EA7]" />
+              <Share2 size={11} />
               <span>Share</span>
             </button>
           </div>
 
-          {/* Row: star rating + review count (if it exists) + area/locality served. No fabricated stats */}
-          <div className="mt-2 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-[#67696D] dark:text-[#A1A1AA]">
+          <div className="mt-2 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-[#6B645F] dark:text-[#9E958F]">
             {hasRating && (
-              <div className="inline-flex items-center gap-1 font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <div className="inline-flex items-center gap-1 font-bold text-[#141210] dark:text-[#FAFAFA]">
                 <Star size={13} className="fill-amber-400 text-amber-400" />
                 <span>{ratingValue.toFixed(1)}</span>
                 {hasReviewsCount && (
-                  <span className="font-normal text-[#67696D] dark:text-[#A1A1AA]">
+                  <span className="font-normal text-[#6B645F] dark:text-[#9E958F]">
                     ({worker.reviews_count}{" "}
                     {worker.reviews_count === 1 ? "review" : "reviews"})
                   </span>
@@ -642,44 +615,43 @@ export default function WorkerProfile() {
 
             {worker.locality && (
               <span className="flex items-center gap-1">
-                <MapPin size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <MapPin size={13} className="text-[#F4512C] shrink-0" />
                 <span>{worker.locality}</span>
               </span>
             )}
 
             {worker.experience && (
               <span className="flex items-center gap-1">
-                <Briefcase size={13} className="text-[#989EA7] shrink-0" />
+                <Briefcase size={13} className="text-[#6B645F] dark:text-[#9E958F] shrink-0" />
                 <span>{worker.experience} experience</span>
               </span>
             )}
           </div>
 
           {/* Direct Trust & Guarantee Triad */}
-          <div className="mt-3.5 pt-3 border-t border-[#E7ECF1] dark:border-[#222222] grid grid-cols-3 gap-2 text-center text-[11px]">
-            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/60 p-2 border border-black/[0.04] dark:border-white/[0.06]">
-              <span className="font-bold text-emerald-600 dark:text-emerald-400 block">✓ ID Verified</span>
-              <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">Govt Aadhaar</span>
+          <div className="mt-4 pt-3.5 border-t border-[#EAE2DC] dark:border-white/10 grid grid-cols-3 gap-2 text-center text-[11px]">
+            <div className="rounded-xl bg-[#FAF8F5] dark:bg-[#0B0A09] p-2.5 border border-[#EAE2DC] dark:border-white/10">
+              <span className="font-bold text-[#0F8A73] block">✓ ID Verified</span>
+              <span className="text-[10px] text-[#6B645F] dark:text-[#9E958F]">Govt Aadhaar</span>
             </div>
-            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/60 p-2 border border-black/[0.04] dark:border-white/[0.06]">
-              <span className="font-bold text-[#09090B] dark:text-white block">0% Commission</span>
-              <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">Pay Direct</span>
+            <div className="rounded-xl bg-[#FAF8F5] dark:bg-[#0B0A09] p-2.5 border border-[#EAE2DC] dark:border-white/10">
+              <span className="font-bold text-[#141210] dark:text-[#FAFAFA] block">0% Commission</span>
+              <span className="text-[10px] text-[#6B645F] dark:text-[#9E958F]">Pay Direct</span>
             </div>
-            <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/60 p-2 border border-black/[0.04] dark:border-white/[0.06]">
-              <span className="font-bold text-teal-600 dark:text-teal-400 block">~10m Reply</span>
-              <span className="text-[10px] text-[#71717A] dark:text-[#A1A1AA]">Fast Response</span>
+            <div className="rounded-xl bg-[#FAF8F5] dark:bg-[#0B0A09] p-2.5 border border-[#EAE2DC] dark:border-white/10">
+              <span className="font-bold text-[#F4512C] block">~10m Reply</span>
+              <span className="text-[10px] text-[#6B645F] dark:text-[#9E958F]">Fast Response</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. CONTENT SECTIONS: PERSONAL NOTE, ABOUT & SERVICES */}
+      {/* 3. CONTENT SECTIONS */}
       <div className="mt-4 space-y-4">
-        {/* Personal Note if in My Circle or if note exists */}
         {(saved || personalNote.trim().length > 0) && worker && (
-          <section className="rounded-[16px] border border-primary-100/40 bg-primary-100/10 dark:bg-primary-100/5 p-4 sm:p-5 shadow-soft space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-primary">
-              <StickyNote size={14} className="text-primary" />
+          <section className="rounded-2xl border border-[#F4512C]/30 bg-[#FCEAE4]/40 dark:bg-[#3A2018]/30 p-4 sm:p-5 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#F4512C]">
+              <StickyNote size={14} className="text-[#F4512C]" />
               <span>My Circle Personal Note</span>
             </div>
             <input
@@ -687,38 +659,37 @@ export default function WorkerProfile() {
               value={personalNote}
               onChange={handleNoteChange}
               placeholder="Add a note (e.g. 'Fixed geyser in May, very punctual')..."
-              className="w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#222222] bg-white dark:bg-[#121212] px-3.5 py-2 text-xs text-[#2C2C2C] dark:text-[#F4F4F5] placeholder-[#989EA7] focus:border-primary focus:outline-none"
+              className="w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-3.5 py-2 text-xs text-[#141210] dark:text-[#FAFAFA] placeholder:text-[#6B645F] dark:placeholder:text-[#9E958F] focus:border-[#F4512C] focus:outline-none"
             />
-            <p className="text-[10px] text-[#989EA7]">
+            <p className="text-[10px] text-[#6B645F] dark:text-[#9E958F]">
               Saved privately on this device.
             </p>
           </section>
         )}
-        {/* Short "About" bio text, if that field exists */}
+
         {worker.about && worker.about.trim().length > 0 && (
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 shadow-soft">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#A1A1AA]">
+          <section className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 sm:p-5">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
               About
             </h2>
-            <p className="mt-2 text-xs leading-relaxed text-[#2C2C2C] dark:text-[#D4D4D8]">
+            <p className="mt-2 text-xs leading-relaxed text-[#141210] dark:text-[#FAFAFA]">
               {worker.about}
             </p>
           </section>
         )}
 
-        {/* "Services offered" — existing skill/category tags as small pill chips */}
         {Array.isArray(worker.services) && worker.services.length > 0 && (
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 shadow-soft">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#67696D] dark:text-[#A1A1AA]">
+          <section className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 sm:p-5">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
               Services Offered
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {worker.services.map((service) => (
                 <span
                   key={service}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-primary-100/40 bg-primary-100/10 dark:bg-primary-100/5 px-3 py-1.5 text-xs font-medium text-[#2C2C2C] dark:text-[#F4F4F5]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 py-1.5 text-xs font-medium text-[#141210] dark:text-[#FAFAFA]"
                 >
-                  <Check size={13} className="text-primary" />
+                  <Check size={13} className="text-[#F4512C]" />
                   <span>{service}</span>
                 </span>
               ))}
@@ -726,7 +697,6 @@ export default function WorkerProfile() {
           </section>
         )}
 
-        {/* Track Record Section (Unmoderated Public Timeline) */}
         {worker && (
           <WorkerTrackRecordSection
             workerId={worker.id}
@@ -734,19 +704,17 @@ export default function WorkerProfile() {
           />
         )}
 
-        {/* Work Passbook: customer-confirmed jobs and the worker's typical rates */}
         {worker && <WorkerPassbookSection workerId={worker.id} />}
 
-        {/* 4. "MORE [CATEGORY] NEAR YOU" — Horizontal scroll on every worker profile */}
         {relatedWorkers.length > 0 && (
-          <section className="rounded-[16px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-4 sm:p-5 shadow-soft">
+          <section className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3.5">
-              <h2 className="text-sm sm:text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                 More {worker.category ? `${worker.category}s` : "Pros"} Near You
               </h2>
               <Link
                 to={`/search?service=${encodeURIComponent(worker.category || "")}&location=${encodeURIComponent(worker.locality || "")}`}
-                className="text-xs font-bold text-primary hover:underline"
+                className="text-xs font-bold text-[#F4512C] hover:underline"
               >
                 View all &rarr;
               </Link>
@@ -760,11 +728,10 @@ export default function WorkerProfile() {
           </section>
         )}
 
-        {/* Feedback / Report Link */}
         <div className="pt-1 text-center">
           <Link
             to="/report"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#67696D] dark:text-[#A1A1AA] transition hover:text-foreground"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B645F] dark:text-[#9E958F] transition hover:text-[#F4512C]"
           >
             <ShieldCheck size={13} />
             <span>Report or Provide Feedback</span>
@@ -781,7 +748,7 @@ export default function WorkerProfile() {
           onClick={() => setActivePhoto(null)}
         >
           <div
-            className="relative max-h-[90vh] max-w-2xl overflow-hidden rounded-[20px] bg-white dark:bg-[#0A0A0A] border border-[#E7ECF1] dark:border-[#1F1F1F] shadow-2xl"
+            className="relative max-h-[90vh] max-w-2xl overflow-hidden rounded-[24px] bg-white dark:bg-[#161514] border border-[#EAE2DC] dark:border-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -798,8 +765,8 @@ export default function WorkerProfile() {
               className="max-h-[75vh] w-full object-contain bg-black"
             />
             {activePhoto.label && (
-              <div className="p-4 border-t border-[#E7ECF1] dark:border-[#1F1F1F]">
-                <p className="text-xs font-semibold text-[#2C2C2C] dark:text-[#F4F4F5]">
+              <div className="p-4 border-t border-[#EAE2DC] dark:border-white/10">
+                <p className="text-xs font-semibold text-[#141210] dark:text-[#FAFAFA]">
                   {activePhoto.label}
                 </p>
               </div>
@@ -811,17 +778,17 @@ export default function WorkerProfile() {
       {/* 6. DIRECT CALL MODAL */}
       {showContact && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs"
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-sm rounded-[20px] border border-[#E7ECF1] dark:border-[#1F1F1F] bg-white dark:bg-[#0A0A0A] p-6 shadow-2xl">
+          <div className="w-full max-w-sm rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+                <h2 className="text-base font-extrabold text-[#141210] dark:text-[#FAFAFA]">
                   Call {worker.name}
                 </h2>
-                <p className="mt-0.5 text-xs text-[#67696D] dark:text-[#A1A1AA] select-all font-mono">
+                <p className="mt-0.5 text-xs text-[#6B645F] dark:text-[#9E958F] select-all font-mono">
                   +91 {worker.phone}
                 </p>
               </div>
@@ -829,7 +796,7 @@ export default function WorkerProfile() {
                 type="button"
                 onClick={() => setShowContact(false)}
                 aria-label="Close"
-                className="rounded-full p-1.5 text-[#989EA7] hover:bg-secondary hover:text-foreground cursor-pointer"
+                className="rounded-full p-1.5 text-[#6B645F] dark:text-[#9E958F] hover:bg-[#F5EFEA] dark:hover:bg-[#242220] hover:text-[#141210] dark:hover:text-[#FAFAFA] cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -837,7 +804,7 @@ export default function WorkerProfile() {
             <a
               href={contactHref}
               onClick={() => setShowContact(false)}
-              className="mt-5 flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-primary text-xs font-bold text-white transition hover:bg-[#0f766e] shadow-subtle active:scale-[0.98]"
+              className="mt-5 flex h-11 w-full items-center justify-center gap-1.5 rounded-full bg-[#F4512C] hover:bg-[#E04320] text-xs font-bold text-white transition active:scale-[0.98]"
             >
               <Phone size={14} />
               <span>Call Now</span>
@@ -856,10 +823,9 @@ export default function WorkerProfile() {
         />
       )}
 
-      {/* 8. STICKY BOTTOM BAR (Always visible while scrolling this screen) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#E7ECF1] dark:border-[#1F1F1F] bg-white/95 dark:bg-black/95 backdrop-blur-md px-4 py-3 shadow-2xl">
+      {/* 8. STICKY BOTTOM BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5]/95 dark:bg-[#0B0A09]/95 backdrop-blur-md px-4 py-3 shadow-2xl">
         <div className="mx-auto flex max-w-3xl items-center gap-3">
-          {/* Call button: Outline style */}
           <button
             type="button"
             onClick={() => {
@@ -872,13 +838,12 @@ export default function WorkerProfile() {
               });
               setShowContact(true);
             }}
-            className="flex-1 flex h-11 items-center justify-center gap-2 rounded-full border-2 border-[#2C2C2C] dark:border-[#F4F4F5] bg-transparent text-xs sm:text-sm font-bold text-[#2C2C2C] dark:text-[#F4F4F5] hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] transition cursor-pointer"
+            className="flex-1 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#141210] text-white dark:bg-white dark:text-[#11100F] text-xs sm:text-sm font-bold hover:opacity-90 active:scale-[0.98] transition cursor-pointer"
           >
             <Phone size={16} />
             <span>Call</span>
           </button>
 
-          {/* WhatsApp button: Solid refined WhatsApp teal-green */}
           <a
             href={whatsappHref}
             target="_blank"
@@ -892,7 +857,7 @@ export default function WorkerProfile() {
                 source: "sticky_bottom_bar",
               });
             }}
-            className="flex-1 flex h-11 items-center justify-center gap-2 rounded-full bg-[#128C7E] hover:bg-[#075E54] text-xs sm:text-sm font-bold text-white shadow-subtle active:scale-[0.98] transition cursor-pointer"
+            className="flex-1 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#0F8A73] hover:bg-[#0B6E5B] text-xs sm:text-sm font-bold text-white active:scale-[0.98] transition cursor-pointer"
           >
             <MessageCircle size={16} />
             <span>WhatsApp</span>

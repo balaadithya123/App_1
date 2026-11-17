@@ -33,7 +33,7 @@ const categories = [
 ];
 const experienceBands = ["<1", "1–3", "3–5", "5+"];
 const inputClass =
-  "h-11 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-3.5 text-sm text-[#09090B] dark:text-[#FAFAFA] focus:border-neutral-400 dark:focus:border-neutral-500 focus:outline-none transition placeholder:text-[#A1A1AA] dark:placeholder:text-[#71717A]";
+  "h-11 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-3.5 text-sm font-medium text-[#141210] dark:text-[#FAFAFA] focus:border-[#F4512C] focus:ring-2 focus:ring-[#F4512C]/20 focus:outline-none transition placeholder:text-[#8C847E] dark:placeholder:text-[#766F6A]";
 const normalizePhone = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 export default function Register() {
@@ -416,17 +416,20 @@ export default function Register() {
   if (!role) {
     return (
       <PageShell backTo="/" backLabel="Back">
-        <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-5 py-8 text-center shadow-sm sm:px-8 sm:py-10">
-          <h1 className="text-3xl font-bold text-[#09090B] dark:text-[#FAFAFA] sm:text-4xl">
-            Register
+        <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] px-5 py-8 text-center shadow-sm sm:px-8 sm:py-10">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+            Join Builderco
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA] sm:text-4xl">
+            Create your account
           </h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-[#71717A] dark:text-[#A1A1AA]">
-            Choose how you want to use Local Worker Discovery.
+          <p className="mx-auto mt-2 max-w-xl text-sm text-[#6B645F] dark:text-[#9E958F]">
+            Choose how you want to use Builderco.
           </p>
           <div className="mx-auto mt-8 grid max-w-5xl gap-5 sm:grid-cols-3">
             <Card
-              icon={<HardHat size={36} className="text-[#09090B] dark:text-[#FAFAFA]" />}
-              title="Register as Worker"
+              icon={<HardHat size={24} />}
+              title="Register as Specialist"
               text="Create a profile so nearby people can find your skills and services."
               actionLabel="Continue →"
               onClick={() => {
@@ -436,29 +439,29 @@ export default function Register() {
               }}
             />
             <Card
-              icon={<Building2 size={36} className="text-[#09090B] dark:text-[#FAFAFA]" />}
-              title="Register as Employer"
-              text="Create a lightweight client account to track requests later."
+              icon={<Building2 size={24} />}
+              title="Register as Homeowner"
+              text="Create a lightweight client account to track requests and reminders."
               onClick={() => {
                 setRole("employer");
                 setOtpSent(false);
               }}
             />
             <Card
-              icon={<Users size={36} className="text-[#09090B] dark:text-[#FAFAFA]" />}
+              icon={<Users size={24} />}
               title="Register as Agency"
-              text="Create an agency profile and manage a team of local workers."
+              text="Create an agency profile and manage a team of local specialists."
               onClick={() => navigate("/register-agency")}
             />
           </div>
-          <p className="mt-8 text-sm text-[#71717A] dark:text-[#A1A1AA]">
+          <p className="mt-8 text-sm text-[#6B645F] dark:text-[#9E958F]">
             Already have an account?{" "}
             <Link
               to="/login"
               state={{ from: "main" }}
-              className="font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline"
+              className="font-bold text-[#F4512C] hover:underline"
             >
-              Login
+              Sign In
             </Link>
           </p>
         </section>
@@ -480,26 +483,24 @@ export default function Register() {
         }}
       >
         <Header
-          title="Register as a Worker"
-          text="Email is your login. Phone verification is separate and powers your contact verification badge."
+          title="Register as a Specialist"
+          text="Email is your login. Phone verification is separate and powers your verified contact badge."
         />
 
         {/* Voice Auto-fill Bar directly inside form */}
-        <div className="mt-6 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 shadow-sm transition-colors">
+        <div className="mt-6 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 shadow-sm transition-colors">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                <Mic
-                  size={16}
-                  className={
-                    isVoiceRecording
-                      ? "animate-pulse text-rose-500"
-                      : "text-current"
-                  }
-                />
+              <div className="flex items-center gap-2 text-sm font-bold text-[#141210] dark:text-[#FAFAFA]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                  <Mic
+                    size={15}
+                    className={isVoiceRecording ? "animate-pulse" : ""}
+                  />
+                </span>
                 <span>Quick voice fill</span>
               </div>
-              <p className="mt-0.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+              <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
                 Speak your name, trade, location, and years of experience to
                 automatically fill the fields below.
               </p>
@@ -520,16 +521,16 @@ export default function Register() {
                   type="button"
                   onClick={startVoiceFill}
                   disabled={isVoiceProcessing}
-                  className="inline-flex h-9 items-center gap-2 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-4 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] transition hover:border-neutral-400 dark:hover:border-neutral-500 disabled:opacity-50 shadow-sm cursor-pointer"
+                  className="inline-flex h-9 items-center gap-2 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 text-xs font-bold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 disabled:opacity-50 shadow-sm cursor-pointer"
                 >
                   {isVoiceProcessing ? (
                     <>
-                      <Loader2 size={13} className="animate-spin" />
+                      <Loader2 size={13} className="animate-spin text-[#F4512C]" />
                       <span>Extracting details...</span>
                     </>
                   ) : (
                     <>
-                      <Mic size={14} />
+                      <Mic size={14} className="text-[#F4512C]" />
                       <span>Speak to fill</span>
                     </>
                   )}
@@ -548,7 +549,7 @@ export default function Register() {
           )}
 
           {voiceSuccess && (
-            <div className="mt-3 flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-3.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+            <div className="mt-3 flex items-center gap-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-3.5 py-1.5 text-xs font-medium text-[#0F8A73] dark:text-[#3DD1B3]">
               <CheckCircle2 size={15} className="shrink-0" />
               <span>{voiceSuccess}</span>
             </div>
@@ -564,7 +565,7 @@ export default function Register() {
 
         <form
           onSubmit={handleWorker}
-          className="mt-6 space-y-4 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 shadow-sm sm:p-8"
+          className="mt-6 space-y-4 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-sm sm:p-8"
         >
           <Field
             name="email"
@@ -589,7 +590,7 @@ export default function Register() {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
+            <label className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Name
             </label>
             <input
@@ -603,7 +604,7 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
+            <label className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Primary Service Category
             </label>
             <select
@@ -635,7 +636,7 @@ export default function Register() {
           />
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
+            <label className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Years of Experience
             </label>
             <select
@@ -655,29 +656,29 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
+            <label className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
               Agency Affiliation
             </label>
             <div className="grid gap-2 sm:grid-cols-2">
-              <label className="flex items-center gap-2 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-4 py-3 text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] cursor-pointer">
+              <label className="flex items-center gap-2 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-3 text-sm font-semibold text-[#141210] dark:text-[#FAFAFA] cursor-pointer">
                 <input
                   type="radio"
                   name="affiliation"
                   value="independent"
                   checked={affiliation === "independent"}
                   onChange={() => setAffiliation("independent")}
-                  className="accent-black dark:accent-white"
+                  className="accent-[#F4512C]"
                 />{" "}
                 Join as independent
               </label>
-              <label className="flex items-center gap-2 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-4 py-3 text-sm font-semibold text-[#09090B] dark:text-[#FAFAFA] cursor-pointer">
+              <label className="flex items-center gap-2 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] px-4 py-3 text-sm font-semibold text-[#141210] dark:text-[#FAFAFA] cursor-pointer">
                 <input
                   type="radio"
                   name="affiliation"
                   value="agency"
                   checked={affiliation === "agency"}
                   onChange={() => setAffiliation("agency")}
-                  className="accent-black dark:accent-white"
+                  className="accent-[#F4512C]"
                 />{" "}
                 Enter agency code
               </label>
@@ -718,7 +719,7 @@ export default function Register() {
           {success && (
             <p
               role="status"
-              className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-4 py-2 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+              className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-4 py-2 text-center text-xs font-semibold text-[#0F8A73] dark:text-[#3DD1B3]"
             >
               {success}
             </p>
@@ -726,7 +727,7 @@ export default function Register() {
 
           <button
             disabled={busy}
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-70 cursor-pointer"
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#F4512C] text-white text-sm font-bold shadow-sm hover:bg-[#E04320] transition disabled:opacity-70 cursor-pointer"
           >
             {busy ? (
               <>
@@ -746,12 +747,12 @@ export default function Register() {
   return (
     <PageShell backTo="/register" backLabel="Back" onBack={() => setRole(null)}>
       <Header
-        title="Register as a Client"
+        title="Register as a Homeowner"
         text="Email is your login. Phone verification is separate and required for contact purposes."
       />
       <form
         onSubmit={handleEmployer}
-        className="mt-6 space-y-4 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 shadow-sm sm:p-8"
+        className="mt-6 space-y-4 rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 shadow-sm sm:p-8"
       >
         <Field
           name="email"
@@ -805,14 +806,14 @@ export default function Register() {
         {success && (
           <p
             role="status"
-            className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-4 py-2 text-center text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+            className="rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 px-4 py-2 text-center text-xs font-semibold text-[#0F8A73] dark:text-[#3DD1B3]"
           >
             {success}
           </p>
         )}
         <button
           disabled={busy}
-          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-white dark:bg-white dark:text-black text-sm font-bold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-70 cursor-pointer"
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#F4512C] text-white text-sm font-bold shadow-sm hover:bg-[#E04320] transition disabled:opacity-70 cursor-pointer"
         >
           {busy ? (
             <>
@@ -845,18 +846,20 @@ function Card({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-6 text-left shadow-sm hover:border-neutral-400 dark:hover:border-neutral-600 transition">
+    <div className="flex flex-col justify-between rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-6 text-left shadow-sm hover:border-[#F4512C]/50 transition">
       <div>
-        <div className="mb-4 inline-flex">{icon}</div>
-        <h2 className="text-lg font-bold text-[#09090B] dark:text-[#FAFAFA]">{title}</h2>
-        <p className="mt-1.5 text-xs text-[#71717A] dark:text-[#A1A1AA] leading-relaxed">{text}</p>
+        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+          {icon}
+        </div>
+        <h2 className="text-lg font-bold text-[#141210] dark:text-[#FAFAFA]">{title}</h2>
+        <p className="mt-1.5 text-xs text-[#6B645F] dark:text-[#9E958F] leading-relaxed">{text}</p>
       </div>
       <div className="mt-5 space-y-3">
         {children}
         <button
           type="button"
           onClick={onClick}
-          className="inline-flex items-center gap-1 text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] hover:underline transition cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs font-bold text-[#F4512C] hover:underline transition cursor-pointer"
         >
           {actionLabel}
         </button>
@@ -867,9 +870,14 @@ function Card({
 
 function Header({ title, text }: { title: string; text: string }) {
   return (
-    <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-6 py-6 shadow-sm sm:px-8 sm:py-8">
-      <h1 className="text-2xl font-bold text-[#09090B] dark:text-[#FAFAFA] sm:text-3xl">{title}</h1>
-      <p className="mt-1 text-xs text-[#71717A] dark:text-[#A1A1AA]">{text}</p>
+    <section className="rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] px-6 py-6 shadow-sm sm:px-8 sm:py-8">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+        Account Registration
+      </p>
+      <h1 className="mt-1.5 text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA] sm:text-3xl">
+        {title}
+      </h1>
+      <p className="mt-1 text-xs sm:text-sm text-[#6B645F] dark:text-[#9E958F]">{text}</p>
     </section>
   );
 }
@@ -891,10 +899,10 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
+      <label className="mb-1.5 block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
         {label}
         {!required && (
-          <span className="ml-1 font-normal text-[#71717A] dark:text-[#A1A1AA]">(optional)</span>
+          <span className="ml-1 font-normal text-[#6B645F] dark:text-[#9E958F]">(optional)</span>
         )}
       </label>
       <input

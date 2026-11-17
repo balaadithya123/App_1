@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BriefcaseBusiness,
   CalendarDays,
@@ -22,6 +22,15 @@ import WorkerPortfolioManager from "@/components/WorkerPortfolioManager";
 import WorkerAgencyAffiliation from "@/components/WorkerAgencyAffiliation";
 import WorkerAssignedProjects from "@/components/WorkerAssignedProjects";
 import WorkerTrackRecordSection from "@/components/WorkerTrackRecordSection";
+import { DashboardSkeleton } from "@/components/PageSkeletons";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import {
+  formatCacheAge,
+  loadCachedWorkerDashboard,
+  saveCachedWorkerDashboard,
+} from "@/lib/offline-cache";
+import { useLanguage } from "@/lib/i18n";
 
 const isoToday = () => {
   const d = new Date();
@@ -41,6 +50,8 @@ const formatDate = (value: string) =>
 
 export default function WorkerDashboard() {
   const navigate = useNavigate();
+  const isOnline = useOnlineStatus();
+  const { t, translateCategory } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [availableToday, setAvailableToday] = useState(false);
@@ -50,31 +61,21 @@ export default function WorkerDashboard() {
   const [urgent, setUrgent] = useState(false);
   const [error, setError] = useState("");
   const [callbackCount, setCallbackCount] = useState(0);
+  const [cachedAt, setCachedAt] = useState<number | undefined>(undefined);
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-    supabase.auth.getUser().then(async ({ data }) => {
-      const current = data.user;
-      if (!current) {
-        navigate("/login", { replace: true });
-        return;
-      }
-      if (current.user_metadata?.role !== "worker") {
-        navigate("/", { replace: true });
-        return;
-      }
-      const meta = current.user_metadata ?? {};
+    let active = true;
+
+    const applyWorkerState = (current: any, fallbackCallbacks = 0) => {
+      const meta = current?.user_metadata ?? {};
       const today = isoToday();
       const storedFrom = meta.away_from || "";
       const storedUntil = meta.away_until || "";
       const validAwayRange = Boolean(
         storedFrom &&
-        storedUntil &&
-        storedUntil >= today &&
-        storedUntil >= storedFrom,
+          storedUntil &&
+          storedUntil >= today &&
+          storedUntil >= storedFrom,
       );
       const activeAway =
         validAwayRange && storedFrom <= today && storedUntil >= today;
@@ -83,32 +84,106 @@ export default function WorkerDashboard() {
       setAwayUntil(validAwayRange ? storedUntil : "");
       setAvailableToday(Boolean(meta.available_today) && !activeAway);
       setUrgent(Boolean(meta.urgent_today) && !activeAway);
+      setCallbackCount(fallbackCallbacks);
       setLoading(false);
+    };
+
+    const hydrate = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
+      // 1. Read local session immediately so unstable/offline connections open instantly
       const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session) {
-        try {
-          const response = await fetch(
-            `/api/callback-requests?_=${Date.now()}`,
+      const localSession = sessionData?.session;
+      const localUser = localSession?.user;
+
+      if (localUser) {
+        if (localUser.user_metadata?.role !== "worker") {
+          navigate("/", { replace: true });
+          return;
+        }
+        const cached = loadCachedWorkerDashboard(localUser.id);
+        if (cached?.updatedAt) setCachedAt(cached.updatedAt);
+        applyWorkerState(localUser, cached?.callbackCount ?? 0);
+      } else if (typeof navigator !== "undefined" && !navigator.onLine) {
+        const offlineFallback = loadCachedWorkerDashboard();
+        if (offlineFallback) {
+          setCachedAt(offlineFallback.updatedAt);
+          applyWorkerState(
             {
-              cache: "no-store",
-              headers: {
-                Authorization: `Bearer ${sessionData.session.access_token}`,
-              },
+              id: offlineFallback.userId,
+              user_metadata: offlineFallback.userMetadata,
             },
+            offlineFallback.callbackCount,
           );
-          if (response.ok) {
-            const callbackData = await response.json();
-            setCallbackCount(
-              Array.isArray(callbackData?.requests)
-                ? callbackData.requests.length
-                : 0,
-            );
-          }
-        } catch {
-          setCallbackCount(0);
+          return;
         }
       }
-    });
+
+      // 2. Refresh live user metadata and callback count when reachable
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        if (!localUser) navigate("/login", { replace: true });
+        return;
+      }
+
+      let current = localUser ?? null;
+      try {
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) current = data.user;
+      } catch {
+        // Keep localSession user if network drops mid-request
+      }
+
+      if (!active) return;
+      if (!current) {
+        navigate("/login", { replace: true });
+        return;
+      }
+      if (current.user_metadata?.role !== "worker") {
+        navigate("/", { replace: true });
+        return;
+      }
+
+      const cached = loadCachedWorkerDashboard(current.id);
+      let nextCount = cached?.callbackCount ?? 0;
+
+      if (localSession) {
+        try {
+          const response = await fetch("/api/callback-requests", {
+            headers: {
+              Authorization: `Bearer ${localSession.access_token}`,
+            },
+          });
+          if (response.ok) {
+            const callbackData = await response.json();
+            nextCount = Array.isArray(callbackData?.requests)
+              ? callbackData.requests.length
+              : 0;
+          }
+        } catch {
+          // Retain cached count when unstable
+        }
+      }
+
+      if (!active) return;
+      const now = Date.now();
+      setCachedAt(now);
+      applyWorkerState(current, nextCount);
+      saveCachedWorkerDashboard({
+        userId: current.id,
+        role: current.user_metadata?.role || "worker",
+        userMetadata: current.user_metadata ?? {},
+        callbackCount: nextCount,
+        updatedAt: now,
+      });
+    };
+
+    void hydrate();
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   const saveAvailability = async (changes: {
@@ -118,6 +193,10 @@ export default function WorkerDashboard() {
     urgent_today: boolean;
   }) => {
     if (!supabase || !user || saving) return false;
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setError("You're offline. Reconnect to sync your live availability.");
+      return false;
+    }
     setError("");
     setSaving(true);
     try {
@@ -130,18 +209,25 @@ export default function WorkerDashboard() {
       if (fnError)
         throw new Error(fnError.message || "Could not save availability.");
       if (fnData?.message && !fnData.worker) throw new Error(fnData.message);
-      setUser((current: any) =>
-        current
-          ? {
-              ...current,
-              user_metadata: {
-                ...(current.user_metadata ?? {}),
-                ...changes,
-                available: changes.available_today,
-              },
-            }
-          : current,
-      );
+      setUser((current: any) => {
+        if (!current) return current;
+        const nextMeta = {
+          ...(current.user_metadata ?? {}),
+          ...changes,
+          available: changes.available_today,
+        };
+        saveCachedWorkerDashboard({
+          userId: current.id,
+          role: nextMeta.role || "worker",
+          userMetadata: nextMeta,
+          callbackCount,
+          updatedAt: Date.now(),
+        });
+        return {
+          ...current,
+          user_metadata: nextMeta,
+        };
+      });
       return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not save availability.");
@@ -150,6 +236,38 @@ export default function WorkerDashboard() {
       setSaving(false);
     }
   };
+
+  const saveAvailabilityRef = useRef(saveAvailability);
+  saveAvailabilityRef.current = saveAvailability;
+
+  useEffect(() => {
+    const handleVoiceAvailability = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{ availableToday?: boolean; urgentToday?: boolean }>
+      ).detail;
+      if (!detail || typeof detail.availableToday !== "boolean") return;
+      const nextAvailable = detail.availableToday;
+      const nextUrgent = Boolean(detail.urgentToday) && nextAvailable;
+      setAvailableToday(nextAvailable);
+      setUrgent(nextUrgent);
+      void saveAvailabilityRef.current({
+        available_today: nextAvailable,
+        away_from: nextAvailable ? null : awayFrom || null,
+        away_until: nextAvailable ? null : awayUntil || null,
+        urgent_today: nextUrgent,
+      });
+    };
+    window.addEventListener(
+      "builderco-voice-availability",
+      handleVoiceAvailability,
+    );
+    return () => {
+      window.removeEventListener(
+        "builderco-voice-availability",
+        handleVoiceAvailability,
+      );
+    };
+  }, [awayFrom, awayUntil]);
 
   const isAway = Boolean(
     awayFrom && awayUntil && awayFrom <= isoToday() && awayUntil >= isoToday(),
@@ -240,11 +358,7 @@ export default function WorkerDashboard() {
   if (loading) {
     return (
       <PageShell hideBack hideHome>
-        <section className="rounded-[16px] border border-[#E7ECF1] bg-white p-8 text-center shadow-soft">
-          <p className="text-sm font-medium text-[#67696D]">
-            Loading your worker portal...
-          </p>
-        </section>
+        <DashboardSkeleton statCount={3} cardCount={2} />
       </PageShell>
     );
   }
@@ -259,12 +373,12 @@ export default function WorkerDashboard() {
 
   return (
     <PageShell hideBack hideHome>
-      <div className="mx-auto max-w-4xl space-y-4">
-        {/* Worker Profile Header Card */}
-        <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
+      <div className="mx-auto max-w-4xl space-y-5">
+        {/* Worker Profile Hero Banner */}
+        <section className="relative overflow-hidden rounded-[24px] border border-[#EAE2DC] dark:border-white/10 bg-gradient-to-br from-[#FFF4EF] via-[#FAF8F5] to-[#F5EAE2] dark:from-[#261B16] dark:via-[#1C1512] dark:to-[#15110F] p-6 sm:p-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA] shadow-sm">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA]">
                 {avatar ? (
                   <img
                     src={avatar}
@@ -272,44 +386,50 @@ export default function WorkerDashboard() {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <UserRound size={24} className="text-[#09090B] dark:text-[#FAFAFA]" />
+                  <UserRound size={26} className="text-[#F4512C]" />
                 )}
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717A] dark:text-[#A1A1AA]">
-                    Worker Dashboard
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                    {t("worker.portal")}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] px-2.5 py-0.5 text-[10px] font-semibold text-[#09090B] dark:text-[#FAFAFA]">
-                    <BadgeCheck size={12} className="text-emerald-500" />
-                    Verified Pro
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white/80 dark:bg-[#161514]/80 px-2.5 py-0.5 text-[10px] font-semibold text-[#141210] dark:text-[#FAFAFA]">
+                    <BadgeCheck size={12} className="text-[#0F8A73]" />
+                    {t("worker.verifiedPro")}
                   </span>
+                  {!isOnline && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                      {t("offline.snapshot")}{cachedAt ? ` · ${formatCacheAge(cachedAt)}` : ""}
+                    </span>
+                  )}
                 </div>
-                <h1 className="mt-0.5 truncate text-xl font-bold tracking-tight text-[#09090B] dark:text-[#FAFAFA] sm:text-2xl">
+                <h1 className="mt-1 truncate text-2xl font-extrabold tracking-tight text-[#141210] dark:text-[#FAFAFA] sm:text-3xl">
                   {name}
                 </h1>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#71717A] dark:text-[#A1A1AA]">
-                  <span className="flex items-center gap-1 text-[#09090B] dark:text-[#FAFAFA] font-semibold">
-                    <BriefcaseBusiness size={13} />
-                    {category}
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[#6B645F] dark:text-[#9E958F]">
+                  <span className="flex items-center gap-1 font-semibold text-[#141210] dark:text-[#FAFAFA]">
+                    <BriefcaseBusiness size={13} className="text-[#F4512C]" />
+                    {translateCategory(category)}
                   </span>
                   <span>·</span>
                   <span className="flex items-center gap-1">
-                    <MapPin size={13} className="text-[#71717A] dark:text-[#A1A1AA]" />
+                    <MapPin size={13} />
                     {location}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <PWAInstallButton variant="pill" />
               <button
                 type="button"
                 onClick={() => navigate("/profile")}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] hover:border-neutral-400 dark:hover:border-neutral-500 shadow-sm cursor-pointer active:scale-95"
+                className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[#141210] text-white dark:bg-white dark:text-[#11100F] px-5 text-xs font-bold transition hover:opacity-90 cursor-pointer active:scale-95"
               >
                 <Edit3 size={13} />
-                <span>Edit Profile</span>
+                <span>{t("worker.editProfile")}</span>
               </button>
             </div>
           </div>
@@ -319,16 +439,26 @@ export default function WorkerDashboard() {
         <button
           type="button"
           onClick={() => navigate("/worker-passbook")}
-          className="flex w-full items-center gap-4 rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-4 sm:p-5 text-left shadow-sm transition hover:border-neutral-400 cursor-pointer"
+          className="group flex w-full items-center gap-4 rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 text-left transition hover:border-[#F4512C]/50 cursor-pointer"
         >
-          <BadgeCheck size={22} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+            <BadgeCheck size={20} />
+          </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm sm:text-base font-semibold text-[#09090B] dark:text-[#FAFAFA]">Work Passbook</span>
-            <span className="block text-xs text-[#71717A] dark:text-[#A1A1AA]">
-              Record jobs, get customers to confirm them, and show your real work history
+            <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+              {t("worker.passbookEyebrow")}
+            </span>
+            <span className="mt-0.5 block text-sm sm:text-base font-bold text-[#141210] dark:text-[#FAFAFA]">
+              {t("worker.passbookTitle")}
+            </span>
+            <span className="block text-xs text-[#6B645F] dark:text-[#9E958F]">
+              {t("worker.passbookSub")}
             </span>
           </span>
-          <ChevronRight size={18} className="shrink-0 text-[#71717A]" />
+          <ChevronRight
+            size={18}
+            className="shrink-0 text-[#6B645F] dark:text-[#9E958F] transition group-hover:translate-x-0.5 group-hover:text-[#F4512C]"
+          />
         </button>
 
         {/* Growth & Metric Summaries */}
@@ -357,17 +487,20 @@ export default function WorkerDashboard() {
         />
 
         {/* Availability Management Panel */}
-        <section className="rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-5 sm:p-6 shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#FAFAFA] dark:bg-[#09090B] border border-[#E4E4E7] dark:border-[#27272A] text-[#09090B] dark:text-[#FAFAFA]">
-              <CalendarDays size={16} />
+        <section className="rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+              <CalendarDays size={18} />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                Availability & Scheduling
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#F4512C]">
+                {t("worker.scheduleEyebrow")}
+              </p>
+              <h2 className="text-base font-bold text-[#141210] dark:text-[#FAFAFA]">
+                {t("worker.availabilityHeading")}
               </h2>
-              <p className="text-xs text-[#71717A] dark:text-[#A1A1AA]">
-                Control when clients see you as available.
+              <p className="text-xs text-[#6B645F] dark:text-[#9E958F]">
+                {t("worker.availabilitySub")}
               </p>
             </div>
           </div>
@@ -375,21 +508,21 @@ export default function WorkerDashboard() {
           {error && (
             <p
               role="alert"
-              className="mt-3 rounded-[12px] border border-rose-500/20 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400"
+              className="mt-3 rounded-xl border border-rose-500/20 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400"
             >
               {error}
             </p>
           )}
 
           {/* Today's Availability Switch */}
-          <div className="mt-4 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-4">
+          <div className="mt-4 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0">
                 <span
                   className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${
                     availableToday && !isAway
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                      : "border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] text-[#71717A] dark:text-[#A1A1AA]"
+                      ? "border-[#0F8A73]/40 bg-[#0F8A73]/10 text-[#0F8A73]"
+                      : "border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#6B645F] dark:text-[#9E958F]"
                   }`}
                 >
                   {availableToday && !isAway ? (
@@ -399,19 +532,21 @@ export default function WorkerDashboard() {
                   )}
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-[#09090B] dark:text-[#FAFAFA] sm:text-sm">
+                  <p className="truncate text-xs font-bold text-[#141210] dark:text-[#FAFAFA] sm:text-sm">
                     {isAway
-                      ? `Away until ${formatDate(awayUntil)}`
+                      ? t("worker.awayUntil", { date: formatDate(awayUntil) })
                       : availableToday
-                        ? "Available for work today"
-                        : "Currently busy today"}
+                        ? t("worker.availableToday")
+                        : t("worker.busyToday")}
                   </p>
-                  <p className="mt-0.5 text-xs text-[#71717A] dark:text-[#A1A1AA]">
+                  <p className="mt-0.5 text-xs text-[#6B645F] dark:text-[#9E958F]">
                     {isAway
-                      ? "Your availability automatically resumes after this away window."
+                      ? t("worker.awayDesc")
                       : availableToday
-                        ? "Employers can call and send callback requests directly."
-                        : `Next estimated availability: ${formatDate(nextAvailable)}`}
+                        ? t("worker.availableDesc")
+                        : t("worker.nextAvailable", {
+                            date: formatDate(nextAvailable),
+                          })}
                   </p>
                 </div>
               </div>
@@ -426,15 +561,13 @@ export default function WorkerDashboard() {
                   disabled={saving}
                   className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:opacity-50 ${
                     availableToday
-                      ? "bg-black dark:bg-white"
-                      : "bg-[#E4E4E7] dark:bg-[#27272A]"
+                      ? "bg-[#F4512C]"
+                      : "bg-[#EAE2DC] dark:bg-[#242220]"
                   }`}
                 >
                   <span
-                    className={`block h-5 w-5 rounded-full shadow-xs transition-transform ${
-                      availableToday
-                        ? "translate-x-5 bg-white dark:bg-black"
-                        : "translate-x-0.5 bg-white dark:bg-[#71717A]"
+                    className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
+                      availableToday ? "translate-x-5" : "translate-x-0.5"
                     }`}
                   />
                 </button>
@@ -443,24 +576,24 @@ export default function WorkerDashboard() {
           </div>
 
           {/* Urgent / Same-Day Work Option */}
-          <div className="mt-3 flex items-center justify-between rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 shadow-sm">
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
             <div className="flex items-center gap-2.5 min-w-0">
               <Flame
-                size={15}
+                size={16}
                 className={
                   urgent && !todayIsUnavailable
-                    ? "text-amber-500"
-                    : "text-[#71717A] dark:text-[#A1A1AA]"
+                    ? "text-[#F4512C]"
+                    : "text-[#6B645F] dark:text-[#9E958F]"
                 }
               />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                  Urgent / same-day jobs
+                <p className="text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                  {t("worker.urgentJobs")}
                 </p>
-                <p className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
+                <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
                   {todayIsUnavailable
-                    ? "Enable 'Available today' first to accept emergency jobs."
-                    : "Show an urgent badge to employers needing immediate assistance."}
+                    ? t("worker.urgentDisabled")
+                    : t("worker.urgentEnabled")}
                 </p>
               </div>
             </div>
@@ -472,51 +605,49 @@ export default function WorkerDashboard() {
               aria-label="Toggle urgent work status"
               className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
                 urgent && !todayIsUnavailable
-                  ? "bg-black dark:bg-white"
-                  : "bg-[#E4E4E7] dark:bg-[#27272A]"
+                  ? "bg-[#F4512C]"
+                  : "bg-[#EAE2DC] dark:bg-[#242220]"
               }`}
             >
               <span
-                className={`block h-5 w-5 rounded-full shadow-xs transition-transform ${
-                  urgent && !todayIsUnavailable
-                    ? "translate-x-5 bg-white dark:bg-black"
-                    : "translate-x-0.5 bg-white dark:bg-[#71717A]"
+                className={`block h-5 w-5 rounded-full bg-white shadow-xs transition-transform ${
+                  urgent && !todayIsUnavailable ? "translate-x-5" : "translate-x-0.5"
                 }`}
               />
             </button>
           </div>
 
           {/* Away Mode Range Box */}
-          <div className="mt-3 rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] p-3.5">
+          <div className="mt-3 rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] p-4">
             <div className="flex items-center gap-2">
-              <Plane size={14} className="text-[#71717A] dark:text-[#A1A1AA]" />
-              <p className="text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                Away Window / Vacation
+              <Plane size={14} className="text-[#F4512C]" />
+              <p className="text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                {t("worker.awayWindow")}
               </p>
             </div>
-            <p className="mt-0.5 text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
-              Select date ranges when you will be out of town or taking leave.
+            <p className="mt-0.5 text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+              {t("worker.awayWindowSub")}
             </p>
 
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <label className="text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
-                From
+              <label className="text-[11px] font-semibold text-[#6B645F] dark:text-[#9E958F]">
+                {t("worker.from")}
                 <input
                   type="date"
                   min={tomorrow}
                   value={awayFrom}
                   onChange={(e) => setAwayFrom(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2.5 text-xs text-[#09090B] dark:text-[#FAFAFA] outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
+                  className="mt-1 h-9 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
                 />
               </label>
-              <label className="text-[11px] font-semibold text-[#71717A] dark:text-[#A1A1AA]">
-                Until
+              <label className="text-[11px] font-semibold text-[#6B645F] dark:text-[#9E958F]">
+                {t("worker.until")}
                 <input
                   type="date"
                   min={awayFrom || tomorrow}
                   value={awayUntil}
                   onChange={(e) => setAwayUntil(e.target.value)}
-                  className="mt-1 h-9 w-full rounded-[12px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-2.5 text-xs text-[#09090B] dark:text-[#FAFAFA] outline-none focus:border-neutral-400 dark:focus:border-neutral-500"
+                  className="mt-1 h-9 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-2.5 text-xs text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C]"
                 />
               </label>
             </div>
@@ -528,18 +659,18 @@ export default function WorkerDashboard() {
                 disabled={
                   !awayFrom || !awayUntil || awayUntil < awayFrom || saving
                 }
-                className="inline-flex h-8 items-center rounded-full bg-black text-white dark:bg-white dark:text-black px-4 text-xs font-semibold shadow-sm hover:bg-neutral-800 dark:hover:bg-neutral-200 transition disabled:opacity-50 cursor-pointer"
+                className="inline-flex h-8 items-center rounded-full bg-[#F4512C] hover:bg-[#E04320] text-white px-4 text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
               >
-                Set away window
+                {t("worker.setAway")}
               </button>
               {awayFrom && awayUntil && (
                 <button
                   type="button"
                   onClick={clearAway}
                   disabled={saving}
-                  className="inline-flex h-8 items-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] px-4 text-xs font-semibold text-[#09090B] dark:text-[#FAFAFA] transition hover:bg-[#FAFAFA] dark:hover:bg-[#27272A] cursor-pointer"
+                  className="inline-flex h-8 items-center rounded-full border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] px-4 text-xs font-semibold text-[#141210] dark:text-[#FAFAFA] transition hover:border-[#F4512C]/50 cursor-pointer"
                 >
-                  Clear
+                  {t("worker.clear")}
                 </button>
               )}
             </div>
@@ -547,95 +678,99 @@ export default function WorkerDashboard() {
         </section>
 
         {/* Quick Action Navigation Grid */}
-        <section className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <button
             type="button"
             onClick={() => navigate("/worker-commitments")}
-            className="group flex items-center justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 text-left transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-sm cursor-pointer"
+            className="group flex items-center justify-between rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 text-left transition hover:border-[#F4512C]/50 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
-                <ClipboardList size={15} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                <ClipboardList size={16} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                  Commitments
+                <strong className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                  {t("nav.commitments")}
                 </strong>
-                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">Job schedule</span>
+                <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+                  {t("worker.jobSchedule")}
+                </span>
               </div>
             </div>
             <ChevronRight
-              size={13}
-              className="text-[#71717A] dark:text-[#A1A1AA] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
+              size={14}
+              className="text-[#6B645F] dark:text-[#9E958F] transition group-hover:translate-x-0.5 group-hover:text-[#F4512C]"
             />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/callback-requests")}
-            className="group flex items-center justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 text-left transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-sm cursor-pointer"
+            className="group flex items-center justify-between rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 text-left transition hover:border-[#F4512C]/50 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
-                <ClipboardList size={15} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                <ClipboardList size={16} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                  Callbacks {callbackCount > 0 && `(${callbackCount})`}
+                <strong className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                  {t("nav.callbacks")} {callbackCount > 0 && `(${callbackCount})`}
                 </strong>
-                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">Direct leads</span>
+                <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+                  {t("worker.directLeads")}
+                </span>
               </div>
             </div>
             <ChevronRight
-              size={13}
-              className="text-[#71717A] dark:text-[#A1A1AA] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
+              size={14}
+              className="text-[#6B645F] dark:text-[#9E958F] transition group-hover:translate-x-0.5 group-hover:text-[#F4512C]"
             />
           </button>
 
           <button
             type="button"
             onClick={() => navigate("/profile")}
-            className="group flex items-center justify-between rounded-[16px] border border-[#E4E4E7] dark:border-[#27272A] bg-white dark:bg-[#141416] p-3.5 text-left transition hover:border-neutral-400 dark:hover:border-neutral-500 hover:shadow-sm cursor-pointer"
+            className="group flex items-center justify-between rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-4 text-left transition hover:border-[#F4512C]/50 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E4E4E7] dark:border-[#27272A] bg-[#FAFAFA] dark:bg-[#09090B] text-[#09090B] dark:text-[#FAFAFA]">
-                <Edit3 size={15} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FCEAE4] dark:bg-[#3A2018] text-[#F4512C]">
+                <Edit3 size={16} />
               </span>
               <div>
-                <strong className="block text-xs font-bold text-[#09090B] dark:text-[#FAFAFA]">
-                  Profile Details
+                <strong className="block text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
+                  {t("worker.profileDetails")}
                 </strong>
-                <span className="text-[11px] text-[#71717A] dark:text-[#A1A1AA]">
-                  Skills & rates
+                <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F]">
+                  {t("worker.skillsRates")}
                 </span>
               </div>
             </div>
             <ChevronRight
-              size={13}
-              className="text-[#71717A] dark:text-[#A1A1AA] transition group-hover:translate-x-0.5 group-hover:text-[#09090B] dark:group-hover:text-white"
+              size={14}
+              className="text-[#6B645F] dark:text-[#9E958F] transition group-hover:translate-x-0.5 group-hover:text-[#F4512C]"
             />
           </button>
 
           <button
             type="button"
             onClick={logout}
-            className="group flex items-center justify-between rounded-[16px] border border-rose-500/20 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 text-left transition hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-500/30 cursor-pointer"
+            className="group flex items-center justify-between rounded-2xl border border-rose-500/20 bg-rose-50/50 dark:bg-rose-950/20 p-4 text-left transition hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:border-rose-500/30 cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-rose-500/20 bg-rose-100/50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
-                <LogOut size={15} />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-rose-500/20 bg-rose-100/50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
+                <LogOut size={16} />
               </span>
               <div>
                 <strong className="block text-xs font-bold text-rose-700 dark:text-rose-300">
-                  Sign Out
+                  {t("worker.signOut")}
                 </strong>
                 <span className="text-[11px] text-rose-600/80 dark:text-rose-400/80">
-                  End session
+                  {t("worker.endSession")}
                 </span>
               </div>
             </div>
             <ChevronRight
-              size={13}
+              size={14}
               className="text-rose-400 transition group-hover:translate-x-0.5 group-hover:text-rose-600 dark:group-hover:text-rose-300"
             />
           </button>

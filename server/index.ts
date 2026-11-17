@@ -45,6 +45,10 @@ import { handleCompletePhoneVerification } from "./routes/phone-verification";
 import { handleGeocode, handleReverseGeocode } from "./routes/maps";
 import { handleServiceChat } from "./routes/chat";
 import { handleVoiceOnboarding } from "./routes/voice-onboarding";
+import {
+  handleVoiceAssistantTurn,
+  handleVoiceTts,
+} from "./routes/voice-assistant";
 import { handleScreenPortfolio } from "./routes/portfolio-screen";
 import { handleEvaluateRanking } from "./routes/ranking";
 import {
@@ -86,6 +90,8 @@ export function createServer() {
   app.get("/api/maps/reverse-geocode", handleReverseGeocode);
   app.post("/api/chat", handleServiceChat);
   app.post("/api/voice-onboarding", handleVoiceOnboarding);
+  app.post("/api/voice-assistant/turn", handleVoiceAssistantTurn);
+  app.post("/api/voice-assistant/tts", handleVoiceTts);
   app.post("/api/portfolio/screen", handleScreenPortfolio);
   app.post("/api/ranking/evaluate", handleEvaluateRanking);
   app.get("/api/workers", handleGetWorkers);

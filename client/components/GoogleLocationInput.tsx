@@ -908,10 +908,10 @@ export default function GoogleLocationInput({
     <div className="relative w-full" ref={dropdownRef}>
       {label && (
         <div className="mb-1.5 flex items-center justify-between">
-          <label className="text-xs font-bold text-[#2C2C2C] dark:text-[#F4F4F5]">
+          <label className="text-xs font-bold text-[#141210] dark:text-[#FAFAFA]">
             {label}
             {!required && (
-              <span className="ml-1 font-normal text-[#989EA7]">
+              <span className="ml-1 font-normal text-[#8C847E] dark:text-[#766F6A]">
                 (optional)
               </span>
             )}
@@ -920,16 +920,16 @@ export default function GoogleLocationInput({
             type="button"
             onClick={() => handleDetectLocation(false)}
             disabled={isLocating}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary hover:bg-primary/20 transition disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#F4512C]/30 bg-[#FCEAE4] dark:bg-[#3A2018] px-2.5 py-0.5 text-xs font-semibold text-[#F4512C] hover:bg-[#F4512C]/15 transition disabled:opacity-50 cursor-pointer"
           >
             {isLocating ? (
               <>
-                <Loader2 size={12} className="animate-spin text-primary" />
+                <Loader2 size={12} className="animate-spin text-[#F4512C]" />
                 <span>Accessing GPS...</span>
               </>
             ) : (
               <>
-                <Navigation size={12} className="text-primary" />
+                <Navigation size={12} className="text-[#F4512C]" />
                 <span>Auto-Detect GPS</span>
               </>
             )}
@@ -939,7 +939,7 @@ export default function GoogleLocationInput({
 
       {/* Input Field with GPS Indicator */}
       <div className="relative flex items-center">
-        <div className="pointer-events-none absolute left-3.5 flex items-center text-primary">
+        <div className="pointer-events-none absolute left-3.5 flex items-center text-[#F4512C]">
           <MapPin size={16} />
         </div>
         <input
@@ -964,22 +964,22 @@ export default function GoogleLocationInput({
           placeholder={
             isLocating ? "Detecting your GPS location..." : placeholder
           }
-          className="h-11 w-full rounded-[12px] border border-[#E7ECF1] dark:border-[#242424] bg-[#F6F9FC] dark:bg-[#141414] pl-9.5 pr-20 text-xs sm:text-sm text-[#2C2C2C] dark:text-[#F4F4F5] outline-none focus:border-primary focus:bg-white dark:focus:bg-[#0A0A0A] transition placeholder:text-[#989EA7]"
+          className="h-11 w-full rounded-xl border border-[#EAE2DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-[#0B0A09] pl-9.5 pr-20 text-xs sm:text-sm text-[#141210] dark:text-[#FAFAFA] outline-none focus:border-[#F4512C] focus:ring-2 focus:ring-[#F4512C]/15 focus:bg-white dark:focus:bg-[#161514] transition placeholder:text-[#8C847E] dark:placeholder:text-[#766F6A]"
         />
 
         {/* Right side status / refresh action */}
         <div className="absolute right-2.5 flex items-center gap-1">
           {isLocating ? (
-            <Loader2 size={14} className="animate-spin text-primary" />
+            <Loader2 size={14} className="animate-spin text-[#F4512C]" />
           ) : isSearching ? (
-            <Loader2 size={14} className="animate-spin text-[#989EA7]" />
+            <Loader2 size={14} className="animate-spin text-[#8C847E]" />
           ) : (
             <button
               type="button"
               onClick={() => handleDetectLocation(false)}
               title="Refresh GPS Location"
               aria-label="Refresh GPS Location"
-              className="flex h-7 w-7 items-center justify-center rounded-full text-[#989EA7] hover:bg-black/5 dark:hover:bg-white/10 hover:text-primary transition cursor-pointer"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-[#8C847E] hover:bg-[#EAE2DC]/50 dark:hover:bg-white/10 hover:text-[#F4512C] transition cursor-pointer"
             >
               <RefreshCw size={13} />
             </button>
@@ -990,7 +990,7 @@ export default function GoogleLocationInput({
       {/* Instant 2-3 Place Suggestion Quick Chips */}
       {topPills.length > 0 && query.trim() && (
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-[#989EA7]">
+          <span className="text-[10px] font-semibold text-[#8C847E] dark:text-[#766F6A]">
             Suggestions:
           </span>
           {topPills.map((place) => {
@@ -1004,13 +1004,13 @@ export default function GoogleLocationInput({
                 onClick={() => handleSelectLocalPlace(place)}
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium transition cursor-pointer ${
                   isSelected
-                    ? "bg-primary text-white"
-                    : "border border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#141414] text-[#2C2C2C] dark:text-[#F4F4F5] hover:border-primary/50 hover:bg-primary/5"
+                    ? "bg-[#F4512C] text-white"
+                    : "border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] text-[#141210] dark:text-[#FAFAFA] hover:border-[#F4512C]/50 hover:bg-[#FCEAE4]/50 dark:hover:bg-[#3A2018]/50"
                 }`}
               >
                 <MapPin
                   size={10}
-                  className={isSelected ? "text-white" : "text-primary"}
+                  className={isSelected ? "text-white" : "text-[#F4512C]"}
                 />
                 <span>{cleanName}</span>
               </button>
@@ -1021,10 +1021,10 @@ export default function GoogleLocationInput({
 
       {/* Auto-detected GPS Pill Notice */}
       {gpsAutoDetected && query && !isLocating && (
-        <div className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 px-2.5 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+        <div className="mt-1.5 flex items-center gap-1.5 rounded-xl bg-[#0F8A73]/10 border border-[#0F8A73]/25 px-2.5 py-1 text-[11px] font-medium text-[#0F8A73] dark:text-[#3DD1B3]">
           <Sparkles
             size={12}
-            className="shrink-0 text-emerald-600 dark:text-emerald-400"
+            className="shrink-0 text-[#0F8A73] dark:text-[#3DD1B3]"
           />
           <span>Auto-accessed via GPS. Stored as your standard location.</span>
         </div>
@@ -1032,8 +1032,8 @@ export default function GoogleLocationInput({
 
       {/* Dropdown Suggestions */}
       {isOpen && hasSuggestions && query.trim().length > 0 && (
-        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-[14px] border border-[#E7ECF1] dark:border-[#242424] bg-white dark:bg-[#141414] p-1.5 shadow-lg backdrop-blur-md">
-          <div className="px-2.5 py-1 text-[10px] font-bold tracking-wider text-[#989EA7] uppercase">
+        <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-2xl border border-[#EAE2DC] dark:border-white/10 bg-white dark:bg-[#161514] p-1.5 shadow-lg backdrop-blur-md">
+          <div className="px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] text-[#8C847E] dark:text-[#766F6A] uppercase">
             Suggested Place Names ({localMatches.length + apiSuggestions.length}
             )
           </div>
@@ -1044,14 +1044,14 @@ export default function GoogleLocationInput({
               key={`local-${idx}`}
               type="button"
               onClick={() => handleSelectLocalPlace(place)}
-              className="flex w-full items-start gap-2.5 rounded-[10px] px-2.5 py-2 text-left text-xs transition hover:bg-[#F6F9FC] dark:hover:bg-[#1C1C1C] cursor-pointer"
+              className="flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2 text-left text-xs transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] cursor-pointer"
             >
-              <MapPin size={14} className="mt-0.5 shrink-0 text-primary" />
+              <MapPin size={14} className="mt-0.5 shrink-0 text-[#F4512C]" />
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">
+                <p className="font-bold text-[#141210] dark:text-[#FAFAFA] truncate">
                   {place.name}
                 </p>
-                <p className="text-[11px] text-[#67696D] dark:text-[#A1A1AA] truncate">
+                <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F] truncate">
                   {place.district}, {place.state}
                 </p>
               </div>
@@ -1064,14 +1064,14 @@ export default function GoogleLocationInput({
               key={`api-${idx}`}
               type="button"
               onClick={() => handleSelectApiSuggestion(item)}
-              className="flex w-full items-start gap-2.5 rounded-[10px] px-2.5 py-2 text-left text-xs transition hover:bg-[#F6F9FC] dark:hover:bg-[#1C1C1C] cursor-pointer border-t border-[#E7ECF1]/50 dark:border-[#242424]/50"
+              className="flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2 text-left text-xs transition hover:bg-[#FAF8F5] dark:hover:bg-[#242220] cursor-pointer border-t border-[#EAE2DC]/60 dark:border-white/10"
             >
-              <MapPin size={14} className="mt-0.5 shrink-0 text-sky-500" />
+              <MapPin size={14} className="mt-0.5 shrink-0 text-[#0F8A73] dark:text-[#3DD1B3]" />
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-[#2C2C2C] dark:text-[#F4F4F5] truncate">
+                <p className="font-bold text-[#141210] dark:text-[#FAFAFA] truncate">
                   {item.locality || item.city || "Area"}
                 </p>
-                <p className="text-[11px] text-[#67696D] dark:text-[#A1A1AA] truncate">
+                <p className="text-[11px] text-[#6B645F] dark:text-[#9E958F] truncate">
                   {item.formatted_address}
                 </p>
               </div>
@@ -1082,13 +1082,13 @@ export default function GoogleLocationInput({
 
       {/* Selected Location Details Card */}
       {selectedLocation && (
-        <div className="mt-2 flex items-center justify-between rounded-[10px] border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs text-[#2C2C2C] dark:text-[#F4F4F5]">
+        <div className="mt-2 flex items-center justify-between rounded-xl border border-[#F4512C]/25 bg-[#FCEAE4]/50 dark:bg-[#3A2018]/40 px-3 py-1.5 text-xs text-[#141210] dark:text-[#FAFAFA]">
           <div className="flex items-center gap-1.5 truncate">
-            <Check size={13} className="text-primary shrink-0" />
+            <Check size={13} className="text-[#F4512C] shrink-0" />
             <span className="font-bold">
               {selectedLocation.locality || selectedLocation.city}
             </span>
-            <span className="text-[11px] text-[#67696D] dark:text-[#A1A1AA] truncate">
+            <span className="text-[11px] text-[#6B645F] dark:text-[#9E958F] truncate">
               ({selectedLocation.formatted})
             </span>
           </div>
@@ -1096,7 +1096,7 @@ export default function GoogleLocationInput({
             href={`https://www.google.com/maps/search/?api=1&query=${selectedLocation.lat},${selectedLocation.lng}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline shrink-0"
+            className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#F4512C] hover:underline shrink-0"
           >
             <span>View Map</span>
             <ExternalLink size={11} />
@@ -1105,14 +1105,14 @@ export default function GoogleLocationInput({
       )}
 
       {errorMsg && (
-        <div className="mt-1 flex items-center gap-1 text-xs text-red-500 font-medium">
+        <div className="mt-1 flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 font-medium">
           <AlertCircle size={12} />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {helperText && !errorMsg && !gpsAutoDetected && (
-        <p className="mt-1 text-xs text-[#67696D] dark:text-[#A1A1AA]">
+        <p className="mt-1 text-xs text-[#6B645F] dark:text-[#9E958F]">
           {helperText}
         </p>
       )}
