@@ -111,7 +111,7 @@ function RootRoute() {
     return <RouteLoadingFallback />;
   }
 
-  return <Index />;
+  return <LandingPage />;
 }
 
 function NavigationOriginTracker() {
@@ -175,9 +175,9 @@ export default function App() {
                   <Route path="/home" element={<Index />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/explore" element={<Index />} />
-                  <Route path="/landing" element={<RootRoute />} />
-                  <Route path="/overview" element={<RootRoute />} />
-                  <Route path="/about" element={<RootRoute />} />
+                  <Route path="/landing" element={<LandingPage />} />
+                  <Route path="/overview" element={<LandingPage />} />
+                  <Route path="/about" element={<LandingPage />} />
                   <Route path="/voice-onboarding" element={<VoiceOnboarding />} />
                   <Route path="/voice" element={<VoiceOnboarding />} />
                   <Route path="/search" element={<SearchResults />} />

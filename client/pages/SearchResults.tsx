@@ -624,7 +624,7 @@ export default function SearchResults() {
   return (
     <PageShell
       backLabel={t("callbacks.back")}
-      backTo="/"
+      backTo="/home"
       headerTitle={category === "All" ? t("cat.All Services") : translateCategory(category)}
       headerRight={
         <Link
